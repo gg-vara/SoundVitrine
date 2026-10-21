@@ -1,6 +1,6 @@
 {
     "name": "amphaal/soundvitrine",
-    "version": "0.9.5.3",
+    "version": "0.9.5.4",
     "description": "SoundVitrine is an hosted iTunes Library portal for the web. Used alongside SoundBuddy, you can broadcast to visitors what you are listening to, and what music you currently have on your computer !",
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.13"

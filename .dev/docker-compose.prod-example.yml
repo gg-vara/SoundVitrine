@@ -3,7 +3,7 @@ name: SoundVitrine
 services:
   soundvitrine:
     restart: on-failure:1
-    image: ghcr.io/amphaal/soundvitrine:${SOUNDVITRINE_VERSION:-main}
+    image: ghcr.io/gg-vara/soundvitrine:${SOUNDVITRINE_VERSION:-main}
     volumes:
      - soundvitrine-state:/app/_state:rw
     environment:
