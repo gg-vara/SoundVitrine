@@ -15,7 +15,7 @@ RUN composer install --no-dev --optimize-autoloader
 
 # https://frankenphp.dev/docs/docker/
 # note: prefer non-alpine for compatibility and performance (https://frankenphp.dev/fr/docs/performance/)
-FROM dunglas/frankenphp:php8.3-alpine AS runner
+FROM dunglas/frankenphp:1-php8.3.36-alpine AS runner
 RUN install-php-extensions \
 	intl
 
