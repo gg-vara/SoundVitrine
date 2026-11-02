@@ -51,6 +51,71 @@ function uploadFile($pathTo, $expectedFilename)
     }
 }
 
+/**
+ * signature of the buffers compressed by Windows' Compression API
+ */
+const MSZIP_BUFFER_MAGIC = "\x0A\x51\xE5\xC0";
+
+/**
+ * decompresses an uploaded file : MSZIP buffer, as compressed natively on Windows (which has no zlib API),
+ * or zlib, gzip and raw deflate data. Returns false if it cannot be decompressed
+ */
+function decompressUpload(string $data): string|false
+{
+    if (str_starts_with($data, MSZIP_BUFFER_MAGIC)) {
+        return mszipDecode($data);
+    }
+
+    return zlib_decode($data);
+}
+
+/**
+ * MSZIP buffer of Windows' Compression API : a 24 bytes header (magic, then uncompressed size at 8, block size at 16),
+ * followed by blocks of [compressed size, u32]["CK"][raw deflate], each one using the previous block's output as dictionary
+ */
+function mszipDecode(string $data): string|false
+{
+    $length = strlen($data);
+    if ($length < 24) {
+        return false;
+    }
+
+    $expectedSize = unpack('P', $data, 8)[1];
+
+    $output = '';
+    $previous = '';
+    $offset = 24;
+    while ($offset < $length) {
+        if ($offset + 4 > $length) {
+            return false;
+        }
+
+        $size = unpack('V', $data, $offset)[1];
+        $offset += 4;
+
+        if ($size < 2 || $offset + $size > $length || substr($data, $offset, 2) !== 'CK') {
+            return false;
+        }
+
+        $options = $previous === '' ? [] : ['dictionary' => substr($previous, -32768)];
+        $context = inflate_init(ZLIB_ENCODING_RAW, $options);
+        $block = $context === false ? false : inflate_add($context, substr($data, $offset + 2, $size - 2), ZLIB_FINISH);
+        if ($block === false) {
+            return false;
+        }
+
+        $output .= $block;
+        if (strlen($output) > $expectedSize) {
+            return false;
+        }
+
+        $previous = $block;
+        $offset += $size;
+    }
+
+    return strlen($output) === $expectedSize ? $output : false;
+}
+
 function prepareAndTestUploadedFileCompliance($expectedFilename)
 {
     $decompressed = '';
@@ -58,7 +123,7 @@ function prepareAndTestUploadedFileCompliance($expectedFilename)
     // check if compressed
     if ($_FILES[$expectedFilename]['type'] == "application/compressed-mlib") {
         //
-        $decompressed = zlib_decode(file_get_contents($_FILES[$expectedFilename]["tmp_name"]));
+        $decompressed = decompressUpload(file_get_contents($_FILES[$expectedFilename]["tmp_name"]));
 
         //
         file_put_contents($_FILES[$expectedFilename]["tmp_name"], $decompressed);
