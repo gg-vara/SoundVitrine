@@ -35,7 +35,7 @@ function credentials(fields: Record<string, string>, headers: Record<string, str
 // the very bytes SoundBuddy sends (src/net/Multipart.h, src/helpers/UploadHelper.h)
 function upload(action: string, field: string, content: string | Uint8Array, type: string, extra: Record<string, string> = {}) {
   const boundary = '----SoundBuddyBoundaryabcdefghijklmnopqrstuvwx';
-  const extension = type === 'application/compressed-mlib' ? '.zmlib' : '.json';
+  const extension = type === 'application/json' ? '.json' : '.zmlib';
   const fields = Object.entries({ password: PASSWORD, headless: '1', ...extra })
     .map(([name, value]) => `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`)
     .join('');
@@ -101,7 +101,7 @@ describe('library upload', () => {
     for (const response of [
       await uploadLibrary(library, 'application/json', { password: 'wrong' }),
       await uploadLibrary('not json'),
-      await uploadLibrary('not compressed', 'application/compressed-mlib'),
+      await uploadLibrary('not compressed', 'application/octet-stream'),
     ]) {
       expect(response.status).toBe(520);
       expectPlainText(response);
@@ -117,7 +117,7 @@ describe('library upload', () => {
   });
 
   test('a compressed library is stored decompressed, and compiled', async () => {
-    const response = await uploadLibrary(deflateSync(library), 'application/compressed-mlib');
+    const response = await uploadLibrary(deflateSync(library), 'application/octet-stream');
     expect(response.status).toBe(200);
     expectPlainText(response);
     expect(await response.text()).toBe('Bon appétit!');
@@ -125,6 +125,12 @@ describe('library upload', () => {
     expect(readFileSync(join(userFolder(USER), 'current.json'), 'utf8')).toBe(library);
     const served = await handle(new Request(`${base}/data/users/${USER}/unified.json`));
     expect(((await served.json()) as { abal: Record<string, unknown> }).abal.Artist).toBeDefined();
+  });
+
+  test('a compressed library from an older SoundBuddy, with its former content type', async () => {
+    const response = await uploadLibrary(deflateSync(library), 'application/compressed-mlib');
+    expect(response.status).toBe(200);
+    expect(readFileSync(join(userFolder(USER), 'current.json'), 'utf8')).toBe(library);
   });
 
   test('the same library again changes nothing', async () => {

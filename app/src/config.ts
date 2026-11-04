@@ -13,8 +13,9 @@ export const COMPANION_APP_GITHUB_LATEST_RELEASE_URL = 'https://github.com/gg-va
 export const MUSIC_LIB_UPLOAD_FILE_NAME = `${APP_NAME}_file`;
 export const SHOUT_UPLOAD_FILE_NAME = 'shout_file';
 
-// content type of a compressed library upload (see compression.ts)
-export const COMPRESSED_LIBRARY_CONTENT_TYPE = 'application/compressed-mlib';
+// content types SoundBuddy gives a compressed library upload, now and up to its 0.11.0 : informative, as uploads are told from their content
+export const COMPRESSED_LIBRARY_CONTENT_TYPE = 'application/octet-stream';
+export const LEGACY_COMPRESSED_LIBRARY_CONTENT_TYPE = 'application/compressed-mlib';
 
 // files of a user's folder
 export const MUSIC_LIB_PROFILE_FILE_NAME = 'current.json';
