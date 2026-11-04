@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "seeded",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd=app", "dev:seed"],
+      "port": 3000
+    }
+  ]
+}

@@ -64,7 +64,7 @@ As I always wanted to tell about my discoveries to my friends when I was outside
     - It will require a docker image build, so it might take a few seconds the first time you run it; please wait !
 - Once you notice `SoundVitrine listening` in `1) Run - Docker Compose`'s terminal log, you can run `2) Open SoundVitrine locally` to launch the app.
 
-You can also run it without Docker : from `app/`, `bun install`, then `PORT=3000 bun run dev`. `bun test`, `bun run typecheck` and `bun run lint` check the code.
+You can also run it without Docker : from `app/`, `bun install`, then `PORT=3000 bun run dev`. `bun test`, `bun run typecheck` and `bun run lint` check the code. `bun run dev:seed` starts a server to try things on, from a known state rebuilt at each start : a test account, a generated library and a recent shout (see `CLAUDE.md`).
 
 ### API
 What [SoundBuddy](https://github.com/gg-vara/SoundBuddy) calls, and the live shouts of a user, are described by an OpenAPI document (`/api/openapi.json`), which you can browse and try at `/api/docs`.
