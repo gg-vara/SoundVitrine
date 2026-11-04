@@ -1,0 +1,28 @@
+{
+  "name": "soundvitrine",
+  "version": "0.10.0",
+  "description": "SoundVitrine is an hosted iTunes Library portal for the web. Used alongside SoundBuddy, you can broadcast to visitors what you are listening to, and what music you currently have on your computer !",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.4",
+  "scripts": {
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write ."
+  },
+  "dependencies": {
+    "@orpc/openapi": "^1.16.1",
+    "@orpc/server": "^1.16.1",
+    "@orpc/zod": "^1.16.1",
+    "@scalar/api-reference": "^1.76.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}
