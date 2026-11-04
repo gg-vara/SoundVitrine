@@ -62,7 +62,7 @@ function asJson(text: string): string | undefined {
 }
 
 // the uploaded file as JSON text, decompressed if needed; undefined if not JSON.
-// Told from its content : Bun's form parser drops the content types it does not know, as the one of compressed libraries
+// Told from its content : Bun's form parser ignores the Content-Type of a file, and deduces one from its file name
 async function uploadedJson(file: File): Promise<string | undefined> {
   const data = new Uint8Array(await file.arrayBuffer());
   return asJson(Buffer.from(data).toString('utf8')) ?? asJson(decompressUpload(data)?.toString('utf8') ?? '');
@@ -129,8 +129,8 @@ export const uploadMusicLibraryRoute = base
     tags: ['SoundBuddy'],
     summary: 'Upload a music library',
     description:
-      `Replaces the library of the user : the tracks ${COMPANION_APP_NAME} exports, as JSON, or compressed ` +
-      `("${COMPRESSED_LIBRARY_CONTENT_TYPE}" content type : MSZIP buffer of Windows' Compression API, zlib, gzip or raw deflate).`,
+      `Replaces the library of the user : the tracks ${COMPANION_APP_NAME} exports, as JSON, or compressed, as told from the content ` +
+      `(MSZIP buffer of Windows' Compression API, zlib, gzip or raw deflate). ${COMPANION_APP_NAME} sends those as "${COMPRESSED_LIBRARY_CONTENT_TYPE}".`,
     inputStructure: 'detailed',
     outputStructure: 'detailed',
     spec: operation => ({
