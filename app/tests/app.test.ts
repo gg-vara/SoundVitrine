@@ -1,0 +1,339 @@
+// The server, called as SoundBuddy and browsers call it
+
+import { beforeAll, describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { deflateSync } from 'node:zlib';
+import { handle, prepareState } from '../src/app';
+import { STATE_FOLDER_PATH } from '../src/config';
+import { updateUser, userFolder } from '../src/users';
+
+const USER = 'curator';
+const PASSWORD = 'password1';
+const base = 'http://localhost';
+const library = JSON.stringify([
+  {
+    Name: 'One',
+    Album: 'First',
+    'Album Artist': 'Artist',
+    Genre: 'Rock',
+    Year: 1997,
+    'Disc Number': 1,
+    'Track Number': 1,
+    'Date Added': '2020-01-01T00:00:00Z',
+  },
+]);
+
+const soundBuddyHeaders = { 'X-Client-Id': 'SoundBuddy', 'X-Client-Version': '0.11.0', 'Accept-Language': 'en' };
+
+function credentials(fields: Record<string, string>, headers: Record<string, string> = soundBuddyHeaders) {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) form.set(name, value);
+  return handle(new Request(`${base}/hb/creds`, { method: 'POST', body: form, headers }));
+}
+
+// the very bytes SoundBuddy sends (src/net/Multipart.h, src/helpers/UploadHelper.h)
+function upload(action: string, field: string, content: string | Uint8Array, type: string, extra: Record<string, string> = {}) {
+  const boundary = '----SoundBuddyBoundaryabcdefghijklmnopqrstuvwx';
+  const extension = type === 'application/compressed-mlib' ? '.zmlib' : '.json';
+  const fields = Object.entries({ password: PASSWORD, headless: '1', ...extra })
+    .map(([name, value]) => `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`)
+    .join('');
+  const body = Buffer.concat([
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="${field}"; filename="${field}${extension}"\r\nContent-Type: ${type}\r\n\r\n`,
+    ),
+    Buffer.from(content),
+    Buffer.from(`\r\n${fields}--${boundary}--\r\n`),
+  ]);
+  const headers = { 'Accept-Language': 'en', 'Content-Type': `multipart/form-data; boundary=${boundary}` };
+  return handle(new Request(`${base}/u/${USER}/${action}`, { method: 'POST', body, headers }));
+}
+
+const uploadLibrary = (content: string | Uint8Array, type = 'application/json', extra?: Record<string, string>) =>
+  upload('uploadMusicLibrary', 'SoundVitrine_file', content, type, extra);
+
+const shout = (content: string, extra?: Record<string, string>) => upload('uploadShout', 'shout_file', content, 'application/json', extra);
+
+const expectPlainText = (response: Response) => expect(response.headers.get('content-type')).toStartWith('text/plain');
+
+beforeAll(() => {
+  updateUser(USER, { password: PASSWORD, email: 'curator@example.com' });
+  prepareState();
+});
+
+describe('heartbeat', () => {
+  test('valid credentials', async () => {
+    const response = await credentials({ username: USER, password: PASSWORD });
+    expect(response.status).toBe(200);
+    expectPlainText(response);
+    expect(await response.text()).toBe('OK');
+  });
+
+  test('the username is trimmed and case insensitive', async () => {
+    expect((await credentials({ username: ` ${USER.toUpperCase()} `, password: PASSWORD })).status).toBe(200);
+  });
+
+  test('refused credentials : 403 with the reason, which stops SoundBuddy', async () => {
+    const response = await credentials({ username: USER, password: 'wrong' });
+    expect(response.status).toBe(403);
+    expectPlainText(response);
+    expect(await response.text()).not.toContain('{');
+  });
+
+  test('the reason follows Accept-Language', async () => {
+    const french = await credentials({ username: USER, password: 'wrong' }, { ...soundBuddyHeaders, 'Accept-Language': 'fr' });
+    const english = await credentials({ username: USER, password: 'wrong' });
+    expect(await french.text()).not.toBe(await english.text());
+  });
+
+  test('400 when not called by SoundBuddy, or without form', async () => {
+    expect((await credentials({ username: USER, password: PASSWORD }, {})).status).toBe(400);
+    expect((await credentials({ username: USER, password: PASSWORD }, { 'X-Client-Id': 'Other', 'X-Client-Version': '1' })).status).toBe(
+      400,
+    );
+    expect((await handle(new Request(`${base}/hb/creds`, { method: 'POST', headers: soundBuddyHeaders }))).status).toBe(400);
+  });
+});
+
+describe('library upload', () => {
+  test('errors : 520 in plain text', async () => {
+    for (const response of [
+      await uploadLibrary(library, 'application/json', { password: 'wrong' }),
+      await uploadLibrary('not json'),
+      await uploadLibrary('not compressed', 'application/compressed-mlib'),
+    ]) {
+      expect(response.status).toBe(520);
+      expectPlainText(response);
+      expect(await response.text()).not.toBeEmpty();
+    }
+  });
+
+  test('unknown user', async () => {
+    const form = new FormData();
+    form.set('headless', '1');
+    const response = await handle(new Request(`${base}/u/nobody/uploadMusicLibrary`, { method: 'POST', body: form }));
+    expect(response.status).toBe(520);
+  });
+
+  test('a compressed library is stored decompressed, and compiled', async () => {
+    const response = await uploadLibrary(deflateSync(library), 'application/compressed-mlib');
+    expect(response.status).toBe(200);
+    expectPlainText(response);
+    expect(await response.text()).toBe('Bon appétit!');
+
+    expect(readFileSync(join(userFolder(USER), 'current.json'), 'utf8')).toBe(library);
+    const served = await handle(new Request(`${base}/data/users/${USER}/unified.json`));
+    expect(((await served.json()) as { abal: Record<string, unknown> }).abal.Artist).toBeDefined();
+  });
+
+  test('the same library again changes nothing', async () => {
+    const response = await uploadLibrary(library);
+    expect(response.status).toBe(200);
+    expect(await response.text()).not.toBe('Bon appétit!');
+  });
+
+  test('browser form : back to the library, and its errors are shown in a 200', async () => {
+    const form = new FormData();
+    form.set('SoundVitrine_file', new File(['[]'], 'library.json', { type: 'application/json' }));
+    form.set('password', PASSWORD);
+    const response = await handle(new Request(`${base}/u/${USER}`, { method: 'POST', body: form }));
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe(`/u/${USER}`);
+
+    const refused = new FormData();
+    refused.set('SoundVitrine_file', new File(['[]'], 'library.json', { type: 'application/json' }));
+    refused.set('password', 'wrong');
+    expect((await handle(new Request(`${base}/u/${USER}/uploadMusicLibrary`, { method: 'POST', body: refused }))).status).toBe(200);
+
+    await uploadLibrary(library);
+  });
+});
+
+describe('shouts', () => {
+  const played = { date: '2026-11-04T10:00:00Z', name: 'One', album: 'First', artist: 'Artist', playerState: true, md5: 'abc' };
+
+  test('expects SoundBuddy', async () => {
+    const form = new FormData();
+    form.set('password', PASSWORD);
+    const response = await handle(new Request(`${base}/u/${USER}/uploadShout`, { method: 'POST', body: form }));
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('expects API call');
+  });
+
+  test('refused with a wrong password', async () => {
+    expect((await shout(JSON.stringify(played), { password: 'wrong' })).status).toBe(520);
+  });
+
+  test('stored, and sent live as server-sent events', async () => {
+    const abort = new AbortController();
+    const stream = await handle(new Request(`${base}/u/${USER}/shouts`, { signal: abort.signal }));
+    expect(stream.headers.get('content-type')).toStartWith('text/event-stream');
+    const reader = (stream.body as ReadableStream<Uint8Array>).getReader();
+
+    // the stream subscribes as it is first read : its opening comment
+    await reader.read();
+
+    const uploading = shout(JSON.stringify(played));
+    let received = '';
+    while (!received.includes('data:') || !received.endsWith('\n\n')) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      received += new TextDecoder().decode(value);
+    }
+
+    expect((await uploading).status).toBe(200);
+    expect(received).toContain('event: message');
+    expect(JSON.parse(received.split('data: ')[1]?.split('\n')[0] ?? '')).toEqual(played);
+
+    abort.abort();
+    await reader.cancel();
+
+    const latest = await handle(new Request(`${base}/data/users/${USER}/shout.json`));
+    expect(await latest.json()).toEqual(played);
+  });
+});
+
+describe('API reference', () => {
+  interface Operation {
+    responses: Record<string, { content?: Record<string, unknown> }>;
+    requestBody?: { content: Record<string, unknown> };
+  }
+
+  test('the OpenAPI document describes what SoundBuddy calls', async () => {
+    const document = (await (await handle(new Request(`${base}/api/openapi.json`))).json()) as {
+      openapi: string;
+      paths: Record<string, Record<string, Operation>>;
+    };
+    expect(document.openapi).toStartWith('3.');
+
+    const { paths } = document;
+    expect(paths['/hb/creds']?.post?.responses['403']?.content?.['text/plain']).toBeDefined();
+    expect(paths['/u/{user}/uploadMusicLibrary']?.post?.requestBody?.content['multipart/form-data']).toBeDefined();
+    expect(paths['/u/{user}/uploadShout']?.post?.responses['520']).toBeDefined();
+    expect(paths['/u/{user}/shouts']?.get?.responses['200']?.content?.['text/event-stream']).toBeDefined();
+  });
+
+  test('Scalar is served from here', async () => {
+    const docs = await (await handle(new Request(`${base}/api/docs`))).text();
+    expect(docs).toContain('/api/scalar.js');
+    expect(docs).not.toContain('cdn.jsdelivr.net');
+
+    const script = await handle(new Request(`${base}/api/scalar.js`));
+    expect(script.status).toBe(200);
+    expect(script.headers.get('content-type')).toStartWith('text/javascript');
+  });
+});
+
+describe('pages', () => {
+  const browserPost = (path: string, fields: Record<string, string>) =>
+    handle(
+      new Request(`${base}${path}`, {
+        method: 'POST',
+        body: new URLSearchParams(fields),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }),
+    );
+
+  const cookieOf = (response: Response) => response.headers.get('set-cookie')?.split(';')[0] ?? '';
+
+  test('welcome lists the users, never their private data', async () => {
+    const page = await (await handle(new Request(`${base}/`))).text();
+    expect(page).toContain(`/u/${USER}`);
+    expect(page).not.toContain(PASSWORD);
+    expect(page).not.toContain('curator@example.com');
+  });
+
+  test('the library page', async () => {
+    const response = await handle(new Request(`${base}/u/${USER.toUpperCase()}`));
+    const page = await response.text();
+    expect(response.headers.get('content-type')).toStartWith('text/html');
+    expect(page).toContain('app-music-library');
+    expect(page).toContain(`const shoutStreamUrl = "/u/${USER}/shouts"`);
+    expect(page).toContain('function setupLiveUpdatesForShouts');
+  });
+
+  test('a user without library gets the upload form', async () => {
+    updateUser('emptyuser', { password: PASSWORD });
+    prepareState();
+    expect(await (await handle(new Request(`${base}/u/emptyuser`))).text()).toContain('name="SoundVitrine_file"');
+  });
+
+  test('login, then the account page', async () => {
+    const refused = await browserPost('/account', { username: USER, password: 'wrong' });
+    expect(await refused.text()).toContain('popup error');
+
+    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    expect(logged.status).toBe(302);
+    expect(logged.headers.get('location')).toBe(`/u/${USER}`);
+
+    const account = await handle(new Request(`${base}/account`, { headers: { cookie: cookieOf(logged) } }));
+    expect(await account.text()).toContain("id='EditorWrapper'");
+  });
+
+  test('a tampered session is ignored', async () => {
+    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    const [payload] = cookieOf(logged).split('.');
+    const account = await handle(new Request(`${base}/account`, { headers: { cookie: `${payload}.forged` } }));
+    expect(await account.text()).not.toContain("id='EditorWrapper'");
+  });
+
+  test('scripts of the pages only get the content', async () => {
+    const page = await (await handle(new Request(`${base}/account`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }))).text();
+    expect(page).not.toContain('<!DOCTYPE');
+    expect(page).toContain('accountManagement');
+  });
+
+  test('account creation', async () => {
+    const tooShort = await browserPost('/account/create', { username: 'abc', password: PASSWORD, email: 'a@example.com' });
+    expect(await tooShort.text()).toContain('popup error');
+
+    const created = await browserPost('/account/create', { username: 'NewCurator', password: PASSWORD, email: 'a@example.com' });
+    expect(created.status).toBe(302);
+    expect(created.headers.get('location')).toBe('/u/newcurator');
+
+    const again = await browserPost('/account/create', { username: 'newcurator', password: PASSWORD, email: 'a@example.com' });
+    expect(await again.text()).toContain('popup error');
+  });
+
+  test('what is posted comes back escaped', async () => {
+    const username = '"><script>alert(1)</script>';
+    const page = await (await browserPost('/account/create', { username, password: 'x', email: 'a@example.com' })).text();
+    expect(page).not.toContain('<script>alert(1)');
+  });
+
+  test('the band colors only take colors', async () => {
+    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    const post = (body: unknown) =>
+      handle(new Request(`${base}/account/bb`, { method: 'POST', body: JSON.stringify(body), headers: { cookie: cookieOf(logged) } }));
+
+    expect(await (await post(['#000000', '#111111', '#222222', '#333333'])).text()).toBe('OK');
+    expect(await (await post(['</style><script>', '#111111', '#222222', '#333333'])).text()).toBe('');
+  });
+
+  test('the language chosen in the footer sticks', async () => {
+    const chosen = await browserPost('/account', { set_lang: 'fr' });
+    expect(chosen.status).toBe(303);
+    const page = await handle(new Request(`${base}/account`, { headers: { cookie: cookieOf(chosen), 'Accept-Language': 'en' } }));
+    expect(await page.text()).toContain('<html lang="fr">');
+  });
+
+  test('state files stay out of reach', async () => {
+    for (const path of [
+      '/data/users/../users.json',
+      '/data/users/..%2fusers.json',
+      '/data/users/%2e%2e/session.key',
+      '/public/..%2fsrc/app.ts',
+    ]) {
+      const response = await handle(new Request(`${base}${path}`));
+      expect(await response.text()).not.toContain(PASSWORD);
+      expect(response.status).toBe(404);
+    }
+    expect(readFileSync(join(STATE_FOLDER_PATH, 'users.json'), 'utf8')).toContain(USER);
+  });
+
+  test('health check, and unknown pages', async () => {
+    expect(await (await handle(new Request(`${base}/healthz`))).text()).toBe('OK');
+    expect((await handle(new Request(`${base}/nothing`))).status).toBe(404);
+  });
+});
