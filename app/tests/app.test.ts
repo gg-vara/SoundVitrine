@@ -134,12 +134,6 @@ describe('library upload', () => {
     expect(((await served.json()) as { abal: Record<string, unknown> }).abal.Artist).toBeDefined();
   });
 
-  test('a compressed library from an older SoundBuddy, with its former content type', async () => {
-    const response = await uploadLibrary(deflateSync(library), 'application/compressed-mlib');
-    expect(response.status).toBe(200);
-    expect(readFileSync(join(userFolder(USER), 'current.json'), 'utf8')).toBe(library);
-  });
-
   test('the same library again changes nothing', async () => {
     const response = await uploadLibrary(library);
     expect(response.status).toBe(200);

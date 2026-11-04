@@ -10,7 +10,6 @@ import {
   APP_NAME,
   COMPANION_APP_NAME,
   COMPRESSED_LIBRARY_CONTENT_TYPE,
-  LEGACY_COMPRESSED_LIBRARY_CONTENT_TYPE,
   MUSIC_LIB_UPLOAD_FILE_NAME,
   SHOUT_PROFILE_FILE_NAME,
   SHOUT_UPLOAD_FILE_NAME,
@@ -135,7 +134,7 @@ export const uploadMusicLibraryRoute = base
     summary: 'Upload a music library',
     description:
       `Replaces the library of the user : the tracks ${COMPANION_APP_NAME} exports, as JSON, or compressed, as told from the content ` +
-      `(MSZIP buffer of Windows' Compression API, zlib, gzip or raw deflate). ${COMPANION_APP_NAME} sends those as "${COMPRESSED_LIBRARY_CONTENT_TYPE}", its older versions as "${LEGACY_COMPRESSED_LIBRARY_CONTENT_TYPE}".`,
+      `(MSZIP buffer of Windows' Compression API, zlib, gzip or raw deflate). ${COMPANION_APP_NAME} sends those as "${COMPRESSED_LIBRARY_CONTENT_TYPE}".`,
     inputStructure: 'detailed',
     outputStructure: 'detailed',
     spec: operation => ({
