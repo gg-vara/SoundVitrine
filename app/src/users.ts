@@ -1,57 +1,55 @@
-// Users : a JSON database (users.json), and a folder per user, whose files are served under /data/users/<user>/
+// Users : their accounts in the database (see auth.ts), and a folder per user, whose files are served under /data/users/<user>/
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { auth } from './auth';
 import { DEFAULT_BACKGROUND_COLORS, STATE_FOLDER_PATH } from './config';
+import { database } from './db';
 import type { Translator } from './i18n';
-
-export interface User {
-  password: string;
-  email?: string;
-  customColors?: string[];
-  profilePic?: string;
-}
+import { clearFailures, isBlocked, recordFailure } from './rate-limit';
 
 // what may be shown of a user
-export type PublicUser = Omit<User, 'password' | 'email'> & { customColors: string[] };
-
-const databasePath = join(STATE_FOLDER_PATH, 'users.json');
-
-function readAll(): Record<string, User> {
-  try {
-    const parsed: unknown = JSON.parse(readFileSync(databasePath, 'utf8'));
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as Record<string, User>;
-  } catch {
-    // missing or unreadable : starts empty
-  }
-  return {};
+export interface User {
+  username: string;
+  profilePic?: string;
+  customColors: string[];
 }
 
-function writeAll(users: Record<string, User>) {
-  mkdirSync(dirname(databasePath), { recursive: true });
-  writeFileSync(databasePath, JSON.stringify(users, null, 4));
+interface UserRow {
+  id: string;
+  username: string;
+  profilePic: string | null;
+  customColors: string | null;
 }
 
-export function allUsers(): Record<string, User> {
-  return readAll();
+const selectUser = 'SELECT id, username, profilePic, customColors FROM user';
+
+function asUser(row: UserRow): User {
+  return {
+    username: row.username,
+    profilePic: row.profilePic ?? undefined,
+    customColors: row.customColors ? (JSON.parse(row.customColors) as string[]) : DEFAULT_BACKGROUND_COLORS,
+  };
+}
+
+function findRow(username: string): UserRow | null {
+  return database.query<UserRow, [string]>(`${selectUser} WHERE username = ?`).get(username);
+}
+
+export function allUsers(): User[] {
+  return database.query<UserRow, []>(`${selectUser} ORDER BY createdAt, rowid`).all().map(asUser);
 }
 
 export function findUser(username: string): User | undefined {
-  return readAll()[username];
+  const row = findRow(username);
+  return row ? asUser(row) : undefined;
 }
 
-export function publicUser(username: string): PublicUser | undefined {
-  const user = findUser(username);
-  if (!user) return undefined;
-  const { password: _password, email: _email, ...rest } = user;
-  return { ...rest, customColors: user.customColors ?? DEFAULT_BACKGROUND_COLORS };
-}
-
-// merges "changes" into the user, created if missing
-export function updateUser(username: string, changes: Partial<User>) {
-  const users = readAll();
-  users[username] = { ...users[username], ...changes } as User;
-  writeAll(users);
+export function updateProfile(username: string, changes: { customColors?: string[]; profilePic?: string }) {
+  if (changes.customColors) {
+    database.run('UPDATE user SET customColors = ? WHERE username = ?', [JSON.stringify(changes.customColors), username]);
+  }
+  if (changes.profilePic) database.run('UPDATE user SET profilePic = ? WHERE username = ?', [changes.profilePic, username]);
 }
 
 //
@@ -69,22 +67,48 @@ export function publicUserFolder(username: string): string {
 }
 
 export function ensureUserFolders() {
-  for (const username of Object.keys(readAll())) mkdirSync(userFolder(username), { recursive: true });
+  for (const { username } of allUsers()) mkdirSync(userFolder(username), { recursive: true });
 }
 
 // set up properly : in the database, with its folder
 export function userExists(username: string): boolean {
-  return findUser(username) !== undefined && existsSync(userFolder(username));
+  return findRow(username) !== null && existsSync(userFolder(username));
 }
 
-// "null" if the credentials match, else why not
-export function checkCredentials(username: string, password: string, tr: Translator): string | null {
-  if (!username) return tr('e_log_nouser');
-  if (!password) return tr('e_nopass');
+//
+// Passwords, as SoundBuddy sends them with each of its calls
+//
 
-  const user = findUser(username);
-  if (!user) return tr('e_unsu', username);
-  if (password !== user.password) return tr('e_pmm');
+async function isPasswordOf(username: string, password: string): Promise<boolean> {
+  const row = findRow(username);
+  if (!row) return false;
 
-  return null;
+  const context = await auth.$context;
+  const hash = (await context.internalAdapter.findCredentialAccount(row.id))?.password;
+  return hash ? context.password.verify({ hash, password }) : false;
+}
+
+export interface CredentialsCheck {
+  // why the credentials are refused, if so
+  refusal: string | null;
+  // too many failures of this client : the password was not even looked at
+  blocked: boolean;
+}
+
+// "clientIp" being the origin of the call, for the failures it may accumulate (see rate-limit.ts)
+export async function checkCredentials(username: string, password: string, clientIp: string, tr: Translator): Promise<CredentialsCheck> {
+  const refused = (refusal: string, blocked = false) => ({ refusal, blocked });
+
+  if (!username) return refused(tr('e_log_nouser'));
+  if (!password) return refused(tr('e_nopass'));
+  if (!findRow(username)) return refused(tr('e_unsu', username));
+  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'), true);
+
+  if (!(await isPasswordOf(username, password))) {
+    recordFailure(clientIp, username);
+    return refused(tr('e_pmm'));
+  }
+
+  clearFailures(clientIp, username);
+  return { refusal: null, blocked: false };
 }

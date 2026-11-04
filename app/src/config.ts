@@ -36,5 +36,8 @@ export const PORT = Number(process.env.PORT ?? 80);
 // a page to send and receive test shouts (/mock/sse), for development
 export const ALLOW_SSE_TESTING = Boolean(process.env.ALLOW_SSE_TESTING);
 
-// canonical URLs in HTTP rather than HTTPS, when no proxy tells the scheme (X-Forwarded-Proto)
+// behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
+export const TRUST_PROXY = process.env.SOUNDVITRINE_TRUST_PROXY === '1';
+
+// served in HTTP rather than HTTPS : canonical URLs when no proxy tells the scheme (X-Forwarded-Proto), and session cookies
 export const ENFORCE_CANONICAL_HTTP_SCHEME = process.env.ENFORCE_CANONICAL_HTTP_SCHEME === '1';

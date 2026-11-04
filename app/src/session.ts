@@ -1,9 +1,6 @@
-// Browser sessions : the logged user and chosen language, in a cookie signed with a key of the state folder
+// What a page knows of its visitor : the logged user, from Better Auth's session, and the chosen language, in its own cookie
 
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { STATE_FOLDER_PATH } from './config';
+import { auth } from './auth';
 import type { Lang } from './i18n';
 import { isLang } from './i18n';
 
@@ -12,60 +9,20 @@ export interface Session {
   lang?: Lang;
 }
 
-const COOKIE_NAME = 'soundvitrine_session';
-const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+const LANG_COOKIE = 'soundvitrine_lang';
+const LANG_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-// the signing key : SOUNDVITRINE_SESSION_SECRET, else one generated once, kept in the state folder
-function loadSecret(): Buffer {
-  if (process.env.SOUNDVITRINE_SESSION_SECRET) return Buffer.from(process.env.SOUNDVITRINE_SESSION_SECRET);
-
-  const path = join(STATE_FOLDER_PATH, 'session.key');
-  if (!existsSync(path)) {
-    mkdirSync(STATE_FOLDER_PATH, { recursive: true });
-    writeFileSync(path, randomBytes(32).toString('base64'), { mode: 0o600 });
-  }
-  return Buffer.from(readFileSync(path, 'utf8').trim());
-}
-
-let secret: Buffer | undefined;
-
-function sign(payload: string): string {
-  secret ??= loadSecret();
-  return createHmac('sha256', secret).update(payload).digest('base64url');
-}
-
-function cookieValue(request: Request): string | undefined {
+export function chosenLang(request: Request): Lang | undefined {
   for (const part of request.headers.get('cookie')?.split(';') ?? []) {
-    const [name, ...value] = part.trim().split('=');
-    if (name === COOKIE_NAME) return value.join('=');
+    const [name, value] = part.trim().split('=');
+    if (name === LANG_COOKIE && isLang(value)) return value;
   }
   return undefined;
 }
 
-export function readSession(request: Request): Session {
-  const [payload, signature] = cookieValue(request)?.split('.') ?? [];
-  if (!payload || !signature) return {};
-
-  const expected = Buffer.from(sign(payload));
-  const given = Buffer.from(signature);
-  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return {};
-
-  try {
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>;
-    return {
-      loggedAs: typeof data.loggedAs === 'string' && data.loggedAs ? data.loggedAs : undefined,
-      lang: isLang(data.lang) ? data.lang : undefined,
-    };
-  } catch {
-    return {};
-  }
+export async function readSession(request: Request): Promise<Session> {
+  const session = await auth.api.getSession({ headers: request.headers });
+  return { loggedAs: session?.user.username ?? undefined, lang: chosenLang(request) };
 }
 
-// Set-Cookie header storing "session", or clearing it when empty
-export function sessionCookie(session: Session, secure: boolean): string {
-  const attributes = `Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`;
-  if (!session.loggedAs && !session.lang) return `${COOKIE_NAME}=; Max-Age=0; ${attributes}`;
-
-  const payload = Buffer.from(JSON.stringify(session)).toString('base64url');
-  return `${COOKIE_NAME}=${payload}.${sign(payload)}; Max-Age=${MAX_AGE_SECONDS}; ${attributes}`;
-}
+export const langCookie = (lang: Lang) => `${LANG_COOKIE}=${lang}; Max-Age=${LANG_MAX_AGE_SECONDS}; Path=/; HttpOnly; SameSite=Lax`;

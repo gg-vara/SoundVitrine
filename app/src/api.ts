@@ -3,7 +3,6 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { eventIterator, ORPCError, os } from '@orpc/server';
 import { z } from 'zod';
 import { decompressUpload } from './compression';
@@ -16,13 +15,15 @@ import {
   SHOUT_PROFILE_FILE_NAME,
   SHOUT_UPLOAD_FILE_NAME,
 } from './config';
+import { librarySha1, saveLatestShout, saveLibraryRecord } from './db';
 import type { Translator } from './i18n';
 import { compileLibrary, libraryPath } from './library';
 import { publishShout, ShoutSchema, shoutsOf } from './shouts';
-import { checkCredentials, findUser, userExists, userFolder } from './users';
+import { checkCredentials, userExists } from './users';
 
 export interface ApiContext {
   tr: Translator;
+  clientIp: string;
 }
 
 const base = os.$context<ApiContext>();
@@ -97,6 +98,7 @@ export const checkCredentialsRoute = base
         200: '"OK" : the credentials are valid',
         400: 'not called by SoundBuddy, or without form',
         403: 'why the credentials are refused',
+        429: 'too many failed attempts from this client on this account',
       }),
     }),
   })
@@ -110,14 +112,16 @@ export const checkCredentialsRoute = base
     }),
   )
   .output(z.object({ status: z.literal(200), body: z.file() }))
-  .handler(({ input, context: { tr } }) => {
+  .handler(async ({ input, context: { tr, clientIp } }) => {
     const { headers, body } = input;
     if (!body || (body.username === undefined && body.password === undefined)) throw new ORPCError('BAD_REQUEST', { message: '' });
     if (headers['x-client-id'] !== COMPANION_APP_NAME || headers['x-client-version'] === undefined) {
       throw new ORPCError('BAD_REQUEST', { message: '' });
     }
 
-    const refusal = checkCredentials((body.username ?? '').trim().toLowerCase(), body.password ?? '', tr);
+    const { refusal, blocked } = await checkCredentials((body.username ?? '').trim().toLowerCase(), body.password ?? '', clientIp, tr);
+    // not 403 when blocked, which makes SoundBuddy stop trying
+    if (blocked) throw new ORPCError('TOO_MANY_REQUESTS', { status: 429, message: refusal ?? '' });
     if (refusal !== null) throw new ORPCError('FORBIDDEN', { message: refusal });
 
     return text('OK');
@@ -152,7 +156,7 @@ export const uploadMusicLibraryRoute = base
       z.object({ status: z.literal(302), headers: z.object({ location: z.string() }) }),
     ]),
   )
-  .handler(async ({ input, context: { tr } }) => {
+  .handler(async ({ input, context: { tr, clientIp } }) => {
     const user = input.params.user.toLowerCase();
     const form = input.body;
     const headless = form.headless !== undefined;
@@ -160,21 +164,19 @@ export const uploadMusicLibraryRoute = base
 
     if (!userExists(user)) return failure(tr('e_unsu', user), headless);
     if (!file) return failure(tr('missingArgs'), headless);
-    if (!form.password) return failure(tr('e_nopass'), headless);
-    if (form.password !== findUser(user)?.password) return failure(tr('e_pmm'), headless);
+    const { refusal } = await checkCredentials(user, typeof form.password === 'string' ? form.password : '', clientIp, tr);
+    if (refusal !== null) return failure(refusal, headless);
 
     const json = await uploadedJson(file);
     if (json === undefined) return failure(tr('e_ucJSON'), headless);
 
     // identical to the current library
-    const current = Bun.file(libraryPath(user));
-    if (await current.exists()) {
-      const digest = (data: string | Uint8Array) => createHash('sha1').update(data).digest('hex');
-      if (digest(json) === digest(new Uint8Array(await current.arrayBuffer()))) return text(tr('fiNu'));
-    }
+    const sha1 = createHash('sha1').update(json).digest('hex');
+    if (sha1 === librarySha1(user)) return text(tr('fiNu'));
 
     await Bun.write(libraryPath(user), json);
     await compileLibrary(user);
+    saveLibraryRecord(user, sha1);
 
     if (headless) return text('Bon appétit!');
     return { status: 302 as const, headers: { location: `/u/${user}` } };
@@ -196,7 +198,7 @@ export const uploadShoutRoute = base
   })
   .input(z.object({ params: userParams, body: uploadForm(SHOUT_UPLOAD_FILE_NAME, 'the shout, as JSON (see the Shout schema)') }))
   .output(z.object({ status: z.literal(200), body: z.file() }))
-  .handler(async ({ input, context: { tr } }) => {
+  .handler(async ({ input, context: { tr, clientIp } }) => {
     const user = input.params.user.toLowerCase();
     const form = input.body;
     const headless = form.headless !== undefined;
@@ -205,8 +207,8 @@ export const uploadShoutRoute = base
     if (!userExists(user)) return failure(tr('e_unsu', user), headless);
     if (!headless) throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'expects API call' });
     if (!file) return failure(tr('missingArgs'), true);
-    if (!form.password) return failure(tr('e_nopass'), true);
-    if (form.password !== findUser(user)?.password) return failure(tr('e_pmm'), true);
+    const { refusal } = await checkCredentials(user, typeof form.password === 'string' ? form.password : '', clientIp, tr);
+    if (refusal !== null) return failure(refusal, true);
 
     const json = await uploadedJson(file);
     if (json === undefined) return failure(tr('e_ucJSON'), true);
@@ -214,7 +216,7 @@ export const uploadShoutRoute = base
     // sent live only if it is one, but kept anyway
     const shout = ShoutSchema.safeParse(JSON.parse(json));
     if (shout.success) publishShout(user, shout.data);
-    await Bun.write(join(userFolder(user), SHOUT_PROFILE_FILE_NAME), json);
+    saveLatestShout(user, json);
 
     return text(tr('shouted'));
   });

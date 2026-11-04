@@ -35,6 +35,8 @@ export const en = {
   e_cufad: 'Error while copying uploaded file to archive directory.',
   e_wdu: 'Cannot write directory "%s" for the specified user.',
   e_unsu: 'User "%s" is not set up properly or does not exist.',
+  e_email_unusable: 'This email address is invalid, or already used.',
+  e_too_many: 'Too many failed attempts, please try again later.',
   e_nopass: 'No password provided, upload is impossible.',
   e_pmm: 'Password missmatch, upload is impossible.',
   e_ucJSON: 'The uploaded file is not JSON compliant.',

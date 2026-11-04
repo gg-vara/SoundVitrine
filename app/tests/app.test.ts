@@ -1,12 +1,14 @@
 // The server, called as SoundBuddy and browsers call it
 
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { handle, prepareState } from '../src/app';
+import { auth } from '../src/auth';
 import { STATE_FOLDER_PATH } from '../src/config';
-import { updateUser, userFolder } from '../src/users';
+import { database } from '../src/db';
+import { userFolder } from '../src/users';
 
 const USER = 'curator';
 const PASSWORD = 'password1';
@@ -57,9 +59,14 @@ const shout = (content: string, extra?: Record<string, string>) => upload('uploa
 
 const expectPlainText = (response: Response) => expect(response.headers.get('content-type')).toStartWith('text/plain');
 
-beforeAll(() => {
-  updateUser(USER, { password: PASSWORD, email: 'curator@example.com' });
-  prepareState();
+const createUser = async (username: string, password = PASSWORD) => {
+  await auth.api.signUpEmail({ body: { name: username, username, password, email: `${username}@example.com` } });
+  await prepareState();
+};
+
+beforeAll(async () => {
+  await prepareState();
+  await createUser(USER);
 });
 
 describe('heartbeat', () => {
@@ -247,7 +254,7 @@ describe('pages', () => {
     const page = await (await handle(new Request(`${base}/`))).text();
     expect(page).toContain(`/u/${USER}`);
     expect(page).not.toContain(PASSWORD);
-    expect(page).not.toContain('curator@example.com');
+    expect(page).not.toContain(`${USER}@example.com`);
   });
 
   test('the library page', async () => {
@@ -260,8 +267,7 @@ describe('pages', () => {
   });
 
   test('a user without library gets the upload form', async () => {
-    updateUser('emptyuser', { password: PASSWORD });
-    prepareState();
+    await createUser('emptyuser');
     expect(await (await handle(new Request(`${base}/u/emptyuser`))).text()).toContain('name="SoundVitrine_file"');
   });
 
@@ -288,6 +294,58 @@ describe('pages', () => {
     const page = await (await handle(new Request(`${base}/account`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }))).text();
     expect(page).not.toContain('<!DOCTYPE');
     expect(page).toContain('accountManagement');
+  });
+
+  test('passwords are stored hashed', () => {
+    const { password } = database.query<{ password: string }, []>('SELECT password FROM account LIMIT 1').get() as { password: string };
+    expect(password).not.toBe(PASSWORD);
+    expect(password.length).toBeGreaterThan(50);
+  });
+
+  test('logging out ends the session in the database, not only in the browser', async () => {
+    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    const cookie = cookieOf(logged);
+    await handle(new Request(`${base}/account/disconnect`, { headers: { cookie } }));
+    expect(await (await handle(new Request(`${base}/account`, { headers: { cookie } }))).text()).not.toContain("id='EditorWrapper'");
+  });
+
+  test('too many failures block that client on that account, even with the right password', async () => {
+    await createUser('guessed1');
+    const form = (password: string) => new URLSearchParams({ username: 'guessed1', password });
+    const post = (password: string, client: string) =>
+      handle(
+        new Request(`${base}/account`, {
+          method: 'POST',
+          body: form(password),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }),
+        client,
+      );
+
+    for (let i = 0; i < 10; i++) expect((await post('wrong', '10.0.0.1')).status).toBe(200);
+    const blocked = await post(PASSWORD, '10.0.0.1');
+    expect(blocked.status).toBe(200);
+    expect(await blocked.text()).toContain('popup error');
+
+    expect((await post(PASSWORD, '10.0.0.2')).status).toBe(302);
+  });
+
+  test('SoundBuddy gets a 429 when blocked, which does not make it give up', async () => {
+    await createUser('guessed2');
+    const check = (password: string) => {
+      const body = new FormData();
+      body.set('username', 'guessed2');
+      body.set('password', password);
+      return handle(new Request(`${base}/hb/creds`, { method: 'POST', body, headers: soundBuddyHeaders }), '10.0.0.3');
+    };
+
+    for (let i = 0; i < 10; i++) expect((await check('wrong')).status).toBe(403);
+    expect((await check(PASSWORD)).status).toBe(429);
+  });
+
+  test('an email cannot serve two accounts', async () => {
+    const taken = await browserPost('/account/create', { username: 'secondcurator', password: PASSWORD, email: `${USER}@example.com` });
+    expect(await taken.text()).toContain('popup error');
   });
 
   test('account creation', async () => {
@@ -325,17 +383,12 @@ describe('pages', () => {
   });
 
   test('state files stay out of reach', async () => {
-    for (const path of [
-      '/data/users/../users.json',
-      '/data/users/..%2fusers.json',
-      '/data/users/%2e%2e/session.key',
-      '/public/..%2fsrc/app.ts',
-    ]) {
+    for (const path of ['/data/users/..%2fsoundvitrine.db', '/data/users/%2e%2e/session.key', '/public/..%2fsrc/app.ts']) {
       const response = await handle(new Request(`${base}${path}`));
       expect(await response.text()).not.toContain(PASSWORD);
       expect(response.status).toBe(404);
     }
-    expect(readFileSync(join(STATE_FOLDER_PATH, 'users.json'), 'utf8')).toContain(USER);
+    expect(existsSync(join(STATE_FOLDER_PATH, 'soundvitrine.db'))).toBe(true);
   });
 
   test('health check, and unknown pages', async () => {

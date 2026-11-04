@@ -6,6 +6,8 @@ services:
     image: ghcr.io/gg-vara/soundvitrine:${SOUNDVITRINE_VERSION:-main}
     volumes:
      - soundvitrine-state:/app/_state:rw
+    environment:
+      SOUNDVITRINE_TRUST_PROXY: "1" # Traefik gives the client's address, to limit password guessing by client
     networks:
       - traefik
     labels:

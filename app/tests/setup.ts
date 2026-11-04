@@ -8,4 +8,9 @@ import { join } from 'node:path';
 const state = mkdtempSync(join(tmpdir(), 'soundvitrine-tests-'));
 process.env.SOUNDVITRINE_STATE_PATH = state;
 
-afterAll(() => rmSync(state, { recursive: true, force: true }));
+afterAll(() => {
+  // the database may still be open, which Windows refuses to remove : it stays in the temporary folder then
+  try {
+    rmSync(state, { recursive: true, force: true });
+  } catch {}
+});

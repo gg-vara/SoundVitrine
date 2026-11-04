@@ -14,6 +14,7 @@ export interface PageContext {
   request: Request;
   url: URL;
   session: Session;
+  clientIp: string;
   lang: Lang;
   tr: Translator;
   // called by the scripts of the pages, which then only want the content of the page (X-Requested-With)

@@ -4,11 +4,11 @@ import { APP_NAME, COMPANION_APP_GITHUB_LATEST_RELEASE_URL, COMPANION_APP_NAME, 
 import type { Html } from '../html';
 import { html, raw } from '../html';
 import type { User } from '../users';
-import { publicUser, publicUserFolder } from '../users';
+import { findUser, publicUserFolder } from '../users';
 import type { FormResult, LengthRule, PageContext } from './layout';
 import { adminPage, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
 
-export function welcomePage(context: PageContext, users: Record<string, User>): Html {
+export function welcomePage(context: PageContext, users: User[]): Html {
   const { tr } = context;
   const content = html`<style>
     #intro-users-descr {
@@ -45,12 +45,12 @@ export function welcomePage(context: PageContext, users: Record<string, User>): 
     </div>
     <br/>
     <div id="intro-users-descr">
-        ${Object.entries(users).map(
-          ([username, user]) => html`<a href="/u/${username}">
+        ${users.map(
+          ({ username, profilePic }) => html`<a href="/u/${username}">
                 <div class="user">
                     ${
-                      user.profilePic
-                        ? html`<img style="max-height: 1.5em; max-width: 1.5em" src="${publicUserFolder(username) + user.profilePic}">`
+                      profilePic
+                        ? html`<img style="max-height: 1.5em; max-width: 1.5em" src="${publicUserFolder(username) + profilePic}">`
                         : html`<i class="fas fa-user"></i>`
                     }
                     <span>${username}</span>
@@ -107,7 +107,7 @@ function downloadButtons(context: PageContext): Html {
 
 function editors(context: PageContext, user: string): Html {
   const { tr } = context;
-  const profilePic = publicUser(user)?.profilePic;
+  const profilePic = findUser(user)?.profilePic;
   return html`<div id='EditorWrapper'>
     <div id="bBandEditor" title="${tr('updateBBand')}">
         ${wAnim(user)}
@@ -170,7 +170,7 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
     </div>
     ${downloadButtons(context)}
 </div>
-<style>${raw(colorsCss(user, publicUser(user)?.customColors))}</style>`;
+<style>${raw(colorsCss(user, findUser(user)?.customColors))}</style>`;
   } else {
     content = html`<div id="accountManagement">
     <div class="loginRack">
@@ -195,7 +195,7 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
 
 export const accountRules: Record<'username' | 'password', LengthRule> = {
   username: { min: 6, max: 20 },
-  password: { min: 8, max: 20 },
+  password: { min: 8, max: 128 },
 };
 
 export function createAccountPage(context: PageContext, result: FormResult | null): Html {

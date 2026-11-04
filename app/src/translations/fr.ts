@@ -35,6 +35,8 @@ export const fr = {
   e_cufad: "Erreur durant la copie du fichier téléversé vers le dossier d'archivage.",
   e_wdu: 'Impossible de créer le répertoire "%s" pour l\'utilisateur spécifié.',
   e_unsu: "L'utilisateur \"%s\" n'est pas configuré correctement ou n'existe pas.",
+  e_email_unusable: 'Cette adresse email est invalide, ou déjà utilisée.',
+  e_too_many: 'Trop de tentatives échouées, merci de réessayer plus tard.',
   e_nopass: 'Aucun mot de passe fourni, impossible de téléverser.',
   e_pmm: 'Le mot de passe de correspond pas à celui attendu, impossible de téléverser.',
   e_ucJSON: "Le fichier téléversé n'est pas un fichier JSON.",

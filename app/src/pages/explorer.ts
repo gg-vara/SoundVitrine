@@ -3,7 +3,7 @@
 import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, SHOUT_PROFILE_FILE_NAME } from '../config';
 import type { Html } from '../html';
 import { html, raw } from '../html';
-import { publicUser, publicUserFolder } from '../users';
+import { findUser, publicUserFolder } from '../users';
 import type { PageContext } from './layout';
 import { adminScripts, adminStyles, colorsCss, externalStyles, filesOf, footer, metadata, pageTitle, wAnim } from './layout';
 
@@ -165,7 +165,7 @@ const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '
 
 export function libraryPage(context: PageContext, user: string): Html {
   const { tr } = context;
-  const profile = publicUser(user);
+  const profile = findUser(user);
   const profilePicture = profile?.profilePic ? publicUserFolder(user) + profile.profilePic : undefined;
 
   return html`<!DOCTYPE html>

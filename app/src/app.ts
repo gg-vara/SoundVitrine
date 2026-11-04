@@ -5,18 +5,22 @@ import { extname, join, resolve, sep } from 'node:path';
 import { OpenAPIHandler } from '@orpc/openapi/fetch';
 import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
+import { APIError } from 'better-auth/api';
 import { API_TITLE, hasLibrary, router } from './api';
-import { ALLOW_SSE_TESTING, APP_ROOT, APP_VERSION, COMPANION_APP_NAME, STATE_FOLDER_PATH } from './config';
+import { auth, prepareAuth } from './auth';
+import { ALLOW_SSE_TESTING, APP_ROOT, APP_VERSION, COMPANION_APP_NAME, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import { latestShout } from './db';
 import type { Html } from './html';
 import type { Lang } from './i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n';
+import { migrateLegacyState } from './migration';
 import { accountPage, accountRules, createAccountPage, uploadPage, welcomePage } from './pages/admin';
 import { libraryPage, mockPage } from './pages/explorer';
 import type { FormResult, PageContext } from './pages/layout';
-import type { Session } from './session';
-import { readSession, sessionCookie } from './session';
+import { clearFailures, isBlocked, recordFailure } from './rate-limit';
+import { chosenLang, langCookie, readSession } from './session';
 import { publishShout } from './shouts';
-import { allUsers, checkCredentials, ensureUserFolders, publicUser, publicUserFolder, updateUser, userExists, userFolder } from './users';
+import { allUsers, ensureUserFolders, findUser, publicUserFolder, updateProfile, userExists, userFolder } from './users';
 
 //
 // API
@@ -82,14 +86,11 @@ const text = (body: string, status = 200) => new Response(body, { status, header
 
 const redirect = (location: string, status = 302) => new Response(null, { status, headers: { location } });
 
-// a page, storing "session" when it changed
-function page(content: Html | Response, context: PageContext, session?: Session): Response {
+// a page, setting "cookies"
+function page(content: Html | Response, cookies: string[] = []): Response {
   const response =
     content instanceof Response ? content : new Response(content.value, { headers: { 'content-type': 'text/html;charset=utf-8' } });
-  if (session) {
-    const secure = context.url.protocol === 'https:' || context.request.headers.get('x-forwarded-proto') === 'https';
-    response.headers.append('set-cookie', sessionCookie(session, secure));
-  }
+  for (const cookie of cookies) response.headers.append('set-cookie', cookie);
   return response;
 }
 
@@ -105,20 +106,30 @@ async function formFields(request: Request): Promise<Record<string, string>> {
   return fields;
 }
 
-function login(context: PageContext): { session?: Session; result: FormResult | null; response?: Response } {
+// where a user goes once logged in
+const afterLogin = (context: PageContext, username: string) => redirect(context.isXhr ? '/account' : `/u/${username}`);
+
+async function login(context: PageContext): Promise<{ cookies?: string[]; result: FormResult | null; response?: Response }> {
+  const { tr, clientIp, request } = context;
   const username = (context.form.username ?? '').trim().toLowerCase();
   const password = context.form.password ?? '';
+  const refused = (description: string) => ({ result: { isError: true, description } });
 
-  if (context.session.loggedAs === username) return { result: { isError: false, description: context.tr('e_log_identical') } };
+  if (context.session.loggedAs === username) return { result: { isError: false, description: tr('e_log_identical') } };
+  if (!username) return refused(tr('e_log_nouser'));
+  if (!password) return refused(tr('e_nopass'));
+  if (!findUser(username)) return refused(tr('e_unsu', username));
+  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'));
 
-  const refusal = checkCredentials(username, password, context.tr);
-  if (refusal !== null) return { result: { isError: true, description: refusal } };
-
-  return {
-    session: { ...context.session, loggedAs: username },
-    result: null,
-    response: redirect(context.isXhr ? '/account' : `/u/${username}`),
-  };
+  try {
+    const { headers } = await auth.api.signInUsername({ body: { username, password }, headers: request.headers, returnHeaders: true });
+    clearFailures(clientIp, username);
+    return { cookies: headers.getSetCookie(), result: null, response: afterLogin(context, username) };
+  } catch (error) {
+    if (!(error instanceof APIError)) throw error;
+    recordFailure(clientIp, username);
+    return refused(tr('e_pmm'));
+  }
 }
 
 function randomColor(): string {
@@ -156,26 +167,37 @@ async function accountRoute(context: PageContext, action: string | undefined): P
 
   switch (action) {
     case 'create': {
-      if (request.method !== 'POST') return page(createAccountPage(context, null), context);
+      if (request.method !== 'POST') return page(createAccountPage(context, null));
 
       const refusal = accountCreationRefusal(context);
-      if (refusal !== null) return page(createAccountPage(context, { isError: true, description: refusal }), context);
+      if (refusal !== null) return page(createAccountPage(context, { isError: true, description: refusal }));
 
       const username = (context.form.username ?? '').trim().toLowerCase();
-      updateUser(username, {
-        password: context.form.password,
-        email: context.form.email,
-        customColors: [randomColor(), randomColor(), randomColor(), randomColor()],
-      });
-      mkdirSync(userFolder(username), { recursive: true });
-
-      const loggedIn = login({ ...context, form: { ...context.form, username } });
-      return page(loggedIn.response ?? createAccountPage(context, loggedIn.result), context, loggedIn.session);
+      try {
+        const { headers } = await auth.api.signUpEmail({
+          body: {
+            name: username,
+            username,
+            displayUsername: username,
+            email: context.form.email ?? '',
+            password: context.form.password ?? '',
+          },
+          headers: request.headers,
+          returnHeaders: true,
+        });
+        updateProfile(username, { customColors: [randomColor(), randomColor(), randomColor(), randomColor()] });
+        mkdirSync(userFolder(username), { recursive: true });
+        return page(afterLogin(context, username), headers.getSetCookie());
+      } catch (error) {
+        if (!(error instanceof APIError)) throw error;
+        return page(createAccountPage(context, { isError: true, description: context.tr('e_email_unusable') }));
+      }
     }
 
     case 'disconnect': {
       const referer = request.headers.get('referer');
-      return page(redirect(context.isXhr ? '/account' : (referer ?? '/')), context, {});
+      const { headers } = await auth.api.signOut({ headers: request.headers, returnHeaders: true });
+      return page(redirect(context.isXhr ? '/account' : (referer ?? '/')), headers.getSetCookie());
     }
 
     // profile picture
@@ -193,10 +215,10 @@ async function accountRoute(context: PageContext, action: string | undefined): P
       const pictureName = `pp.${extension}`;
       await Bun.write(join(userFolder(user), pictureName), file);
 
-      const previous = publicUser(user)?.profilePic;
+      const previous = findUser(user)?.profilePic;
       if (previous && previous !== pictureName) rmSync(join(userFolder(user), previous), { force: true });
 
-      updateUser(user, { profilePic: pictureName });
+      updateProfile(user, { profilePic: pictureName });
       return text(publicUserFolder(user) + pictureName);
     }
 
@@ -208,16 +230,16 @@ async function accountRoute(context: PageContext, action: string | undefined): P
       const isColor = (color: unknown) => typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color);
       if (!user || !Array.isArray(colors) || colors.length !== 4 || !colors.every(isColor)) return text('');
 
-      updateUser(user, { customColors: colors as string[] });
+      updateProfile(user, { customColors: colors as string[] });
       return text('OK');
     }
 
     default: {
       if (request.method === 'POST' && (context.form.username !== undefined || context.form.password !== undefined)) {
-        const loggedIn = login(context);
-        return page(loggedIn.response ?? accountPage(context, loggedIn.result), context, loggedIn.session);
+        const loggedIn = await login(context);
+        return page(loggedIn.response ?? accountPage(context, loggedIn.result), loggedIn.cookies);
       }
-      return page(accountPage(context, null), context);
+      return page(accountPage(context, null));
     }
   }
 }
@@ -236,19 +258,19 @@ async function libraryRoute(
   // the upload form of a user without library posts its file here
   if (!action && request.method === 'POST' && request.headers.get('content-type')?.startsWith('multipart/form-data')) {
     const upload = new Request(new URL(`/u/${user}/uploadMusicLibrary`, request.url).href, request);
-    const { response } = await apiHandler.handle(upload, { prefix: '/', context: { tr: context.tr } });
+    const { response } = await apiHandler.handle(upload, { prefix: '/', context: { tr: context.tr, clientIp: context.clientIp } });
     return response ? plainTextErrors(response) : text('', 500);
   }
 
   if (action && action !== 'uploadMusicLibrary') return accountRoute(context, undefined);
-  if (!hasLibrary(user) || action === 'uploadMusicLibrary') return page(uploadPage(context), context);
+  if (!hasLibrary(user) || action === 'uploadMusicLibrary') return page(uploadPage(context));
 
-  return page(libraryPage(context, user), context);
+  return page(libraryPage(context, user));
 }
 
 function mockRoute(context: PageContext, action: string | undefined): Response {
   if (!ALLOW_SSE_TESTING) return text('Mock testing is disabled.', 403);
-  if (action !== 'send') return page(mockPage(context), context);
+  if (action !== 'send') return page(mockPage(context));
   if (context.request.method !== 'POST') return text('', 404);
 
   const toUser = context.form.toUser;
@@ -262,7 +284,13 @@ function mockRoute(context: PageContext, action: string | undefined): Response {
 // Requests
 //
 
-export async function handle(request: Request): Promise<Response> {
+// who calls : "peerAddress" is the direct connection, which is the proxy when there is one
+function clientIpOf(request: Request, peerAddress: string | undefined): string {
+  const forwarded = TRUST_PROXY ? request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() : undefined;
+  return forwarded || peerAddress || 'unknown';
+}
+
+export async function handle(request: Request, peerAddress?: string): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
 
@@ -273,20 +301,28 @@ export async function handle(request: Request): Promise<Response> {
     return (await staticFile(join(APP_ROOT, 'public'), path.slice('/public/'.length))) ?? text('', 404);
   }
   if (request.method === 'GET' && path.startsWith('/data/users/')) {
+    // the latest shout comes from the database
+    const shoutOf = /^\/data\/users\/([^/]+)\/shout\.json$/.exec(path)?.[1];
+    if (shoutOf) {
+      const shout = latestShout(shoutOf.toLowerCase());
+      return shout ? new Response(shout, { headers: { 'content-type': 'application/json' } }) : text('', 404);
+    }
+
     return (await staticFile(join(STATE_FOLDER_PATH, 'users'), path.slice('/data/users/'.length))) ?? text('', 404);
   }
 
-  const session = readSession(request);
-  const lang: Lang = session.lang ?? langFromHeader(request.headers.get('accept-language')) ?? defaultLang;
+  const clientIp = clientIpOf(request, peerAddress);
+  const lang: Lang = chosenLang(request) ?? langFromHeader(request.headers.get('accept-language')) ?? defaultLang;
   const tr = translator(lang);
 
-  const { matched, response } = await apiHandler.handle(request, { prefix: '/', context: { tr } });
+  const { matched, response } = await apiHandler.handle(request, { prefix: '/', context: { tr, clientIp } });
   if (matched && response) return plainTextErrors(response);
 
   const context: PageContext = {
     request,
     url,
-    session,
+    session: await readSession(request),
+    clientIp,
     lang,
     tr,
     isXhr: request.headers.get('x-requested-with')?.toLowerCase() === 'xmlhttprequest',
@@ -295,13 +331,13 @@ export async function handle(request: Request): Promise<Response> {
 
   // language chosen from the footer : back to the page
   if (isLang(context.form.set_lang)) {
-    return page(redirect(path + url.search, 303), context, { ...session, lang: context.form.set_lang });
+    return page(redirect(path + url.search, 303), [langCookie(context.form.set_lang)]);
   }
 
   const [section, first, second] = path.split('/').filter(Boolean);
   switch (section) {
     case undefined:
-      return page(welcomePage(context, allUsers()), context);
+      return page(welcomePage(context, allUsers()));
     case 'account':
       return accountRoute(context, first);
     case 'u':
@@ -313,8 +349,10 @@ export async function handle(request: Request): Promise<Response> {
   }
 }
 
-// the state folder, and the folders of its users
-export function prepareState() {
+// the database, what former versions left, and the folders of the users
+export async function prepareState() {
   mkdirSync(join(STATE_FOLDER_PATH, 'users'), { recursive: true });
+  await prepareAuth();
+  await migrateLegacyState();
   ensureUserFolders();
 }
