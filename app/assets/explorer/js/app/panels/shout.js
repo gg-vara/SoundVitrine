@@ -1,23 +1,10 @@
 /** @type {EventSource} */
 var shoutES = null;
 
-function getSSEShoutUrl(jwt) {
-    const url = new URL(window.location.href);
-    url.pathname = ssePathEndpoint;
-    url.searchParams.append("topic", sseShoutTopic);
-    url.searchParams.append('authorization', jwt);
-    return url;
-}
-
 /**
- * 
- * @param {string | null} jwt 
+ * the latest shout, then the next ones as they come (server-sent events of shoutStreamUrl)
  */
-async function setupLiveUpdatesForShouts(jwt) {
-    if (jwt == null) {
-        jwt = await (await fetch("/sseAuthRefresh")).text();
-    }
-
+function setupLiveUpdatesForShouts() {
     //
     fetch(clientURLShout).then(async e => {
         //
@@ -31,7 +18,7 @@ async function setupLiveUpdatesForShouts(jwt) {
     });
 
     //
-    shoutES = new EventSource(getSSEShoutUrl(jwt));
+    shoutES = new EventSource(shoutStreamUrl);
 
     /**
      * 
@@ -48,7 +35,7 @@ async function setupLiveUpdatesForShouts(jwt) {
         shoutES.close();
 
         // retry
-        setupLiveUpdatesForShouts(null);
+        setupLiveUpdatesForShouts();
     }
 
     //
