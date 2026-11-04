@@ -1,2 +1,4 @@
-files/vendor/
+node_modules
+_state
+tests
 .env*

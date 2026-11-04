@@ -1,25 +1,11 @@
 {
-    "terminal.integrated.cwd": "${workspaceFolder}/app/files",
+    "terminal.integrated.cwd": "${workspaceFolder}/app",
     "js/ts.implicitProjectConfig.checkJs": true,
-    "javascript.preferences.importModuleSpecifierEnding": "js",
     "search.exclude": {
-        "app/files/public/ext/js/**": true
+        "app/public/ext/js/**": true
     },
-    "php.suggest.basic": false,
-    "intelephense.environment.phpVersion": "8.3.0",
-    "intelephense.environment.includePaths": [
-        "./vendor"
-    ],
-    "editor.indentSize": 4,
-    "editor.tabSize": 4,
-    "phpCodeSniffer.standard": "PSR12",
-    "phpCodeSniffer.exec.osx": "app/files/vendor/bin/phpcs",
-    "phpCodeSniffer.exec.windows": "app\\files\\vendor\\bin\\phpcs.bat",
-    "phpCodeSniffer.exclude": [
-        "**/vendor/**",
-        "**.js",
-    ],
-    "[php]": {
-        "editor.defaultFormatter": "obliviousharmony.vscode-php-codesniffer"
+    "[typescript]": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.tabSize": 2
     }
 }

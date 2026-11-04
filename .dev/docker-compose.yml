@@ -4,25 +4,25 @@ services:
   app:
     restart: on-failure:1
     image: Amphaal/soundvitrine
-    build: 
+    build:
       context: ../app
-      target: runtime-xdebug
+    command: ["bun", "--watch", "src/index.ts"]
     ports:
       - "80:80" # HTTP
     volumes:
      - ../_state:/app/_state:rw
     environment:
-      MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}"   # required
-      MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}" # required
+      NODE_ENV: "development"
       ALLOW_SSE_TESTING: "1" # dev-only
       ENFORCE_CANONICAL_HTTP_SCHEME: "1"
     develop:
       watch:
-        - action: sync+restart
-          path: ../app/Caddyfile
-          target: /etc/frankenphp/Caddyfile
         - action: sync
-          path: ../app/files
+          path: ../app/src
+          target: /app/src
+        - action: sync
+          path: ../app/assets
+          target: /app/assets
+        - action: sync
+          path: ../app/public
           target: /app/public
-    extra_hosts:
-      - host.docker.internal:host-gateway

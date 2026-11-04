@@ -6,9 +6,6 @@ services:
     image: ghcr.io/gg-vara/soundvitrine:${SOUNDVITRINE_VERSION:-main}
     volumes:
      - soundvitrine-state:/app/_state:rw
-    environment:
-      MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"   # required, please configure in `.env` file
-      MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}" # required, please configure in `.env` file
     networks:
       - traefik
     labels:

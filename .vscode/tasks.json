@@ -1,28 +1,12 @@
 {
   "version": "2.0.0",
   "tasks": [
-    ///
-    /// Dev Deps
-    ///
     {
-      "label": "0. Install Composer (requires admin privileges)",
-      "windows": {
-        // make sure to install Chocolatey beforehand (https://docs.chocolatey.org/en-us/choco/setup/)
-        "command": "choco",
-        "args": ["install", "-y", "php", "composer"]
-      },
-      "osx": {
-        "command": "brew",
-        "args": ["install", "php", "composer"]
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "1. Install dev dependencies",
-      "command": "composer",
+      "label": "1. Install dependencies",
+      "command": "bun",
       "args": ["install"],
       "options": {
-        "cwd": "${workspaceFolder}/app/files"
+        "cwd": "${workspaceFolder}/app"
       },
       "problemMatcher": []
     },
