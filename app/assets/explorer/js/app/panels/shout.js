@@ -34,8 +34,8 @@ function setupLiveUpdatesForShouts() {
         // close current
         shoutES.close();
 
-        // retry
-        setupLiveUpdatesForShouts();
+        // retry, without flooding a server that is restarting
+        setTimeout(setupLiveUpdatesForShouts, 5000);
     }
 
     //
