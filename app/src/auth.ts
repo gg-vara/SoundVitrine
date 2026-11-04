@@ -43,9 +43,8 @@ export const auth = betterAuth({
   },
   plugins: [
     username({
-      // the accounts of former versions may be shorter : the creation form has its own rule (see accountRules)
-      minUsernameLength: 1,
-      maxUsernameLength: 64,
+      minUsernameLength: 6,
+      maxUsernameLength: 20,
       usernameValidator: name => /^[a-zA-Z0-9]+([_-]?[a-zA-Z0-9])*$/.test(name),
     }),
   ],

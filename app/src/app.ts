@@ -13,7 +13,6 @@ import { latestShout } from './db';
 import type { Html } from './html';
 import type { Lang } from './i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n';
-import { migrateLegacyState } from './migration';
 import { accountPage, accountRules, createAccountPage, uploadPage, welcomePage } from './pages/admin';
 import { libraryPage, mockPage } from './pages/explorer';
 import type { FormResult, PageContext } from './pages/layout';
@@ -349,10 +348,9 @@ export async function handle(request: Request, peerAddress?: string): Promise<Re
   }
 }
 
-// the database, what former versions left, and the folders of the users
+// the database, and the folders of the users
 export async function prepareState() {
   mkdirSync(join(STATE_FOLDER_PATH, 'users'), { recursive: true });
   await prepareAuth();
-  await migrateLegacyState();
   ensureUserFolders();
 }
