@@ -46,8 +46,9 @@ function _toggleShutter(targetId, resizeInstructionsGetter) {
 //scrolls to element
 function vNavigate(elem, correct) {
 
+    //a shutter which had nothing to change gives none
     if (!elem) {
-        resolve();
+        return;
     }
     let relativeDocumentOffset = elem.getBoundingClientRect().top + window.scrollY;
     let elemPos = relativeDocumentOffset + (correct || 0);
@@ -122,7 +123,7 @@ function hNavigate(direction) {
     let target = document.getElementsByTagName('main')[0];
     let maxChildren = target.childElementCount;
     let maxIndex = maxChildren - 1;
-    let actualIndex = target.getAttribute("data-index") || 0;
+    let actualIndex = Number(target.getAttribute("data-index"));
     let targetIndex = null;
 
     let followUp = Promise.resolve(null);
@@ -130,7 +131,7 @@ function hNavigate(direction) {
 
     //direction to go
     if (direction == null) { //automatic switch
-        targetIndex = Number(actualIndex) ? 0 : 1;
+        targetIndex = actualIndex ? 0 : 1;
     } else if (direction == 2) {
         targetIndex = actualIndex + 1;
     } else if (direction == 4) {

@@ -44,8 +44,10 @@ interface Window {
   resizeShout: () => ResizeInstructions;
   toggleFeed: () => void;
   resizeFeed: () => ResizeInstructions;
+  resizeStats: () => ResizeInstructions;
+  resizeProfile: () => ResizeInstructions;
   toggleProfile: () => void;
   toggleStats: () => void;
   updateHeaderClasses: (classes: string) => void;
-  headerToggle: () => void;
+  revealHeaderInReach: () => void;
 }

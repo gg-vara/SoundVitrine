@@ -10,7 +10,7 @@ export function setHeaderClasses(classes: string) {
 const directionFrom = createScrollDirection();
 let updating = false;
 
-export function updateHeader() {
+function updateHeader() {
   const element = header();
   const classes = headerClasses({
     direction: directionFrom(window.scrollY),
@@ -27,6 +27,12 @@ export function updateHeader() {
   });
 }
 
+// a page that got shorter may have nothing left to scroll, which is what brings the header back
+export function revealHeaderInReach() {
+  const element = header();
+  if (element.classList.contains('toHide') && window.scrollY <= element.clientHeight) setHeaderClasses('sticky');
+}
+
 const speedAt = createScrollSpeed();
 
 function onScroll() {
@@ -40,7 +46,11 @@ export function followScrolling() {
 // what scrolls the page by itself must not move the header
 export function withoutFollowingScrolling(work: Promise<unknown>) {
   document.removeEventListener('scroll', onScroll);
-  return work.finally(followScrolling);
+  return work.finally(() => {
+    // the page moved meanwhile : the next direction is from where it is now
+    directionFrom(window.scrollY);
+    followScrolling();
+  });
 }
 
 export function followSwipes() {

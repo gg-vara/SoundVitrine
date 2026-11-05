@@ -5,18 +5,20 @@
 
 //resize functions
 function bindResizeFunctions() {
-    //
-    resizeFunctions.width.resizeFeed = () => resizeFeed().applyNewHeight;
-    resizeFunctions.width.resizeShout = () => resizeShout().applyNewHeight;
-    resizeFunctions.width.alignConnectSideElements = () => () => alignConnectSideElements;
+    //what opens under the header holds as much as its content needs, which depends on the width
+    resizeFunctions.width.resizeFeed = () => resizeFeed().applyNewHeight?.();
+    resizeFunctions.width.resizeStats = () => resizeStats().applyNewHeight?.();
+    resizeFunctions.width.resizeProfile = () => resizeProfile().applyNewHeight?.();
+    resizeFunctions.width.resizeShout = () => resizeShout().applyNewHeight?.();
+    resizeFunctions.width.alignConnectSideElements = () => alignConnectSideElements();
 
     //
-    resizeFunctions.any.headerToggle = () => () => headerToggle;
+    resizeFunctions.any.revealHeaderInReach = () => revealHeaderInReach();
 };
 
 var sourceHeight = window.innerHeight;
 var sourceWidth = window.innerWidth;
-/** @type {Object<string, Object<string, () => (() => void | null )>>} */
+/** @type {Object<string, Object<string, () => void>>} */
 var resizeFunctions = {
     height: {},
     width: {},
@@ -38,41 +40,22 @@ function resizeManualHeightsAndWidths() {
     const newHeight = window.innerHeight;
     const newWidth = window.innerWidth;
 
-    /**
-     * 
-     * @param {Date} date 
-     * @param {string} logTrackId 
-     * @returns {(arg0: () => (() => void | null)) => void}
-     */
-    const execFunc = function (date, logTrackId) {
-        /** @type {(functorObj: () => (() => void | null)) => void} */
-        return (functorObj) => {
-            //console.log("["+ date +"] " + logTrackId + " : " + functorObj.description);
-            if (functorObj != null) functorObj();
-        };
-    };
-
-    const date = new Date();
+    /** @param {Object<string, () => void>} functions */
+    const run = (functions) => Object.values(functions).forEach((resize) => resize());
 
     //height or width...
-    Object.values(resizeFunctions.any).forEach(
-        execFunc(date, "any")
-    );
+    run(resizeFunctions.any);
 
     //height...
     if (newHeight != sourceHeight) {
         sourceHeight = newHeight;
-        Object.values(resizeFunctions.height).forEach(
-            execFunc(date, "height")
-        );
+        run(resizeFunctions.height);
     }
 
     //width...
     if (newWidth != sourceWidth) {
         sourceWidth = newWidth;
-        Object.values(resizeFunctions.width).forEach(
-            execFunc(date, "width")
-        );
+        run(resizeFunctions.width);
     }
 
 }

@@ -18,17 +18,23 @@ function removeNotification(selector)
 
 function alignConnectSideElements()
 {
-    let topMost = [];
+    //from the header, as the page may be scrolled. Which one shows depends on the width of the page
+    let headerTop = document.getElementsByTagName("header")[0].getBoundingClientRect().top;
+    let tops = [];
 
     document.querySelectorAll("#app-music-library .connect-side").forEach(
         function (e) {
-            topMost.push(e.getBoundingClientRect().top);
+            if (e.getClientRects().length) {
+                tops.push(e.getBoundingClientRect().top - headerTop);
+            }
         }
     );
-    topMost = Math.max(...topMost);
+    if (!tops.length) {
+        return;
+    }
 
     let target = document.querySelector("#app-connect .connect-side")
-    target.style.top = topMost + "px";
+    target.style.top = Math.max(...tops) + "px";
 }
 
 function linkToYoutube(artist, albumOrTitle)

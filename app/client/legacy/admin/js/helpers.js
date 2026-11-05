@@ -77,7 +77,26 @@ const animationEndEventName = (() => {
 var _waiterStack = {};
 
 /**
- * 
+ *
+ * @param {CSSStyleDeclaration} style computed style of what transitions
+ * @returns {number} how long its transitions last at most, delays included
+ */
+function _longestTransitionMs(style) {
+    const toMs = function (list) {
+        return list.split(",").map(function (time) {
+            return parseFloat(time) * (time.trim().endsWith("ms") ? 1 : 1000);
+        });
+    };
+    const delays = toMs(style["transition-delay"]);
+    return Math.max(
+        ...toMs(style["transition-duration"]).map(function (duration, i) {
+            return duration + delays[i % delays.length];
+        })
+    );
+}
+
+/**
+ *
  * @param {string} eventNameToListen name of the event to listen to
  * @param {*} eventEmitter 
  * @param {(eventEmitter: any) => {}} actionThatShouldTriggerEvent 
@@ -107,6 +126,13 @@ function _waitEventEnd(eventNameToListen, eventEmitter, actionThatShouldTriggerE
                 return resolve(eventEmitter);
             }
 
+            const disengage = function () {
+                if (!_waiterStack[newId]) return;
+                eventEmitter.removeEventListener(eventNameToListen, _waiterStack[newId].onEventEnd); //console.log("out", eventEmitter);
+                delete _waiterStack[newId];
+                resolve(eventEmitter);
+            };
+
             _waiterStack[newId] = {
                 expectedEvents: eventsToExpect,
                 eventEndHits: [],
@@ -117,15 +143,17 @@ function _waitEventEnd(eventNameToListen, eventEmitter, actionThatShouldTriggerE
 
                     //if count... disengage
                     if (_waiterStack[newId].eventEndHits.length == _waiterStack[newId].expectedEvents.length) {
-
-                        eventEmitter.removeEventListener(eventNameToListen, _waiterStack[newId].onEventEnd); //console.log("out", eventEmitter);
-                        delete _waiterStack[newId];
-                        return resolve(eventEmitter);
+                        disengage();
                     }
                 }
             };
 
             eventEmitter.addEventListener(eventNameToListen, _waiterStack[newId].onEventEnd); //console.log("in", eventEmitter);
+
+            //a transition that has nothing to change, or in a hidden tab, never ends
+            if (!isAnim) {
+                setTimeout(disengage, _longestTransitionMs(pseudoStyle) + 500);
+            }
 
             // execute the action
             actionThatShouldTriggerEvent(eventEmitter);
