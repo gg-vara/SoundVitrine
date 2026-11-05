@@ -19,6 +19,8 @@ declare function brokenImgFr(elem: Element): void;
 declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
 declare function updateFilter(event: Event): void;
+declare function preventSET(promise: Promise<unknown>): Promise<unknown>;
+declare function vNavigate(element: unknown): unknown;
 
 interface ResizeInstructions {
   next: unknown;
@@ -29,5 +31,9 @@ interface ResizeInstructions {
 interface Window {
   setupLiveUpdatesForShouts: () => void;
   resizeShout: () => ResizeInstructions;
+  generateFreshUploads: () => void;
+  toggleFeed: () => void;
+  resizeFeed: () => ResizeInstructions;
+  toggleProfile: () => void;
   generateDataFeeds: (library: import('./library/data').UnifiedLibrary) => ReturnType<typeof import('./library/data').createDataFeeds>;
 }

@@ -7,6 +7,7 @@
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 
+@source "./feed";
 @source "./search";
 @source "./shout";
 @source "../server/pages/explorer.ts";

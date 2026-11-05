@@ -49,7 +49,6 @@ As I always wanted to tell about my discoveries to my friends when I was outside
     - [Highcharts](https://www.highcharts.com/) for graphs
     - [Mixitup](https://github.com/patrickkunka/mixitup) for DOM animations
     - [Hammer.js](https://hammerjs.github.io/) for gesture handling
-    - [SortTable](https://github.com/stuartlangridge/sorttable), for table sorting obviously
     - [Moment.js](https://momentjs.com/) for time
 - MusicBrainz API (https://musicbrainz.org/doc/MusicBrainz_API)
 

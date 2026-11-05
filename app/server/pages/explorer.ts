@@ -65,11 +65,8 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
             </div>
             ${connectButton(context)}
         </div>
-        <div id='profileContainer' class='subFrame'>
-            <div class='subContent' data-cat="${tr('profile')}" style='flex-grow:1;display:flex;'>
-                <div class='feedWrapper'>
-                </div>
-            </div>
+        <div id='profileContainer' class='subFrame w-full shadow-[1px_.5rem_.5rem_rgb(0,0,0,.05)]'>
+            <div class='subContent [&::before]:text-white' data-cat="${tr('profile')}" style='flex-grow:1;display:flex;'></div>
         </div>
         ${wAnim(user)}
     </header>
@@ -101,9 +98,9 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
                 </div>
             </div>
         </div>
-        <div id='feedContainer' class='subFrame'>
+        <div id='feedContainer' class='subFrame bg-[#eaeaea] shadow-[0px_0px_.05rem_#b7b7b7]'>
             <div class='subContent' data-cat="${tr('whatsnew')}">
-                <div class='feedWrapper'></div>
+                <div id='feedWrapper' class='grow rounded-[5px] bg-[rgba(255,255,255,.75)] p-4 shadow-[0px_0px_10px_1px_#c7c7c7] columns-[20rem]'></div>
             </div>
         </div>
         <div id='discoverContainer' class='subFrame'>
@@ -159,7 +156,6 @@ export function libraryPage(context: PageContext, user: string): Html {
         ${externalStyles}
         <script type="text/javascript" src="/public/ext/js/highcharts.js"></script>
         <script type="text/javascript" src="/public/ext/js/moment-with-locales.min.js"></script>
-        <script type="text/javascript" src="/public/ext/js/sorttable.js"></script>
         <script type="text/javascript" src="/public/ext/js/hammer.min.js"></script>
         <script type="text/javascript" src="/public/ext/js/mixitup.min.js"></script>
         <script>
