@@ -1,9 +1,6 @@
 // Browsing a library by genre, artist and album, down to what is known of an album
 
-// mouse only, as it always was : what the lists and buttons need for the keyboard is a step of its own
-// biome-ignore-all lint/a11y/noLabelWithoutControl: see above
-// biome-ignore-all lint/a11y/noStaticElementInteractions: see above
-// biome-ignore-all lint/a11y/useKeyWithClickEvents: see above
+// biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard
 
 import { createEffect, createMemo, createSignal, For, flush } from 'solid-js';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
@@ -69,11 +66,15 @@ function slidingItems(items: () => Iterable<HTMLElement>, change: () => void) {
 // their width and height come from applyFilterSizes, which needs the "open" class
 const FILTER =
   'ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-[1.25rem] portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0 [&::before]:absolute [&::before]:top-[-.9rem] [&::before]:left-[-.3rem] [&::before]:z-30 [&::before]:text-[.65em] [&::before]:text-[grey] [&::before]:[content:attr(data-sl)]';
-const PLACEHOLDER = 'absolute cursor-pointer [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)]';
-const ITEM =
-  'cursor-pointer [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] [&[data-count]::after]:ml-1 [&[data-count]::after]:align-middle [&[data-count]::after]:text-[grey]';
+// what a button has of its own, as they look like the text around them
+const PLAIN_BUTTON = 'cursor-pointer appearance-none [border:none] bg-transparent p-0 text-start [unicode-bidi:isolate] [font:inherit]';
+const PLACEHOLDER = `${PLAIN_BUTTON} absolute [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] focus-visible:[transform:translate(.35rem,0)]`;
+const ITEM = `${PLAIN_BUTTON} [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] focus-visible:[transform:translate(.35rem,0)] [&[data-count]::after]:ml-1 [&[data-count]::after]:align-middle [&[data-count]::after]:text-[grey]`;
+const SORT_BUTTON = `${PLAIN_BUTTON} mx-[.1rem] my-0 flex shrink-0 grow-0 opacity-60 [transition:all_.1s_ease] hover:[&>*]:opacity-80! [&>i]:cursor-pointer [&>i]:[transition:all_.3s_ease]`;
 
-const CAPTION = 'text-[.8rem] text-[rgba(0,0,0,.6)]';
+const isActivation = (event: KeyboardEvent) => event.code === 'Enter' || event.code === 'Space' || event.code === 'NumpadEnter';
+
+const CAPTION = 'cursor-default text-[.8rem] text-[rgba(0,0,0,.6)]';
 const VALUE = 'mb-4 text-[1rem] text-white';
 
 function FilterUI(props: {
@@ -85,6 +86,7 @@ function FilterUI(props: {
   open: boolean;
   toggle: () => void;
   pick: (name: string) => void;
+  pickByKey: (name: string) => void;
 }) {
   // the same objects however sorted : For then moves their elements
   const sorted = createMemo(() => sortItems(props.items, props.sorter));
@@ -102,7 +104,7 @@ function FilterUI(props: {
     return selected ? 'text-[rgba(0,0,0,1)]' : 'text-[rgba(0,0,0,.25)]';
   };
 
-  let placeholder!: HTMLSpanElement;
+  let placeholder!: HTMLButtonElement;
   let list!: HTMLDivElement;
 
   createEffect(
@@ -118,23 +120,39 @@ function FilterUI(props: {
       class={[FILTER, active() ? 'flex' : 'hidden', { open: props.open }]}
       onMouseDown={props.toggle}
     >
-      <span
-        class={[PLACEHOLDER, props.open ? '-z-1 text-[rgba(0,0,0,0)]' : 'z-20', props.selected ? "w-fit [&::after]:[content:'»']" : '']}
+      <button
+        type="button"
+        hidden={!props.selected}
+        aria-expanded={props.open ? 'true' : 'false'}
+        class={[
+          PLACEHOLDER,
+          props.open ? '-z-1 text-[rgba(0,0,0,0)]' : 'z-20 [color:inherit]',
+          props.selected ? "w-fit [&::after]:[content:'»']" : '',
+        ]}
         ref={placeholder}
+        onKeyDown={event => {
+          if (!isActivation(event)) return;
+          event.preventDefault();
+          props.toggle();
+        }}
       >
         {props.selected ?? ''}
-      </span>
+      </button>
       <div
         class={[
           'flex w-fit flex-col',
           props.selected ? 'absolute origin-[50%_0] [transition:transform_.5s_ease_0s]' : '',
           props.selected ? (props.open ? '[transform:scale(1)] opacity-100' : '[transform:scaleY(0)] opacity-10') : '',
         ]}
+        // out of reach once closed : only its size hides it
+        inert={!!props.selected && !props.open}
         ref={list}
       >
         <For each={sorted()}>
           {item => (
-            <div
+            <button
+              type="button"
+              aria-pressed={item.nFilter === props.selected ? 'true' : 'false'}
               class={[ITEM, itemAfter(item.nFilter === props.selected), itemColor(item.nFilter === props.selected)]}
               data-count={item.count as number}
               data-order={item.order}
@@ -143,9 +161,14 @@ function FilterUI(props: {
                 event.stopPropagation();
                 props.pick(item.nFilter);
               }}
+              onKeyDown={event => {
+                if (!isActivation(event)) return;
+                event.preventDefault();
+                props.pickByKey(item.nFilter);
+              }}
             >
               {item.nFilter}
-            </div>
+            </button>
           )}
         </For>
       </div>
@@ -226,6 +249,15 @@ export function DiscoverPanel(props: {
     }
   }
 
+  // what was picked is about to go out of reach, the focus with it
+  function focusWhatFollows() {
+    const target =
+      (album() ? infos.querySelector('a') : wrapper.querySelector('[data-choosing] [data-order]')) ??
+      [...wrapper.querySelectorAll('button[aria-expanded]:not([hidden])')].at(-1);
+    // the page scrolls by itself, with a margin
+    (target as HTMLElement | undefined)?.focus({ preventScroll: true });
+  }
+
   function sortBy(category: SortCategory) {
     const next = nextSorters(sorters(), category);
     localStorage.setItem(SORTER_STORAGE_KEY, sorterText(next));
@@ -250,6 +282,10 @@ export function DiscoverPanel(props: {
       open={opened().includes(id)}
       toggle={() => setOpened(ids => (ids.includes(id) ? ids.filter(other => other !== id) : [...ids, id]))}
       pick={name => select(pickedFilter(filter(), id, name))}
+      pickByKey={name => {
+        select(pickedFilter(filter(), id, name));
+        focusWhatFollows();
+      }}
     />
   );
 
@@ -258,15 +294,15 @@ export function DiscoverPanel(props: {
       <div class="absolute top-[3.5rem] left-[6.6rem] flex flex-row text-[.8rem] text-[grey] portrait:top-[1.4rem] portrait:left-[8rem]">
         <For each={SORT_CATEGORIES}>
           {category => (
-            <label
-              class={['clickable mx-[.1rem] my-0 opacity-60 [transition:all_.1s_ease]', sorters().active === category ? 'text-black' : '']}
+            <button
+              type="button"
+              class={[SORT_BUTTON, sorters().active === category ? 'text-black' : '[color:inherit]']}
               title={i18n[`sort_${category}`]}
-              data-category={category}
-              data-direction={sorters().directions[category]}
+              aria-pressed={sorters().active === category ? 'true' : 'false'}
               onClick={() => sortBy(category)}
             >
               <i class={`fas ${sortIcon(category, sorters().directions[category])}`} />
-            </label>
+            </button>
           )}
         </For>
       </div>
@@ -287,27 +323,27 @@ export function DiscoverPanel(props: {
       >
         <div class={shown() ? 'flex flex-col text-[#f5f5f5]' : 'hidden'}>
           <div class="mb-2 flex justify-around portrait:[&>*]:mx-2 portrait:[&>*]:my-0">
-            <label class={CAPTION}>
+            <div class={CAPTION}>
               {i18n.year}
               <div class={VALUE}>{album()?.Year as string}</div>
-            </label>
-            <label class={CAPTION}>
+            </div>
+            <div class={CAPTION}>
               Genre
               <div class={VALUE}>{album()?.Genre}</div>
-            </label>
-            <label class={CAPTION}>
+            </div>
+            <div class={CAPTION}>
               {i18n.dateAddition}
               <div class={VALUE} title={album()?.DateAdded}>
                 {album() ? compareDateFromNomHumanized(album()?.DateAdded ?? '', new Date()) : ''}
               </div>
-            </label>
+            </div>
           </div>
           <div class="flex flex-wrap items-center justify-around">
             <div class="flex flex-col items-center text-center">
-              <label class={CAPTION}>
+              <div class={CAPTION}>
                 Album
                 <div class={VALUE}>{album()?.Album}</div>
-              </label>
+              </div>
               <div
                 class="imgLoader noCoverMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]"
                 data-no-cover-found={i18n.no_cover_found}
@@ -316,12 +352,12 @@ export function DiscoverPanel(props: {
                 <img class="min-h-[250px] min-w-[250px]" onLoad={imgLoaded} onError={brokenImg} alt="" />
               </div>
             </div>
-            <label class={[CAPTION, 'my-4 mr-0 ml-8']}>
+            <div class={[CAPTION, 'my-4 mr-0 ml-8']}>
               {i18n.tracks}
               <ol class="m-0 flex flex-col flex-wrap items-start justify-around pl-[1.1rem] text-[1rem] text-white">
                 <For each={Object.values(album()?.Tracks ?? {})}>{track => <li>{track}</li>}</For>
               </ol>
-            </label>
+            </div>
           </div>
           <div class="flex items-center justify-center p-2 pt-8 select-auto">
             <a
