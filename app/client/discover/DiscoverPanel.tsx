@@ -1,6 +1,6 @@
 // Browsing a library by genre, artist and album, down to what is known of an album
 
-// the markup filter.css and albumInfos.css expect, mouse only as it always was : for when these styles move to Tailwind
+// mouse only, as it always was : what the lists and buttons need for the keyboard is a step of its own
 // biome-ignore-all lint/a11y/noLabelWithoutControl: see above
 // biome-ignore-all lint/a11y/noStaticElementInteractions: see above
 // biome-ignore-all lint/a11y/useKeyWithClickEvents: see above
@@ -66,6 +66,16 @@ function slidingItems(items: () => Iterable<HTMLElement>, change: () => void) {
   }
 }
 
+// their width and height come from applyFilterSizes, which needs the "open" class
+const FILTER =
+  'ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-[1.25rem] portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0 [&::before]:absolute [&::before]:top-[-.9rem] [&::before]:left-[-.3rem] [&::before]:z-30 [&::before]:text-[.65em] [&::before]:text-[grey] [&::before]:[content:attr(data-sl)]';
+const PLACEHOLDER = 'absolute cursor-pointer [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)]';
+const ITEM =
+  'cursor-pointer [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] [&[data-count]::after]:ml-1 [&[data-count]::after]:align-middle [&[data-count]::after]:text-[grey]';
+
+const CAPTION = 'text-[.8rem] text-[rgba(0,0,0,.6)]';
+const VALUE = 'mb-4 text-[1rem] text-white';
+
 function FilterUI(props: {
   id: FilterId;
   label: string;
@@ -78,6 +88,19 @@ function FilterUI(props: {
 }) {
   // the same objects however sorted : For then moves their elements
   const sorted = createMemo(() => sortItems(props.items, props.sorter));
+  const active = () => props.items.length > 0 || !!props.selected;
+
+  // albums tell their year, whether selected or not
+  const itemAfter = (selected: boolean) => {
+    if (props.id === 'albumUI') return "[&[data-count]::after]:text-[.8rem] [&[data-count]::after]:[content:'-_'_attr(data-count)]";
+    return selected
+      ? "[&[data-count]::after]:text-[.6rem] [&[data-count]::after]:[content:'»']"
+      : '[&[data-count]::after]:text-[.6rem] [&[data-count]::after]:[content:attr(data-count)]';
+  };
+  const itemColor = (selected: boolean) => {
+    if (!props.selected) return 'text-[rgba(29,29,29,1)]';
+    return selected ? 'text-[rgba(0,0,0,1)]' : 'text-[rgba(0,0,0,.25)]';
+  };
 
   let placeholder!: HTMLSpanElement;
   let list!: HTMLDivElement;
@@ -91,17 +114,28 @@ function FilterUI(props: {
     <div
       id={props.id}
       data-sl={props.label}
-      class={['filterUI', { active: props.items.length > 0 || !!props.selected, hasSelection: !!props.selected, open: props.open }]}
+      data-choosing={active() && !props.selected ? '' : undefined}
+      class={[FILTER, active() ? 'flex' : 'hidden', { open: props.open }]}
       onMouseDown={props.toggle}
     >
-      <span class="ph" ref={placeholder}>
+      <span
+        class={[PLACEHOLDER, props.open ? '-z-1 text-[rgba(0,0,0,0)]' : 'z-20', props.selected ? "w-fit [&::after]:[content:'»']" : '']}
+        ref={placeholder}
+      >
         {props.selected ?? ''}
       </span>
-      <div class="list" ref={list}>
+      <div
+        class={[
+          'flex w-fit flex-col',
+          props.selected ? 'absolute origin-[50%_0] [transition:transform_.5s_ease_0s]' : '',
+          props.selected ? (props.open ? '[transform:scale(1)] opacity-100' : '[transform:scaleY(0)] opacity-10') : '',
+        ]}
+        ref={list}
+      >
         <For each={sorted()}>
           {item => (
             <div
-              class={{ selected: item.nFilter === props.selected }}
+              class={[ITEM, itemAfter(item.nFilter === props.selected), itemColor(item.nFilter === props.selected)]}
               data-count={item.count as number}
               data-order={item.order}
               onMouseDown={event => {
@@ -187,7 +221,7 @@ export function DiscoverPanel(props: {
 
     if (!wanted.albumUI) {
       // the list to choose from next, its label above it
-      const nextList = wrapper.querySelector('.filterUI.active:not(.hasSelection)');
+      const nextList = wrapper.querySelector('[data-choosing]');
       if (nextList) vNavigate(nextList, -30);
     }
   }
@@ -196,7 +230,7 @@ export function DiscoverPanel(props: {
     const next = nextSorters(sorters(), category);
     localStorage.setItem(SORTER_STORAGE_KEY, sorterText(next));
     slidingItems(
-      () => wrapper.querySelectorAll<HTMLElement>('.list > *'),
+      () => wrapper.querySelectorAll<HTMLElement>('[data-order]'),
       () => {
         setSorters(next);
         flush();
@@ -221,11 +255,11 @@ export function DiscoverPanel(props: {
 
   return (
     <>
-      <div class="sorter">
+      <div class="absolute top-[3.5rem] left-[6.6rem] flex flex-row text-[.8rem] text-[grey] portrait:top-[1.4rem] portrait:left-[8rem]">
         <For each={SORT_CATEGORIES}>
           {category => (
             <label
-              class={['clickable', { active: sorters().active === category }]}
+              class={['clickable mx-[.1rem] my-0 opacity-60 [transition:all_.1s_ease]', sorters().active === category ? 'text-black' : '']}
               title={i18n[`sort_${category}`]}
               data-category={category}
               data-direction={sorters().directions[category]}
@@ -236,49 +270,62 @@ export function DiscoverPanel(props: {
           )}
         </For>
       </div>
-      <div class="filterWrapper" ref={wrapper}>
+      <div class="m-0 flex portrait:flex-col" ref={wrapper}>
         {filterUI('genreUI', 'Genres', genres)}
         {filterUI('artistUI', i18n.artists ?? '', artists)}
         {filterUI('albumUI', 'Albums', albums)}
       </div>
-      <div id="albumInfos" class={{ show: shown() }} ref={infos}>
-        <div class="aiContent">
-          <div class="hInfos">
-            <label>
+      <div
+        id="albumInfos"
+        class={[
+          'min-h-[1.3rem] min-w-[1.3rem] [transition:all_.4s_ease-in_0s]',
+          shown()
+            ? 'z-1 grow self-stretch bg-white p-4 shadow-[0_2px_2px_0_rgba(0,0,0,.16),0_0_0_1px_rgba(0,0,0,.08)]'
+            : 'absolute right-8 mt-[.2rem] bg-[rgb(248,248,248)] [animation:flickerAnimation_2s_infinite_ease]',
+        ]}
+        ref={infos}
+      >
+        <div class={shown() ? 'flex flex-col text-[#f5f5f5]' : 'hidden'}>
+          <div class="mb-2 flex justify-around portrait:[&>*]:mx-2 portrait:[&>*]:my-0">
+            <label class={CAPTION}>
               {i18n.year}
-              <div id="aYear">{album()?.Year as string}</div>
+              <div class={VALUE}>{album()?.Year as string}</div>
             </label>
-            <label>
+            <label class={CAPTION}>
               Genre
-              <div id="aGenre">{album()?.Genre}</div>
+              <div class={VALUE}>{album()?.Genre}</div>
             </label>
-            <label>
+            <label class={CAPTION}>
               {i18n.dateAddition}
-              <div id="aDateAdded" title={album()?.DateAdded}>
+              <div class={VALUE} title={album()?.DateAdded}>
                 {album() ? compareDateFromNomHumanized(album()?.DateAdded ?? '', new Date()) : ''}
               </div>
             </label>
           </div>
-          <div class="hMisc">
-            <div class="imgContainer">
-              <label>
+          <div class="flex flex-wrap items-center justify-around">
+            <div class="flex flex-col items-center text-center">
+              <label class={CAPTION}>
                 Album
-                <div id="aTitle">{album()?.Album}</div>
+                <div class={VALUE}>{album()?.Album}</div>
               </label>
-              <div id="aImage" class="imgLoader" data-no-cover-found={i18n.no_cover_found} ref={cover}>
-                <img onLoad={imgLoaded} onError={brokenImg} alt="" />
+              <div
+                class="imgLoader noCoverMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]"
+                data-no-cover-found={i18n.no_cover_found}
+                ref={cover}
+              >
+                <img class="min-h-[250px] min-w-[250px]" onLoad={imgLoaded} onError={brokenImg} alt="" />
               </div>
             </div>
-            <label style={{ margin: '1rem 0 1rem 2rem' }}>
+            <label class={[CAPTION, 'my-4 mr-0 ml-8']}>
               {i18n.tracks}
-              <ol id="aTracks">
+              <ol class="m-0 flex flex-col flex-wrap items-start justify-around pl-[1.1rem] text-[1rem] text-white">
                 <For each={Object.values(album()?.Tracks ?? {})}>{track => <li>{track}</li>}</For>
               </ol>
             </label>
           </div>
-          <div class="listen">
+          <div class="flex items-center justify-center p-2 pt-8 select-auto">
             <a
-              class="animated"
+              class="animated bg-[#efefef] p-2 text-[grey] shadow-[0px_0px_5px_0px_#afafaf] [transition:all_.4s] hover:text-black hover:[&_i]:text-[red]"
               rel="noopener"
               href={album() && linkToYoutube(album()?.Artist ?? '', album()?.Album ?? '')}
               target={album() ? '_blank' : undefined}

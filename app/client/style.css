@@ -7,6 +7,7 @@
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 
+@source "./discover";
 @source "./feed";
 @source "./search";
 @source "./shout";
@@ -20,6 +21,23 @@
 .animTimeline {
   animation-name: progress;
   animation-timing-function: linear;
+}
+
+/* its text comes from the page, which Tailwind cannot write with the line breaks it has */
+.noCoverMessage.noImgFound::before {
+  content: ":'( \A\A " attr(data-no-cover-found);
+}
+
+@keyframes flickerAnimation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes progress {

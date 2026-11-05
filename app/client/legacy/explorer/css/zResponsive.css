@@ -13,37 +13,6 @@
         padding: 1rem .75rem;
     }
 
-    .filterUI {
-        margin-top: 1.3rem;
-    }
-
-    .filterUI:first-child {
-        margin-top: .5rem;
-    }
-
-    .filterWrapper {
-        flex-direction: column;
-    }
-
-    #albumInfos .imgContainer + label {
-        margin-left : 0;
-    }
-
-    #albumInfos .hInfos > * {
-        margin: 0 .5rem;
-    }
-
-    .sorter {
-        left: 8rem;
-        top: 1.4rem;
-    }    
-}
-
-@media (orientation : landscape) {
-
-    .filterUI:first-child {
-        margin-left: 0rem;
-    }
 }
 
 
