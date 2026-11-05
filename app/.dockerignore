@@ -4,3 +4,4 @@ _state-dev
 tests
 scripts
 .env*
+dist

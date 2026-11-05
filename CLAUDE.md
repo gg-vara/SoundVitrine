@@ -12,7 +12,7 @@ bun run dev:seed
 
 A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts.
 
-- `bun test`, `bun x --bun tsc --noEmit`, `bun x biome check --write .` : what CI checks (`biome ci`)
+- `bun test`, `bun run typecheck`, `bun x biome check --write .`, `bun run build` : what CI checks (`biome ci`)
 - never point these at a real state folder : tests and seed keep to temporary ones
 - in a browser : the library page starts once a CSS transition ends, which a hidden tab or pane delays for as long as it stays hidden. Not a slow library : check that the tab is visible before measuring anything
 
@@ -34,6 +34,7 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 - `src/app.ts` : routing, the account pages' logic, static files
 - `src/pages/` : HTML templates. `src/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
 - `assets/` : browser scripts and styles, inlined into the pages. `public/` : static files
+- `web/` : what moves to Vite 8, built to `dist/`. No page loads it yet
 - `src/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
 - `src/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `src/rate-limit.ts` : failed passwords, by client and account
