@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createDataFeeds, type DiscoverFilter, type UnifiedLibrary } from '../library/data';
+import { createDataFeeds, type FilterItem, sortItems, type UnifiedLibrary } from '../library/data';
 
 const album = (year: number, date: string, tracks: Record<string, string> = { '1.1': 'a track' }) => ({
   Year: year,
@@ -28,10 +28,8 @@ const library: UnifiedLibrary = {
   },
 };
 
-function feeds(filter: Partial<DiscoverFilter> = {}, sorter = 'order:asc') {
+function feeds() {
   return createDataFeeds(library, {
-    filter: () => ({ genreUI: null, artistUI: null, albumUI: null, ...filter }),
-    sorter: () => sorter,
     humanizedSince: date => `in ${date.slice(0, 4)}`,
     now: () => new Date('2026-01-01'),
   });
@@ -48,45 +46,52 @@ describe('filters', () => {
   });
 
   test('sorted as the page asks', () => {
-    expect(names(feeds({}, 'count:desc').genreUI())).toEqual(['Rock', 'Jazz']);
-    expect(names(feeds({}, 'count:asc').genreUI())).toEqual(['Jazz', 'Rock']);
-    expect(names(feeds({}, 'order:desc').genreUI())).toEqual(['Rock', 'Jazz']);
+    const genres = feeds().genreUI();
+    expect(names(sortItems(genres, 'count:desc'))).toEqual(['Rock', 'Jazz']);
+    expect(names(sortItems(genres, 'count:asc'))).toEqual(['Jazz', 'Rock']);
+    expect(names(sortItems(genres, 'order:desc'))).toEqual(['Rock', 'Jazz']);
+    expect(names(genres)).toEqual(['Jazz', 'Rock']);
   });
 
   test('a sorter that makes no sense keeps them by name', () => {
-    expect(names(feeds({}, 'nonsense').genreUI())).toEqual(['Jazz', 'Rock']);
+    expect(names(sortItems(feeds().genreUI(), 'nonsense'))).toEqual(['Jazz', 'Rock']);
+  });
+
+  test('sorting keeps the same items', () => {
+    const genres = feeds().genreUI();
+    expect(sortItems(genres, 'count:desc')[1]).toBe(genres[0] as FilterItem);
   });
 
   test('artists of the chosen genre, with their album count', () => {
-    expect(feeds().artistUI()).toBeUndefined();
-    expect(feeds({ genreUI: 'Rock' }).artistUI()).toEqual([
+    expect(feeds().artistUI(null)).toBeUndefined();
+    expect(feeds().artistUI('Rock')).toEqual([
       { nFilter: 'Björk', count: 2, order: 1 },
       { nFilter: 'Røyksopp', count: 1, order: 2 },
     ]);
   });
 
   test('albums of the chosen artist, with their year', () => {
-    expect(feeds().albumUI()).toBeUndefined();
-    expect(feeds({ artistUI: 'Björk' }).albumUI()).toEqual([
+    expect(feeds().albumUI(null)).toBeUndefined();
+    expect(feeds().albumUI('Björk')).toEqual([
       { nFilter: 'Homogenic', count: 1997, order: 1 },
       { nFilter: 'Vespertine', count: 2001, order: 2 },
     ]);
   });
 
   test('a filter pointing at nothing shows nothing', () => {
-    expect(feeds({ genreUI: 'Unknown' }).artistUI()).toEqual([]);
-    expect(feeds({ artistUI: 'Unknown' }).albumUI()).toEqual([]);
-    expect(feeds({ artistUI: 'Unknown', albumUI: 'Unknown' }).albumInfos()).toBeUndefined();
+    expect(feeds().artistUI('Unknown')).toEqual([]);
+    expect(feeds().albumUI('Unknown')).toEqual([]);
+    expect(feeds().albumInfos('Unknown', 'Unknown')).toBeUndefined();
   });
 });
 
 describe('album infos', () => {
   test('needs an artist and an album', () => {
-    expect(feeds({ artistUI: 'Björk' }).albumInfos()).toBeUndefined();
+    expect(feeds().albumInfos('Björk', null)).toBeUndefined();
   });
 
   test('adds their names, without changing the library', () => {
-    const infos = feeds({ artistUI: 'Björk', albumUI: 'Vespertine' }).albumInfos();
+    const infos = feeds().albumInfos('Björk', 'Vespertine');
     expect(infos).toMatchObject({ Album: 'Vespertine', Artist: 'Björk', Year: 2001 });
     expect(library.abal.Björk?.Albums.Vespertine).not.toHaveProperty('Album');
   });
@@ -118,8 +123,6 @@ describe('search', () => {
       abal: Object.fromEntries(many.map(name => [name, { Genres: [], Albums: {} }])),
     };
     const found = createDataFeeds(large, {
-      filter: () => ({ genreUI: null, artistUI: null, albumUI: null }),
-      sorter: () => '',
       humanizedSince: () => '',
       now: () => new Date(),
     }).searchBand('band');
@@ -145,8 +148,6 @@ describe('feed', () => {
     const uploads = createDataFeeds(
       { ...library, glul },
       {
-        filter: () => ({ genreUI: null, artistUI: null, albumUI: null }),
-        sorter: () => '',
         humanizedSince: () => 'one',
         now: () => new Date(),
       },
@@ -157,8 +158,6 @@ describe('feed', () => {
 
   test('an interval named as an object property is an interval like any other', () => {
     const uploads = createDataFeeds(library, {
-      filter: () => ({ genreUI: null, artistUI: null, albumUI: null }),
-      sorter: () => '',
       humanizedSince: () => 'constructor',
       now: () => new Date(),
     }).feedUploads();
@@ -170,8 +169,6 @@ describe('an empty library', () => {
   // empty lists come as [] from the server
   const empty = { arbgl: [], arbgc: [], albgl: [], albgc: [], abal: [], slug: [], glul: [] } as unknown as UnifiedLibrary;
   const it = createDataFeeds(empty, {
-    filter: () => ({ genreUI: null, artistUI: null, albumUI: null }),
-    sorter: () => 'count:desc',
     humanizedSince: () => '',
     now: () => new Date(),
   });

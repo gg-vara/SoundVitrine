@@ -12,11 +12,6 @@ function bindResizeFunctions() {
 
     //
     resizeFunctions.any.headerToggle = () => () => headerToggle;
-
-    Object.keys(_discoverFilter).forEach((id) => {
-        const key = "applyManualSizesFilterUIs[" + id + "]";
-        resizeFunctions.any[key] = () => () => applyManualSizesFilterUIs(id);
-    });
 };
 
 var sourceHeight = window.innerHeight;

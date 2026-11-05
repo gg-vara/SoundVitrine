@@ -155,15 +155,6 @@ function debounce(callback, delay) {
     }
 }
 
-function IsJsonString(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
 function compareDateFromNomHumanized(strISO8601, dateNow) {
     if (!dateNow) {
         dateNow = new moment();
@@ -190,17 +181,6 @@ function calculateMillisecondsElapsed(dateFrom) {
     }
 
     return diffMSecs;
-}
-
-function getRootElementFontSize() {
-    // Returns a number
-    return parseFloat(
-        // of the computed font-size, so in px
-        getComputedStyle(
-            // for the root <html> element
-            document.documentElement
-        ).fontSize
-    );
 }
 
 function _XMLHttpPromise(method, url, POSTParams) {

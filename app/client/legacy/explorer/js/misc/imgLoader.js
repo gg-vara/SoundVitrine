@@ -59,16 +59,13 @@ function updateImgLoader(elem, imgUrl)
 var request_qmbfac = {};
 function queryMusicBrainzForAlbumCover(idProcess, album, artist)
 {
-    if (!idProcess) { idProcess = 'albumInfos';
-    }
-
     return new Promise(
         function (resolve, reject) {
 
             let urlBase =  'https://musicbrainz.org/ws/2/release-group/?limit=1&fmt=json&query=';
             let queryObj = {
-                release : album || _discoverFilter["albumUI"],
-                artist :  artist || _discoverFilter["artistUI"]
+                release : album,
+                artist :  artist
             };
     
             //if elements missing, abort

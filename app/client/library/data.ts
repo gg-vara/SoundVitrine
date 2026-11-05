@@ -30,17 +30,8 @@ export interface UnifiedLibrary {
   glul: Record<string, FeedAlbum>;
 }
 
-export interface DiscoverFilter {
-  genreUI: string | null;
-  artistUI: string | null;
-  albumUI: string | null;
-}
-
 // what the page decides
 export interface DataFeedsContext {
-  filter: () => DiscoverFilter;
-  // "count:desc", "order:asc"...
-  sorter: () => string;
   // "2 years ago", in the language of the page
   humanizedSince: (date: string, now: Date) => string;
   now: () => Date;
@@ -60,17 +51,20 @@ export interface SearchResult {
 const MAX_SEARCH_RESULTS = 100;
 const MAX_FEED_ALBUMS = 100;
 
-// by name, then as the page sorts them
-function sortable(data: Record<string, unknown>, sorter: string): FilterItem[] {
-  const items = Object.keys(data)
+// by name
+function itemsOf(data: Record<string, unknown>): FilterItem[] {
+  return Object.keys(data)
     .sort()
     .map((name, index) => ({ nFilter: name, count: data[name], order: index + 1 }));
+}
 
+// "count:desc", "order:asc"...
+export function sortItems(items: FilterItem[], sorter: string): FilterItem[] {
   const [category, direction, ...others] = sorter.split(':');
   if (others.length > 0 || direction === undefined) return items;
 
   const sortValue = (item: FilterItem) => item[category as keyof FilterItem] as number;
-  return items.sort((a, b) => (direction.includes('asc') ? sortValue(a) - sortValue(b) : sortValue(b) - sortValue(a)));
+  return [...items].sort((a, b) => (direction.includes('asc') ? sortValue(a) - sortValue(b) : sortValue(b) - sortValue(a)));
 }
 
 export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsContext) {
@@ -78,27 +72,21 @@ export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsConte
   const searchNames = createNameSearch(library.slug.map(([, artist]) => artist));
 
   return {
-    genreUI: () => sortable(library.albgc, context.sorter()),
+    genreUI: () => itemsOf(library.albgc),
 
-    artistUI: () => {
-      const genre = context.filter().genreUI;
+    artistUI: (genre: string | null) => {
       if (!genre) return undefined;
       const artists = library.arbgl[genre] ?? [];
-      return sortable(
-        Object.fromEntries(artists.map(artist => [artist, Object.keys(library.abal[artist]?.Albums ?? {}).length])),
-        context.sorter(),
-      );
+      return itemsOf(Object.fromEntries(artists.map(artist => [artist, Object.keys(library.abal[artist]?.Albums ?? {}).length])));
     },
 
-    albumUI: () => {
-      const artist = context.filter().artistUI;
+    albumUI: (artist: string | null) => {
       if (!artist) return undefined;
       const albums = library.abal[artist]?.Albums ?? {};
-      return sortable(Object.fromEntries(Object.entries(albums).map(([name, album]) => [name, album.Year])), context.sorter());
+      return itemsOf(Object.fromEntries(Object.entries(albums).map(([name, album]) => [name, album.Year])));
     },
 
-    albumInfos: () => {
-      const { artistUI: artist, albumUI: name } = context.filter();
+    albumInfos: (artist: string | null, name: string | null) => {
       if (!artist || !name) return undefined;
       const album = library.abal[artist]?.Albums[name];
       return album && { ...album, Album: name, Artist: artist };

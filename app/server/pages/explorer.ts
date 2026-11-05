@@ -83,37 +83,7 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
             </div>
         </div>
         <div id='discoverContainer' class='subFrame'>
-            <div class='subContent' data-cat='${tr('discover')}'>
-                <div class="sorter"></div>
-                <div class='filterWrapper'>
-                    <div data-sl='Genres' id='genreUI'></div>
-                    <div data-sl='${tr('artists')}' id='artistUI'></div>
-                    <div data-sl='Albums' id='albumUI'></div>
-                </div>
-                <div id='albumInfos'>
-                    <div class='aiContent'>
-                        <div class='hInfos'>
-                            <label>${tr('year')}<div id="aYear"></div></label>
-                            <label>Genre<div id="aGenre"></div></label>
-                            <label>${tr('dateAddition')}<div id="aDateAdded"></div></label>
-                        </div>
-                        <div class='hMisc'>
-                            <div class='imgContainer'>
-                                <label>Album<div id="aTitle"></div></label>
-                                <div id='aImage' class='imgLoader' data-no-cover-found="${tr('no_cover_found')}"><img onload="imgLoaded(event)" onerror="brokenImg(event)" alt="" /></div>
-                            </div>
-                            <label style='margin: 1rem 0 1rem 2rem' >${tr('tracks')}<ol id="aTracks"></ol></label>
-                        </div>
-                        <div class='listen'>
-                            <a class='animated' rel="noopener">
-                                <i class="fab fa-youtube"></i>
-                                <span>${tr('listenTTA')}</span>
-                            </a>
-                        </div>
-                    </div>
-                    ${wAnim(user)}
-                </div>
-            </div>
+            <div id='discoverContent' class='subContent' data-cat='${tr('discover')}' data-owner="${user}"></div>
         </div>
     </div>
     ${footer(context)}
@@ -135,7 +105,6 @@ export function libraryPage(context: PageContext, user: string): Html {
         ${externalStyles}
         <script type="text/javascript" src="/public/ext/js/moment-with-locales.min.js"></script>
         <script type="text/javascript" src="/public/ext/js/hammer.min.js"></script>
-        <script type="text/javascript" src="/public/ext/js/mixitup.min.js"></script>
         <script>
             'use strict';
 
@@ -147,28 +116,6 @@ export function libraryPage(context: PageContext, user: string): Html {
 
             var initialRLoaderUrl = "/account";
 
-            var _discoverFilter = {
-                    genreUI : null,
-                    artistUI : null,
-                    albumUI : null
-            };
-            var _discoverMixers = {};
-
-            var defFiltStorageKey = "_discoverSorter";
-            var _discoverSorter = localStorage.getItem(defFiltStorageKey) || "count:desc";
-            var _defaultSorters = {
-                    count : "desc",
-                    order : "asc"
-            };
-            var _sortersIconAdapter = {
-                    order : "alpha",
-                    count : "amount",
-                    asc : "up",
-                    desc : "down"
-            };
-
-            var _appDataFeeds = {};
-
             var _rLoader = null;
         </script>
         ${adminScripts(context)}
@@ -176,7 +123,6 @@ export function libraryPage(context: PageContext, user: string): Html {
             ${raw(filesOf('client/public/ext/js/polyfills'))}
             ${raw(filesOf('client/legacy/explorer/js/misc'))}
             ${raw(filesOf('client/legacy/explorer/js/app'))}
-            ${raw(filesOf('client/legacy/explorer/js/app/panels'))}
         </script>
         ${clientScript()}
         ${adminStyles()}

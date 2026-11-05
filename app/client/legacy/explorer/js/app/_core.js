@@ -19,7 +19,6 @@ function initializateApp()
     alignConnectSideElements();
     bindResizeFunctions();
     registerXNavigateSwipeEvents();
-    generateSortButtons();
     _rLoader = new RLoader("xmlRLoader", initialRLoaderUrl);
 
     //download user file
@@ -45,14 +44,8 @@ function processUnifiedMusicLibrary(unifiedAsJSONText)
 {
     
     unified = JSON.parse(unifiedAsJSONText); //parse
-    _appDataFeeds = generateDataFeeds(unified); //bind lib to data functions
+    generateDataFeeds(unified); //bind lib to data functions
 
-    //prepare UI
-    prepareFilterUIs(Object.keys(_discoverFilter));
-
-    //instantiate initial filterUI
-    updateFilterUIs(['genreUI']);
-    
     //generate feed
     generateFreshUploads(); 
     
