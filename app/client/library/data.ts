@@ -1,4 +1,5 @@
 // What the panels show of a library, from unified.json (server/library.ts). No page here : see tests/library-data.test.ts
+import { createNameSearch, type Range } from './search';
 
 export interface Album {
   Year: unknown;
@@ -53,40 +54,11 @@ export interface FilterItem {
 
 export interface SearchResult {
   Genres: string[];
-  sIndexRange: [number, number];
+  sIndexRange: Range;
 }
 
 const MAX_SEARCH_RESULTS = 100;
 const MAX_FEED_ALBUMS = 100;
-
-const SLUG_FROM = 'àáäâãåèéëêìíïîòóöôùúüûñçßÿœæŕśńṕẃǵǹḿǘẍźḧ·/_,:;';
-const SLUG_TO = 'aaaaaaeeeeiiiioooouuuuncsyoarsnpwgnmuxzh------';
-const SLUG_SPECIALS = new RegExp(SLUG_FROM.split('').join('|'), 'g');
-
-// keepingLength : a character it would remove becomes a "-", for positions to stay those of the name
-export function slugify(text: string, keepingLength = false): string {
-  return text
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(SLUG_SPECIALS, character => SLUG_TO.charAt(SLUG_FROM.indexOf(character)))
-    .replace(/&/g, '-and-')
-    .replace(/[^\w-]+/g, keepingLength ? '-' : '')
-    .replace(/--+/g, '-')
-    .replace(/^-+/, '');
-}
-
-// where in a name its match goes, to highlight it. The slugs of the server do not always read as these ("ø" becomes "o"
-// there, "-" here) : the letters may never all be found, which must end anyway
-export function foundRange(name: string, slug: string, from: number): [number, number] {
-  const rest = slugify(name, true).substring(from);
-  let position = 0;
-  let found = 0;
-  while (found < slug.length && position < rest.length) {
-    if (rest[position] === slug[found]) found++;
-    position++;
-  }
-  return [from, from + position];
-}
 
 // by name, then as the page sorts them
 function sortable(data: Record<string, unknown>, sorter: string): FilterItem[] {
@@ -102,6 +74,9 @@ function sortable(data: Record<string, unknown>, sorter: string): FilterItem[] {
 }
 
 export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsContext) {
+  // the shortest names first : the server sorts them so
+  const searchNames = createNameSearch(library.slug.map(([, artist]) => artist));
+
   return {
     genreUI: () => sortable(library.albgc, context.sorter()),
 
@@ -131,16 +106,10 @@ export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsConte
 
     searchBand: (criteria: string) => {
       if (!criteria) return undefined;
-      const slug = slugify(criteria);
-
-      const results: [string, SearchResult][] = [];
-      for (const [artistSlug, artist] of library.slug) {
-        if (results.length === MAX_SEARCH_RESULTS) break;
-        const index = artistSlug.indexOf(slug);
-        if (index > -1) {
-          results.push([artist, { Genres: library.abal[artist]?.Genres ?? [], sIndexRange: foundRange(artist, slug, index) }]);
-        }
-      }
+      const results = searchNames(criteria, MAX_SEARCH_RESULTS).map(([artist, range]): [string, SearchResult] => [
+        artist,
+        { Genres: library.abal[artist]?.Genres ?? [], sIndexRange: range },
+      ]);
       return results.length ? Object.fromEntries(results) : null;
     },
 

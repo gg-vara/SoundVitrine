@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createDataFeeds, type DiscoverFilter, foundRange, slugify, type UnifiedLibrary } from '../library/data';
+import { createDataFeeds, type DiscoverFilter, type UnifiedLibrary } from '../library/data';
 
 const album = (year: number, date: string, tracks: Record<string, string> = { '1.1': 'a track' }) => ({
   Year: year,
@@ -103,18 +103,18 @@ describe('search', () => {
     expect(feeds().searchBand('BJÖ')).toEqual({ Björk: { Genres: ['Rock', 'Jazz'], sIndexRange: [0, 3] } });
   });
 
-  // used to freeze the page : "ø" is "o" in the server's slugs, "-" in these
-  test('ends on a name whose slug differs from the server', () => {
+  // used to freeze the page
+  test('a name with a letter having no accent to remove', () => {
     const found = feeds().searchBand('royk');
     expect(Object.keys(found ?? {})).toEqual(['Røyksopp']);
-    expect(found?.Røyksopp?.sIndexRange).toEqual([0, 8]);
+    expect(found?.Røyksopp?.sIndexRange).toEqual([0, 4]);
   });
 
   test('at most 100 results', () => {
     const many = Array.from({ length: 150 }, (_, index) => `band ${index}`);
     const large: UnifiedLibrary = {
       ...library,
-      slug: many.map(name => [slugify(name), name]),
+      slug: many.map(name => [name, name]),
       abal: Object.fromEntries(many.map(name => [name, { Genres: [], Albums: {} }])),
     };
     const found = createDataFeeds(large, {
@@ -124,28 +124,6 @@ describe('search', () => {
       now: () => new Date(),
     }).searchBand('band');
     expect(Object.keys(found ?? {})).toHaveLength(100);
-  });
-});
-
-describe('slugs', () => {
-  test('simplify a name', () => {
-    expect(slugify('Simon & Garfunkel')).toBe('simon-and-garfunkel');
-    expect(slugify('AC/DC')).toBe('ac-dc');
-    expect(slugify('  Björk!')).toBe('bjork');
-  });
-
-  test('keep positions when asked', () => {
-    expect(slugify('Mø', true)).toBe('m-');
-    expect(slugify('Mø')).toBe('m');
-  });
-
-  test('a match found in the name', () => {
-    expect(foundRange('Björk', 'jo', 1)).toEqual([1, 3]);
-  });
-
-  test('a match never found ends with the name', () => {
-    expect(foundRange('abc', 'zzz', 0)).toEqual([0, 3]);
-    expect(foundRange('', 'a', 0)).toEqual([0, 0]);
   });
 });
 
