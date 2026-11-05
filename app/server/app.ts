@@ -8,6 +8,7 @@ import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { APIError } from 'better-auth/api';
 import { API_TITLE, hasLibrary, router } from './api';
 import { auth, prepareAuth } from './auth';
+import { compressedResponse } from './compressed-response';
 import { ALLOW_SSE_TESTING, APP_ROOT, APP_VERSION, COMPANION_APP_NAME, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
 import { latestShout } from './db';
 import type { Html } from './html';
@@ -74,7 +75,8 @@ async function staticFile(root: string, path: string, cacheControl = 'public, ma
 
   const content = Bun.file(file);
   if (!(await content.exists())) return undefined;
-  return new Response(content, { headers: extname(file) === '.json' ? {} : { 'cache-control': cacheControl } });
+  const length = { 'content-length': String(content.size) };
+  return new Response(content, { headers: extname(file) === '.json' ? length : { ...length, 'cache-control': cacheControl } });
 }
 
 //
@@ -290,6 +292,10 @@ function clientIpOf(request: Request, peerAddress: string | undefined): string {
 }
 
 export async function handle(request: Request, peerAddress?: string): Promise<Response> {
+  return compressedResponse(request, await respond(request, peerAddress));
+}
+
+async function respond(request: Request, peerAddress?: string): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
 

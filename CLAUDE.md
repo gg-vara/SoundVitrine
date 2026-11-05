@@ -38,6 +38,7 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 - `server/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `server/rate-limit.ts` : failed passwords, by client and account
+- `server/compressed-response.ts` : gzip for browsers. Never live shouts, nor the plain text SoundBuddy reads
 
 ## What must not break
 
