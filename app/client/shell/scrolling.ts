@@ -1,4 +1,4 @@
-// The header following the page as it scrolls, and swipes between the library and the account panel
+// The header following the page as it scrolls
 import { createScrollDirection, createScrollSpeed, FAST_SCROLL, headerClasses } from './header';
 
 const header = () => document.getElementsByTagName('header')[0] as HTMLElement;
@@ -51,9 +51,4 @@ export function withoutFollowingScrolling(work: Promise<unknown>) {
     directionFrom(window.scrollY);
     followScrolling();
   });
-}
-
-export function followSwipes() {
-  const swipes = new Hammer(document.body, { inputClass: Hammer.TouchInput });
-  swipes.on('swipeleft swiperight', event => hNavigate(event.direction));
 }

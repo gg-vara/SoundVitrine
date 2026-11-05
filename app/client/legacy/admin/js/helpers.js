@@ -169,20 +169,6 @@ function waitTransitionEnd(eventEmitter, action, targetPseudoElem) {
     return _waitEventEnd(transitionEndEventName, eventEmitter, action, targetPseudoElem);
 }
 
-function debounce(callback, delay) {
-    var timer;
-    return function () {
-        var args = arguments;
-        var context = this;
-        clearTimeout(timer);
-        timer = setTimeout(
-            function () {
-                callback.apply(context, args);
-            }, delay
-        )
-    }
-}
-
 function compareDateFromNomHumanized(strISO8601, dateNow) {
     if (!dateNow) {
         dateNow = new moment();

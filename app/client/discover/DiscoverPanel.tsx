@@ -4,6 +4,7 @@
 
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
+import { scrollToElement } from '../shell/navigation';
 import {
   appliedFilters,
   type DiscoverFilter,
@@ -236,7 +237,7 @@ export function DiscoverPanel(props: {
     updateCover();
     if (album()) {
       void (shown() ? Promise.resolve() : show()).then(() => {
-        if (wanted.albumUI) vNavigate(infos, -10);
+        if (wanted.albumUI) void scrollToElement(infos, -10);
       });
     } else {
       setShown(false);
@@ -246,7 +247,7 @@ export function DiscoverPanel(props: {
     if (!wanted.albumUI) {
       // the list to choose from next, its label above it
       const nextList = wrapper.querySelector('[data-choosing]');
-      if (nextList) vNavigate(nextList, -30);
+      if (nextList) void scrollToElement(nextList, -30);
     }
   }
 

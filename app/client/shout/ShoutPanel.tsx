@@ -2,6 +2,7 @@
 // shared with the album panel
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
+import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
 import { followShouts } from './live';
 import { metaText, movesTimeline, type Shout } from './logic';
 import { shoutMachine } from './machine';
@@ -11,7 +12,7 @@ const MUTE_STORAGE_KEY = 'muteShoutNotification';
 
 export interface ShoutPanelControls {
   start: () => void;
-  resize: () => ResizeInstructions;
+  resize: () => ApplyHeight;
 }
 
 // the height of the closed panel is measured with these : they never show, as a shout comes before it opens
@@ -93,7 +94,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
         follow: followShouts,
         // the notification covers the panel while the next track comes in
         fadeOutNotification: () => waitTransitionEnd(notification, () => notification.classList.remove('fade')),
-        toggleShutter: open => _toggleShutter(CONTAINER_ID, () => _resizeShutter(CONTAINER_ID, open)),
+        toggleShutter: open => toggleShutter(CONTAINER_ID, () => resizeShutter(CONTAINER_ID, open)),
         show: (shout, changes) => {
           if (changes.includes('album')) updateCover(shout);
           setShown(shout);
@@ -117,7 +118,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
 
   props.controls({
     start: () => actor.send({ type: 'start' }),
-    resize: () => _resizeShutter(CONTAINER_ID, actor.getSnapshot().context.worthDisplaying),
+    resize: () => resizeShutter(CONTAINER_ID, actor.getSnapshot().context.worthDisplaying),
   });
 
   return (

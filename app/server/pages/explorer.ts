@@ -115,8 +115,6 @@ export function libraryPage(context: PageContext, user: string): Html {
             const shoutStreamUrl = ${scriptJson(`/u/${user}/shouts`)};
 
             var initialRLoaderUrl = "/account";
-
-            var _rLoader = null;
         </script>
         ${adminScripts(context)}
         <script>
