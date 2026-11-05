@@ -1,11 +1,15 @@
 // What the owner of the library is listening to. Its styles are still in client/legacy/explorer/css/shout.css
 import { createSignal, Show } from 'solid-js';
-import { changedFields, isNewTrack, isNoMusic, isWorthDisplaying, metaText, movesTimeline, type Shout } from './logic';
+import { createActor } from 'xstate';
+import { followShouts } from './live';
+import { metaText, movesTimeline, type Shout } from './logic';
+import { shoutMachine } from './machine';
 
+const CONTAINER_ID = 'shoutContainer';
 const MUTE_STORAGE_KEY = 'muteShoutNotification';
 
 export interface ShoutPanelControls {
-  receive: (shout: Shout) => Promise<void>;
+  start: () => void;
   resize: () => ResizeInstructions;
 }
 
@@ -22,10 +26,6 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
   let notification!: HTMLDivElement;
   let cover!: HTMLDivElement;
   let timeline!: HTMLDivElement;
-  let current: Shout = {};
-  let worthDisplaying = false;
-
-  const resize = () => _resizeShutter('shoutContainer', worthDisplaying);
 
   const track = () => {
     const shout = shown();
@@ -86,40 +86,38 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
     });
   }
 
-  async function receive(shout: Shout) {
-    worthDisplaying = isWorthDisplaying(shout, calculateMillisecondsElapsed);
+  const actor = createActor(shoutMachine, {
+    input: {
+      effects: {
+        follow: followShouts,
+        // the notification covers the panel while the next track comes in
+        fadeOutNotification: () => waitTransitionEnd(notification, () => notification.classList.remove('fade')),
+        toggleShutter: open => _toggleShutter(CONTAINER_ID, () => _resizeShutter(CONTAINER_ID, open)),
+        show: (shout, changes) => {
+          if (changes.includes('album')) updateCover(shout);
+          setShown(shout);
+          if (movesTimeline(changes)) restartTimeline(shout);
+        },
+        announce: () => {
+          // the panel out of sight : a small floating widget tells about it
+          const bounds = document.getElementById(CONTAINER_ID)?.getBoundingClientRect();
+          if (bounds && (bounds.bottom < 0 || bounds.left < 0)) showWidget();
 
-    const changes = changedFields(current, shout);
-    const newTrack = !isNoMusic(shout) && isNewTrack(changes);
+          requestAnimationFrame(() => {
+            playSound();
+            notification.classList.add('fade');
+          });
+        },
+        millisecondsSince: calculateMillisecondsElapsed,
+      },
+    },
+  });
+  actor.start();
 
-    const container = document.getElementById('shoutContainer');
-    if (!container) return;
-
-    // already showing a track : the notification fades before the next one
-    if (container.clientHeight > 0 && notification.classList.contains('fade') && newTrack) {
-      await waitTransitionEnd(notification, () => notification.classList.remove('fade'));
-    }
-
-    await _toggleShutter('shoutContainer', resize);
-
-    if (changes.includes('album')) updateCover(shout);
-    setShown(shout);
-    if (movesTimeline(changes)) restartTimeline(shout);
-    current = shout;
-
-    if (!newTrack) return;
-
-    // the panel out of sight : a small floating widget tells about it
-    const bounds = container.getBoundingClientRect();
-    if (bounds.bottom < 0 || bounds.left < 0) showWidget();
-
-    requestAnimationFrame(() => {
-      playSound();
-      notification.classList.add('fade');
-    });
-  }
-
-  props.controls({ receive, resize });
+  props.controls({
+    start: () => actor.send({ type: 'start' }),
+    resize: () => _resizeShutter(CONTAINER_ID, actor.getSnapshot().context.worthDisplaying),
+  });
 
   return (
     <>

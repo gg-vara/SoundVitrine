@@ -1,8 +1,13 @@
 import { describe, expect, test } from 'bun:test';
-import { changedFields, isNewTrack, isNoMusic, isWorthDisplaying, metaText, movesTimeline, type Shout } from '../shout/logic';
+import { changedFields, isNewTrack, isNoMusic, isShout, isWorthDisplaying, metaText, movesTimeline, type Shout } from '../shout/logic';
 
 const playing: Shout = { date: '2026-01-01T00:00:00Z', duration: 200, playerPositionMS: 100_000, playerState: true };
 const elapsed = (milliseconds: number) => () => milliseconds;
+
+test('a shout is an object, whatever was uploaded', () => {
+  expect(isShout({ name: 'a' })).toBe(true);
+  for (const value of [null, 'a', 1, [], undefined]) expect(isShout(value)).toBe(false);
+});
 
 describe('worth displaying', () => {
   test('a track still going on', () => {

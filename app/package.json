@@ -31,6 +31,7 @@
     "solid-js": "^2.0.0-rc.20",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
-    "vite-plugin-solid": "^3.0.0-next.27"
+    "vite-plugin-solid": "^3.0.0-next.27",
+    "xstate": "^5.33.3"
   }
 }

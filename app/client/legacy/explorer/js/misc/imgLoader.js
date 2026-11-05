@@ -92,8 +92,12 @@ function queryMusicBrainzForAlbumCover(idProcess, album, artist)
             request_qmbfac[idProcess].onloadend = function (e) {
                 let text = e.currentTarget.responseText;
                 if (!text) {reject(); return;}
-                let obj = JSON.parse(text);
-                let imgUrl = mbQueryCoverArtAPI(obj['release-groups']);
+                //an error from the service (it limits its callers) has another shape, or is no JSON at all
+                let groups;
+                try {
+                    groups = JSON.parse(text)['release-groups'];
+                } catch {}
+                let imgUrl = groups ? mbQueryCoverArtAPI(groups) : null;
                 imgUrl ? resolve(imgUrl) : reject();
             };
             request_qmbfac[idProcess].open('GET', query, true);

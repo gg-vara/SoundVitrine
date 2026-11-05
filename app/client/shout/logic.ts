@@ -14,6 +14,8 @@ export interface Shout {
   year?: number;
 }
 
+export const isShout = (value: unknown): value is Shout => typeof value === 'object' && value !== null && !Array.isArray(value);
+
 export function isWorthDisplaying(shout: Shout, millisecondsSince: (date: string) => number): boolean {
   // without a track length or a timestamp, nothing can be said about it
   if (typeof shout.duration !== 'number' || typeof shout.date !== 'string') return false;
