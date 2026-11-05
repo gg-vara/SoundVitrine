@@ -184,7 +184,7 @@ export function libraryPage(context: PageContext, user: string): Html {
             var clientURLUnified = ${scriptJson(publicUserFolder(user) + COMPILED_MUSIC_LIB_PROFILE_FILE_NAME)};
             var clientURLShout = ${scriptJson(publicUserFolder(user) + SHOUT_PROFILE_FILE_NAME)};
 
-            // server-sent events of the user's shouts (see src/api.ts)
+            // server-sent events of the user's shouts (see server/api.ts)
             const shoutStreamUrl = ${scriptJson(`/u/${user}/shouts`)};
 
             var initialRLoaderUrl = "/account";
@@ -217,14 +217,14 @@ export function libraryPage(context: PageContext, user: string): Html {
         </script>
         ${adminScripts(context)}
         <script>
-            ${raw(filesOf('public/ext/js/polyfills'))}
-            ${raw(filesOf('assets/explorer/js/misc'))}
-            ${raw(filesOf('assets/explorer/js/app'))}
-            ${raw(filesOf('assets/explorer/js/app/panels'))}
+            ${raw(filesOf('client/public/ext/js/polyfills'))}
+            ${raw(filesOf('client/legacy/explorer/js/misc'))}
+            ${raw(filesOf('client/legacy/explorer/js/app'))}
+            ${raw(filesOf('client/legacy/explorer/js/app/panels'))}
         </script>
         ${adminStyles()}
         <style>
-            ${raw(filesOf('assets/explorer/css'))}
+            ${raw(filesOf('client/legacy/explorer/css'))}
         </style>
         <style>
             ${raw(colorsCss(user, profile?.customColors))}

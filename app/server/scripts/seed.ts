@@ -4,7 +4,7 @@
 import { rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const STATE = resolve(import.meta.dir, '../_state-dev');
+const STATE = resolve(import.meta.dir, '../../_state-dev');
 const USERNAME = 'testcurator';
 const PASSWORD = 'testpassword';
 
@@ -16,12 +16,12 @@ process.env.ENFORCE_CANONICAL_HTTP_SCHEME = '1';
 
 rmSync(STATE, { recursive: true, force: true });
 
-const { handle, prepareState } = await import('../src/app');
-const { auth } = await import('../src/auth');
-const { PORT } = await import('../src/config');
-const { saveLatestShout, saveLibraryRecord } = await import('../src/db');
-const { compileLibrary, libraryPath } = await import('../src/library');
-const { updateProfile } = await import('../src/users');
+const { handle, prepareState } = await import('../app');
+const { auth } = await import('../auth');
+const { PORT } = await import('../config');
+const { saveLatestShout, saveLibraryRecord } = await import('../db');
+const { compileLibrary, libraryPath } = await import('../library');
+const { updateProfile } = await import('../users');
 
 // what real libraries hold, and tends to break things
 const ARTISTS = ['Sigur Rós', 'AC/DC', 'Simon & Garfunkel', 'Björk', '!!!', '2Pac', 'Mötley Crüe', '坂本龍一', 'A', 'The "Quoted" Band'];

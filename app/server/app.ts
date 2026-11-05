@@ -1,4 +1,4 @@
-// Requests : static files, the API (src/api.ts) with its reference, then the pages
+// Requests : static files, the API (server/api.ts) with its reference, then the pages
 
 import { mkdirSync, rmSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
@@ -297,11 +297,13 @@ export async function handle(request: Request, peerAddress?: string): Promise<Re
   if (path === '/api/scalar.js') return new Response(Bun.file(SCALAR_SCRIPT), { headers: { 'content-type': 'text/javascript' } });
 
   if (request.method === 'GET' && path.startsWith('/public/')) {
-    return (await staticFile(join(APP_ROOT, 'public'), path.slice('/public/'.length))) ?? text('', 404);
+    return (await staticFile(join(APP_ROOT, 'client/public'), path.slice('/public/'.length))) ?? text('', 404);
   }
   // Vite's build : a file's name changes with its content, it can be kept forever
   if (request.method === 'GET' && path.startsWith('/web/')) {
-    return (await staticFile(join(APP_ROOT, 'dist'), path.slice('/web/'.length), 'public, max-age=31536000, immutable')) ?? text('', 404);
+    return (
+      (await staticFile(join(APP_ROOT, 'client/dist'), path.slice('/web/'.length), 'public, max-age=31536000, immutable')) ?? text('', 404)
+    );
   }
   if (request.method === 'GET' && path.startsWith('/data/users/')) {
     // the latest shout comes from the database

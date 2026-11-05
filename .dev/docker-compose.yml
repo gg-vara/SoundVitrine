@@ -6,7 +6,7 @@ services:
     image: Amphaal/soundvitrine
     build:
       context: ../app
-    command: ["bun", "--watch", "src/index.ts"]
+    command: ["bun", "--watch", "server/index.ts"]
     ports:
       - "80:80" # HTTP
     volumes:
@@ -18,11 +18,11 @@ services:
     develop:
       watch:
         - action: sync
-          path: ../app/src
-          target: /app/src
+          path: ../app/server
+          target: /app/server
         - action: sync
-          path: ../app/assets
-          target: /app/assets
+          path: ../app/client/legacy
+          target: /app/client/legacy
         - action: sync
-          path: ../app/public
-          target: /app/public
+          path: ../app/client/public
+          target: /app/client/public

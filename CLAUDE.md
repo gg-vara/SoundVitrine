@@ -30,26 +30,26 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 
 ## Structure
 
-- `src/api.ts` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`)
-- `src/app.ts` : routing, the account pages' logic, static files
-- `src/pages/` : HTML templates. `src/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
-- `assets/` : browser scripts and styles, inlined into the pages. `public/` : static files
-- `web/` : what moves to Vite 8, built to `dist/` by `bun run build`, served at `/web/`. No page loads it yet
-- `src/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
-- `src/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
-- `src/rate-limit.ts` : failed passwords, by client and account
+- `server/api.ts` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`)
+- `server/app.ts` : routing, the account pages' logic, static files
+- `server/pages/` : HTML templates. `server/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
+- `client/legacy/` : browser scripts and styles, inlined into the pages. `client/public/` : static files, served at `/public/`
+- `client/` : what moves to Vite 8 (`client/main.ts`), built to `client/dist/` by `bun run build`, served at `/web/`. No page loads it yet
+- `server/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
+- `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
+- `server/rate-limit.ts` : failed passwords, by client and account
 
 ## What must not break
 
-Released SoundBuddy versions call `POST /hb/creds`, `/u/{user}/uploadMusicLibrary` and `/u/{user}/uploadShout`, with multipart forms and the password each time. They show the plain text answers to their users, and stop trying on a 403. `tests/app.test.ts` sends the same bytes.
+Released SoundBuddy versions call `POST /hb/creds`, `/u/{user}/uploadMusicLibrary` and `/u/{user}/uploadShout`, with multipart forms and the password each time. They show the plain text answers to their users, and stop trying on a 403. `server/tests/app.test.ts` sends the same bytes.
 
 Bun's form parser ignores the `Content-Type` of a file, deducing one from its name : uploads are told apart by their content.
 
-Library and shout values come from what any account uploads, and run in its visitors' browsers : browser scripts write them with `textContent`, never `innerHTML` (`tests/browser-scripts.test.ts`). Highcharts reads tags in its texts : names reach it escaped.
+Library and shout values come from what any account uploads, and run in its visitors' browsers : browser scripts write them with `textContent`, never `innerHTML` (`server/tests/browser-scripts.test.ts`). Highcharts reads tags in its texts : names reach it escaped.
 
 ## Conventions
 
 - Push or publish only when asked. Several small commits rather than one large one, messages in lowercase, saying what changed
 - Comments say why, in the style of the surrounding code
 - The version in `app/package.json` triggers the image's publication on `main`
-- Each text the pages show goes in `src/translations/`, in both languages
+- Each text the pages show goes in `server/translations/`, in both languages

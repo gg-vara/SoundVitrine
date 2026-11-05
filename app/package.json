@@ -6,12 +6,12 @@
   "type": "module",
   "packageManager": "bun@1.4.4",
   "scripts": {
-    "start": "bun src/index.ts",
-    "dev": "bun --watch src/index.ts",
-    "dev:seed": "bun scripts/seed.ts",
+    "start": "bun server/index.ts",
+    "dev": "bun --watch server/index.ts",
+    "dev:seed": "bun server/scripts/seed.ts",
     "build": "vite build",
     "test": "bun test",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p web",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p client",
     "lint": "biome check .",
     "format": "biome check --write ."
   },

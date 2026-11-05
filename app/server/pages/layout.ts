@@ -147,7 +147,7 @@ export const externalStyles = html`<link rel="stylesheet" href="https://use.font
 <link rel="stylesheet" href="/public/ext/css/animate.min.css">`;
 
 export const adminStyles = () => html`<style>
-${raw(filesOf('assets/admin/css'))}${colorsCss()}
+${raw(filesOf('client/legacy/admin/css'))}${colorsCss()}
 </style>`;
 
 // JSON in a <script>, which must not close it
@@ -156,10 +156,10 @@ const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '
 export const adminScripts = (context: PageContext) => html`<script>
     const i18n = ${scriptJson(dictionaries[context.lang])};
     const lang = ${scriptJson(context.lang)};
-    ${raw(filesOf('assets/admin/js'))}
+    ${raw(filesOf('client/legacy/admin/js'))}
 </script>`;
 
-const flags = readdirSync(join(APP_ROOT, 'public/images/flags'))
+const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
   .filter(name => name.endsWith('.svg'))
   .sort();
 

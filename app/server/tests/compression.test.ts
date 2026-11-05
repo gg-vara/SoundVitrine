@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { deflateRawSync, deflateSync, gzipSync } from 'node:zlib';
-import { decompressUpload } from '../src/compression';
+import { decompressUpload } from '../compression';
 
 // a buffer of Windows' Compression API, its second block compressed against the first one
 function mszip(first: string, second: string): Buffer {

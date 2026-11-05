@@ -4,11 +4,11 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
-import { handle, prepareState } from '../src/app';
-import { auth } from '../src/auth';
-import { APP_ROOT, STATE_FOLDER_PATH } from '../src/config';
-import { database } from '../src/db';
-import { userFolder } from '../src/users';
+import { handle, prepareState } from '../app';
+import { auth } from '../auth';
+import { APP_ROOT, STATE_FOLDER_PATH } from '../config';
+import { database } from '../db';
+import { userFolder } from '../users';
 
 const USER = 'curator';
 const PASSWORD = 'password1';
@@ -202,8 +202,8 @@ describe('shouts', () => {
 });
 
 describe("Vite's build", () => {
-  // a file of its own : dist/ only exists after a build, and tests must not depend on one
-  const folder = join(APP_ROOT, 'dist', 'assets');
+  // a file of its own : client/dist/ only exists after a build, and tests must not depend on one
+  const folder = join(APP_ROOT, 'client', 'dist', 'assets');
   const file = join(folder, 'test-served.js');
 
   beforeAll(() => {
@@ -221,7 +221,7 @@ describe("Vite's build", () => {
   });
 
   test('serves nothing else', async () => {
-    for (const path of ['/web/assets/missing.js', '/web/..%2fsrc/app.ts', '/web/%2e%2e/package.json']) {
+    for (const path of ['/web/assets/missing.js', '/web/..%2fmain.ts', '/web/%2e%2e/%2e%2e/package.json']) {
       expect((await handle(new Request(`${base}${path}`))).status).toBe(404);
     }
     expect((await handle(new Request(`${base}/web/assets/test-served.js`, { method: 'POST' }))).status).not.toBe(200);
@@ -404,7 +404,12 @@ describe('pages', () => {
   });
 
   test('state files stay out of reach', async () => {
-    for (const path of ['/data/users/..%2fsoundvitrine.db', '/data/users/%2e%2e/session.key', '/public/..%2fsrc/app.ts']) {
+    for (const path of [
+      '/data/users/..%2fsoundvitrine.db',
+      '/data/users/%2e%2e/session.key',
+      '/public/..%2fmain.ts',
+      '/public/..%2f..%2fserver/app.ts',
+    ]) {
       const response = await handle(new Request(`${base}${path}`));
       expect(await response.text()).not.toContain(PASSWORD);
       expect(response.status).toBe(404);

@@ -2,7 +2,7 @@
     "terminal.integrated.cwd": "${workspaceFolder}/app",
     "js/ts.implicitProjectConfig.checkJs": true,
     "search.exclude": {
-        "app/public/ext/js/**": true
+        "app/client/public/ext/js/**": true
     },
     "[typescript]": {
         "editor.defaultFormatter": "biomejs.biome",

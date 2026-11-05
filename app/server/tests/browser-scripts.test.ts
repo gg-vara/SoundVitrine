@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Glob } from 'bun';
 
-const ASSETS = join(import.meta.dir, '..', 'assets');
+const ASSETS = join(import.meta.dir, '..', '..', 'client', 'legacy');
 
 // what parses a string as HTML, or runs it
 const RAW_HTML = /\.(innerHTML|outerHTML)\s*\+?=|insertAdjacentHTML|document\.write/;

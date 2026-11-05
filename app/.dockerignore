@@ -1,7 +1,7 @@
 node_modules
 _state
 _state-dev
-tests
-scripts
+server/tests
+server/scripts
 .env*
-dist
+client/dist
