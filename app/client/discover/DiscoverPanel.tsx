@@ -4,6 +4,7 @@
 
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
+import { COVER } from '../shell/cover';
 import { scrollToElement } from '../shell/navigation';
 import {
   appliedFilters,
@@ -362,7 +363,10 @@ export function DiscoverPanel(props: {
                 <div class={VALUE}>{album()?.Album}</div>
               </div>
               <div
-                class="imgLoader noCoverMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]"
+                class={[
+                  COVER,
+                  'noCoverMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]',
+                ]}
                 data-no-cover-found={i18n.no_cover_found}
                 ref={cover}
               >

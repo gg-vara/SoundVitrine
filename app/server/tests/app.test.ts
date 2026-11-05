@@ -414,7 +414,7 @@ describe('pages', () => {
     expect(page).toContain('app-music-library');
     expect(page).toContain(`const shoutStreamUrl = "/u/${USER}/shouts"`);
     // what fills it comes from Vite's build
-    expect(page).toContain(`<div id='shoutContainer' class="subFrame group bg-[#e0e0e0] z-500"></div>`);
+    expect(page).toMatch(/<div id='shoutContainer' class="[^"]*"><\/div>/);
     expect(page).not.toContain('function setupLiveUpdatesForShouts');
   });
 

@@ -1,7 +1,7 @@
-// What the owner of the library is listening to. Its cover also has styles in client/legacy/explorer/css/imgloader.css,
-// shared with the album panel
+// What the owner of the library is listening to
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
+import { COVER } from '../shell/cover';
 import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
 import { followShouts } from './live';
 import { metaText, movesTimeline, type Shout } from './logic';
@@ -132,7 +132,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
       </div>
       <div class="flex w-full flex-row items-center justify-center py-4">
         <a class="ml-2" title={i18n.playOnYT} rel="noopener" href={track()} target={track() ? '_blank' : undefined}>
-          <div class="imgLoader group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]" ref={cover}>
+          <div class={[COVER, 'group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]']} ref={cover}>
             <img class="group-hover/cover:opacity-50" onLoad={imgLoaded} onError={brokenImg} alt="" />
             <i class="fab fa-youtube absolute top-[.5em] left-2 z-5000 text-[1rem] text-[red] opacity-0 [transition:all_.3s_ease] group-hover/cover:opacity-100" />
           </div>
