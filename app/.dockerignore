@@ -5,3 +5,4 @@ server/tests
 server/scripts
 .env*
 client/dist
+client/tests

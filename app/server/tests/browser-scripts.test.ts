@@ -28,6 +28,14 @@ describe('browser scripts', () => {
     expect(offenders).toEqual([]);
   });
 
+  test('nor in what moved to Vite', () => {
+    const client = join(ASSETS, '..');
+    const offenders = [...new Glob('**/*.{ts,tsx}').scanSync(client)].filter(file =>
+      /innerHTML|outerHTML/.test(readFileSync(join(client, file), 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+
   test('names reach the charts escaped', () => {
     expect(readFileSync(join(ASSETS, 'explorer/js/app/panels/stats.js'), 'utf8')).toContain('escapeChartText(genreName)');
   });

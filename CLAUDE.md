@@ -10,7 +10,7 @@ From `app/` :
 bun run dev:seed
 ```
 
-A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts.
+A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
 
 - `bun test`, `bun run typecheck`, `bun x biome check --write .`, `bun run build` : what CI checks (`biome ci`)
 - never point these at a real state folder : tests and seed keep to temporary ones
@@ -34,7 +34,7 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 - `server/app.ts` : routing, the account pages' logic, static files
 - `server/pages/` : HTML templates. `server/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
 - `client/legacy/` : browser scripts and styles, inlined into the pages. `client/public/` : static files, served at `/public/`
-- `client/` : what moves to Vite 8 (`client/main.ts`), built to `client/dist/` by `bun run build`, served at `/web/`. No page loads it yet
+- `client/` : what moved to Vite 8 and Solid, built to `client/dist/` by `bun run build`, served at `/web/`. `client/main.tsx` is the entry, `client/shout/` the shout panel, which `client/legacy/` still starts and resizes (`client/legacy.d.ts`)
 - `server/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `server/rate-limit.ts` : failed passwords, by client and account

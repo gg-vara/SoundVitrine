@@ -18,7 +18,6 @@ function initializateApp()
     navigatorSpecificParameterization();
     alignConnectSideElements();
     bindResizeFunctions();
-    instShoutMuteButton();
     registerXNavigateSwipeEvents();
     generateSortButtons();
     initSearchBand();

@@ -5,7 +5,7 @@ import type { Html } from '../html';
 import { html, raw } from '../html';
 import { findUser, publicUserFolder } from '../users';
 import type { PageContext } from './layout';
-import { adminScripts, adminStyles, colorsCss, externalStyles, filesOf, footer, metadata, pageTitle, wAnim } from './layout';
+import { adminScripts, adminStyles, clientScript, colorsCss, externalStyles, filesOf, footer, metadata, pageTitle, wAnim } from './layout';
 
 // the button opening the account panel, notifying when not logged in
 const connectButton = (
@@ -67,30 +67,7 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
         ${wAnim(user)}
     </header>
     <div id='mainFrame'>
-        <div id='shoutContainer' class="subFrame">
-            <div id='shoutNotification'>
-                ${tr('nowPlaying')}
-            </div>
-            <div class='shout'>
-                <a title='${tr('playOnYT')}' rel="noopener">
-                    <div id="shoutImgLoader" class='imgLoader cover'>
-                        <img onload="imgLoaded(event)" onerror="brokenImg(event)" alt=""/>
-                        <i class="fab fa-youtube"></i>
-                    </div>
-                </a>
-                <div class='albumDesc'>
-                    <div>
-                        <div class='name'>PLACEHOLDER</div>
-                        <div class='meta'>PLACEHOLDER</div>
-                    </div>
-                </div>
-                <div class='timeline'></div>
-                <label class='mute clickable'>
-                    <input id='muzzleShout' type='checkbox' onchange="toggleShoutSound(event)" autocomplete="off">
-                    <i class="fas fa-bell" title-on='${tr('playSound')}' title-off='${tr('muteNotif')}'></i>
-                </label>
-            </div>
-        </div>
+        <div id='shoutContainer' class="subFrame"></div>
         <div id='statsContainer' class='subFrame'>
             <div class='subContent' data-cat="STATS">
                 <div class='statsWrapper'>
@@ -210,8 +187,6 @@ export function libraryPage(context: PageContext, user: string): Html {
             };
 
             var _appDataFeeds = {};
-            var _currentShout = {};
-            var _currentShoutDWorth = false;
 
             var _rLoader = null;
         </script>
@@ -222,6 +197,7 @@ export function libraryPage(context: PageContext, user: string): Html {
             ${raw(filesOf('client/legacy/explorer/js/app'))}
             ${raw(filesOf('client/legacy/explorer/js/app/panels'))}
         </script>
+        ${clientScript()}
         ${adminStyles()}
         <style>
             ${raw(filesOf('client/legacy/explorer/css'))}

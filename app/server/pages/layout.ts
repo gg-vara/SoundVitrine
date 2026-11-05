@@ -30,6 +30,28 @@ export interface PageContext {
 const cache = new Map<string, string>();
 const caching = process.env.NODE_ENV === 'production';
 
+// the file of Vite's entry in its manifest, relative to client/dist/
+export function entryFile(manifest: string): string | undefined {
+  return (JSON.parse(manifest) as Record<string, { file: string; isEntry?: boolean }>)['main.tsx']?.file;
+}
+
+// the script of Vite's build : without it, the page misses what moved there
+export function clientScript(): Html {
+  const key = 'client script';
+  let file = cache.get(key);
+  if (file === undefined) {
+    try {
+      file = entryFile(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'));
+    } catch {}
+    if (file === undefined) {
+      console.error('No browser build in client/dist : run "bun run build"');
+      return html``;
+    }
+    if (caching) cache.set(key, file);
+  }
+  return html`<script type="module" src="/web/${file}"></script>`;
+}
+
 // the files of an application folder, concatenated in alphabetical order (not recursive)
 export function filesOf(folder: string): string {
   const cached = cache.get(folder);

@@ -1,5 +1,6 @@
 # What needs the development dependencies : Vite's build, and Scalar's browser script, without the large package it comes with
-FROM oven/bun:1.4.4-alpine AS build
+# Not on Alpine : Solid's compiler has no build for musl. The result is plain JavaScript, whichever system made it
+FROM oven/bun:1.4.4 AS build
 
 WORKDIR /app
 

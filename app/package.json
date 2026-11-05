@@ -8,7 +8,8 @@
   "scripts": {
     "start": "bun server/index.ts",
     "dev": "bun --watch server/index.ts",
-    "dev:seed": "bun server/scripts/seed.ts",
+    "dev:seed": "vite build && bun server/scripts/seed.ts",
+    "dev:client": "vite build --watch",
     "build": "vite build",
     "test": "bun test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p client",
@@ -25,8 +26,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
     "@scalar/api-reference": "^1.76.4",
+    "@solidjs/web": "^2.0.0-rc.20",
     "@types/bun": "^1.4.4",
+    "solid-js": "^2.0.0-rc.20",
     "typescript": "^7.0.2",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vite-plugin-solid": "^3.0.0-next.27"
   }
 }

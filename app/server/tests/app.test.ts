@@ -8,6 +8,7 @@ import { handle, prepareState } from '../app';
 import { auth } from '../auth';
 import { APP_ROOT, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
+import { entryFile } from '../pages/layout';
 import { userFolder } from '../users';
 
 const USER = 'curator';
@@ -202,6 +203,11 @@ describe('shouts', () => {
 });
 
 describe("Vite's build", () => {
+  test('pages find its entry in the manifest', () => {
+    expect(entryFile(JSON.stringify({ 'main.tsx': { file: 'assets/main-abc.js', isEntry: true } }))).toBe('assets/main-abc.js');
+    expect(entryFile('{}')).toBeUndefined();
+  });
+
   // a file of its own : client/dist/ only exists after a build, and tests must not depend on one
   const folder = join(APP_ROOT, 'client', 'dist', 'assets');
   const file = join(folder, 'test-served.js');
@@ -284,7 +290,9 @@ describe('pages', () => {
     expect(response.headers.get('content-type')).toStartWith('text/html');
     expect(page).toContain('app-music-library');
     expect(page).toContain(`const shoutStreamUrl = "/u/${USER}/shouts"`);
-    expect(page).toContain('function setupLiveUpdatesForShouts');
+    // what fills it comes from Vite's build
+    expect(page).toContain(`<div id='shoutContainer' class="subFrame"></div>`);
+    expect(page).not.toContain('function setupLiveUpdatesForShouts');
   });
 
   test('a user without library gets the upload form', async () => {
