@@ -61,12 +61,7 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
                     </label>
                     ${connectButton(context)}
                 </div>
-                <div id='searchBand'>
-                    <div class='search' data-found="${tr('found')}">
-                        <input type='text' aria-label="${tr('phSearch')}" spellcheck="false" placeholder="${tr('phSearch')}" autocomplete="off">
-                        <div class='searchResults'></div>
-                    </div>
-                </div>
+                <div id='searchBand' class="my-[.35rem]! flex grow-[9001000] justify-center"></div>
             </div>
             ${connectButton(context)}
         </div>

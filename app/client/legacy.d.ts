@@ -18,6 +18,7 @@ declare function updateImgLoader(elem: Element, imgUrl: string): void;
 declare function brokenImgFr(elem: Element): void;
 declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
+declare function updateFilter(event: Event): void;
 
 interface ResizeInstructions {
   next: unknown;
