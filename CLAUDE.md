@@ -34,7 +34,7 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 - `server/app.ts` : routing, the account pages' logic, static files
 - `server/pages/` : HTML templates. `server/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
 - `client/legacy/` : browser scripts and styles, inlined into the pages. `client/public/` : static files, served at `/public/`
-- `client/` : what moved to Vite 8, Solid and Tailwind (`client/style.css` says why it has no layers nor reset, and what it scans : a new folder must be added there), built to `client/dist/` by `bun run build`, served at `/web/`. `client/main.tsx` is the entry, `client/shout/` the shout panel, which `client/legacy/` still starts and resizes, `client/search/` the search bar, `client/feed/` the latest albums, and `client/library/data.ts` what the panels show of a library, which it still calls (`client/legacy.d.ts`). `client/library/search.ts` finds artists in any script, without the server's slugs : only their order is used `client/shout/machine.ts` is its XState machine, given what touches the page as "effects" so that `bun test` runs it. What waits for a CSS transition needs a time limit : its end never comes in a hidden tab
+- `client/` : what moved to Vite 8, Solid and Tailwind (`client/style.css` says why it has no layers nor reset, and what it scans : a new folder must be added there), built to `client/dist/` by `bun run build`, served at `/web/`. `client/main.tsx` is the entry, `client/shout/` the shout panel, which `client/legacy/` still starts and resizes, `client/search/` the search bar, `client/feed/` the latest albums, `client/stats/` the pies, with Chart.js only downloaded when the panel first opens, and `client/library/data.ts` what the panels show of a library, which it still calls (`client/legacy.d.ts`). `client/library/search.ts` finds artists in any script, without the server's slugs : only their order is used `client/shout/machine.ts` is its XState machine, given what touches the page as "effects" so that `bun test` runs it. What waits for a CSS transition needs a time limit : its end never comes in a hidden tab
 - `server/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `server/rate-limit.ts` : failed passwords, by client and account
@@ -45,7 +45,7 @@ Released SoundBuddy versions call `POST /hb/creds`, `/u/{user}/uploadMusicLibrar
 
 Bun's form parser ignores the `Content-Type` of a file, deducing one from its name : uploads are told apart by their content.
 
-Library and shout values come from what any account uploads, and run in its visitors' browsers : browser scripts write them with `textContent`, never `innerHTML` (`server/tests/browser-scripts.test.ts`). Highcharts reads tags in its texts : names reach it escaped.
+Library and shout values come from what any account uploads, and run in its visitors' browsers : browser scripts write them with `textContent`, never `innerHTML` (`server/tests/browser-scripts.test.ts`).
 
 ## Conventions
 

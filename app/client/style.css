@@ -10,6 +10,7 @@
 @source "./feed";
 @source "./search";
 @source "./shout";
+@source "./stats";
 @source "../server/pages/explorer.ts";
 
 /* as client/legacy/ does, including on touch screens */

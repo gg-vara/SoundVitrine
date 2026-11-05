@@ -46,9 +46,6 @@ function processUnifiedMusicLibrary(unifiedAsJSONText)
     
     unified = JSON.parse(unifiedAsJSONText); //parse
     _appDataFeeds = generateDataFeeds(unified); //bind lib to data functions
-    
-    //stats rendering
-    renderStats(unified); 
 
     //prepare UI
     prepareFilterUIs(Object.keys(_discoverFilter));

@@ -5,21 +5,26 @@ import { FeedPanel } from './feed/FeedPanel';
 import { createDataFeeds, type FeedAlbum } from './library/data';
 import { SearchBand } from './search/SearchBand';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
+import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
 import './style.css';
 
 const FEED_ID = 'feedContainer';
 const PROFILE_ID = 'profileContainer';
+const STATS_ID = 'statsContainer';
 
 const isChecked = (id: string) => (document.getElementById(id) as HTMLInputElement).checked;
 const resizeFeed = () => _resizeShutter(FEED_ID, isChecked('showFeed'));
 const resizeProfile = () => _resizeShutter(PROFILE_ID, isChecked('showProfile'));
+const resizeStats = () => _resizeShutter(STATS_ID, isChecked('showStats'));
 
 const shoutContainer = document.getElementById('shoutContainer');
 const searchContainer = document.getElementById('searchBand');
 const feedContainer = document.getElementById('feedWrapper');
+const statsContainer = document.getElementById('statsWrapper');
 
-if (shoutContainer && searchContainer && feedContainer) {
+if (shoutContainer && searchContainer && feedContainer && statsContainer) {
   let panel!: ShoutPanelControls;
+  let stats!: StatsPanelControls;
   let feeds: ReturnType<typeof createDataFeeds> | undefined;
   const [uploads, setUploads] = createSignal<Record<string, FeedAlbum[]>>({});
 
@@ -35,6 +40,17 @@ if (shoutContainer && searchContainer && feedContainer) {
   );
   render(() => <SearchBand search={typed => feeds?.searchBand(typed)} select={updateFilter} />, searchContainer);
   render(() => <FeedPanel intervals={uploads()} select={updateFilter} />, feedContainer);
+  render(
+    () => (
+      <StatsPanel
+        counts={() => feeds && { albums: feeds.statsAlbums(), artists: feeds.statsArtists() }}
+        controls={controls => {
+          stats = controls;
+        }}
+      />
+    ),
+    statsContainer,
+  );
 
   // called by client/legacy/, once the page shows
   window.setupLiveUpdatesForShouts = () => panel.start();
@@ -58,4 +74,8 @@ if (shoutContainer && searchContainer && feedContainer) {
   window.resizeFeed = resizeFeed;
   window.toggleFeed = () => void preventSET(_toggleShutter(FEED_ID, resizeFeed).then(vNavigate));
   window.toggleProfile = () => void preventSET(_toggleShutter(PROFILE_ID, resizeProfile));
+  window.toggleStats = () => {
+    if (isChecked('showStats')) void stats.open();
+    void preventSET(_toggleShutter(STATS_ID, resizeStats).then(vNavigate));
+  };
 }

@@ -46,7 +46,7 @@ As I always wanted to tell about my discoveries to my friends when I was outside
 - [TypeScript](https://www.typescriptlang.org/) on [Bun](https://bun.sh/), with [oRPC](https://orpc.dev/) for the API, its OpenAPI document and live shouts, and [Biome](https://biomejs.dev/) for lint and format
 - [Scalar](https://scalar.com/), to browse the API
 - Vanilla Javascript, alongside 
-    - [Highcharts](https://www.highcharts.com/) for graphs
+    - [Chart.js](https://www.chartjs.org/) for graphs
     - [Mixitup](https://github.com/patrickkunka/mixitup) for DOM animations
     - [Hammer.js](https://hammerjs.github.io/) for gesture handling
     - [Moment.js](https://momentjs.com/) for time

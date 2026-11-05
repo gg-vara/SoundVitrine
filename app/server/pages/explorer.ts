@@ -72,30 +72,9 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
     </header>
     <div id='mainFrame'>
         <div id='shoutContainer' class="subFrame group bg-[#e0e0e0] z-500"></div>
-        <div id='statsContainer' class='subFrame'>
-            <div class='subContent' data-cat="STATS">
-                <div class='statsWrapper'>
-                    <div id='stats'>
-                        <div class='statsPh' id='statsAlbums' data-phid='0' data-def="Albums"></div>
-                        <div class='statsPh' id='statsArtists' data-phid='1' data-def="${tr('artists')}"></div>
-                    </div>
-                    <div id='statsSwitcher'>
-                        <div>
-                            <label class="clickable" title="Albums">
-                                <input id='rAlbums' data-phid='0' type='radio' name='statsS' onchange="switchPanel(event)" checked autocomplete="off">
-                                <i class="fas fa-compact-disc"></i>
-                                <span>Albums</span>
-                            </label>
-                        </div>
-                        <div>
-                            <label class="clickable" title='${tr('artists')}'>
-                                <input id='rArtists' data-phid='1' type='radio' name='statsS' onchange="switchPanel(event)" autocomplete="off">
-                                <i class="fas fa-users"></i>
-                                <span>${tr('artists')}</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+        <div id='statsContainer' class='subFrame bg-[#f9f9f9] shadow-[0px_0px_.05rem_#b7b7b7]'>
+            <div class='subContent min-w-0 [align-items:initial]! [&::before]:absolute' data-cat="STATS">
+                <div id='statsWrapper' class='flex min-w-0 flex-1 flex-col'></div>
             </div>
         </div>
         <div id='feedContainer' class='subFrame bg-[#eaeaea] shadow-[0px_0px_.05rem_#b7b7b7]'>
@@ -154,7 +133,6 @@ export function libraryPage(context: PageContext, user: string): Html {
     <head>
         ${metadata(context, pageTitle(tr('libraryOf', user)))}
         ${externalStyles}
-        <script type="text/javascript" src="/public/ext/js/highcharts.js"></script>
         <script type="text/javascript" src="/public/ext/js/moment-with-locales.min.js"></script>
         <script type="text/javascript" src="/public/ext/js/hammer.min.js"></script>
         <script type="text/javascript" src="/public/ext/js/mixitup.min.js"></script>

@@ -35,5 +35,6 @@ interface Window {
   toggleFeed: () => void;
   resizeFeed: () => ResizeInstructions;
   toggleProfile: () => void;
+  toggleStats: () => void;
   generateDataFeeds: (library: import('./library/data').UnifiedLibrary) => ReturnType<typeof import('./library/data').createDataFeeds>;
 }

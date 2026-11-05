@@ -35,8 +35,4 @@ describe('browser scripts', () => {
     );
     expect(offenders).toEqual([]);
   });
-
-  test('names reach the charts escaped', () => {
-    expect(readFileSync(join(ASSETS, 'explorer/js/app/panels/stats.js'), 'utf8')).toContain('escapeChartText(genreName)');
-  });
 });
