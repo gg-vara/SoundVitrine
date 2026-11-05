@@ -1,4 +1,4 @@
-// The search bar of the library page. "searchResults" and "show" are read by client/legacy/explorer/js/misc/scrolling.js :
+// The search bar of the library page. "searchResults" and "show" are read by client/shell/scrolling.ts :
 // the header stays while searching
 import { createSignal, For, Show } from 'solid-js';
 import type { SearchResult } from '../library/data';

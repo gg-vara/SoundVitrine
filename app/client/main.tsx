@@ -8,6 +8,7 @@ import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/
 import { SearchBand } from './search/SearchBand';
 import { downloadText, removeLoader, showLoader, showPage } from './shell/loader';
 import { startupMachine } from './shell/machine';
+import { followScrolling, followSwipes, setHeaderClasses, updateHeader, withoutFollowingScrolling } from './shell/scrolling';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
 import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
 import './style.css';
@@ -80,14 +81,18 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
 
   // called by client/legacy/, on resizing
   window.resizeShout = () => panel.resize();
+  window.headerToggle = updateHeader;
+
+  // called by client/legacy/, on scrolling to something
+  window.updateHeaderClasses = setHeaderClasses;
 
   // called by the page and client/legacy/, for what opens and closes under the header
   window.resizeFeed = resizeFeed;
-  window.toggleFeed = () => void preventSET(_toggleShutter(FEED_ID, resizeFeed).then(vNavigate));
-  window.toggleProfile = () => void preventSET(_toggleShutter(PROFILE_ID, resizeProfile));
+  window.toggleFeed = () => void withoutFollowingScrolling(_toggleShutter(FEED_ID, resizeFeed).then(vNavigate));
+  window.toggleProfile = () => void withoutFollowingScrolling(_toggleShutter(PROFILE_ID, resizeProfile));
   window.toggleStats = () => {
     if (isChecked('showStats')) void stats.open();
-    void preventSET(_toggleShutter(STATS_ID, resizeStats).then(vNavigate));
+    void withoutFollowingScrolling(_toggleShutter(STATS_ID, resizeStats).then(vNavigate));
   };
 
   function useLibrary(library: UnifiedLibrary) {
@@ -105,7 +110,8 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
     history.scrollRestoration = 'manual';
     alignConnectSideElements();
     bindResizeFunctions();
-    registerXNavigateSwipeEvents();
+    followSwipes();
+    followScrolling();
     _rLoader = new RLoader('xmlRLoader', initialRLoaderUrl);
 
     createActor(startupMachine, {

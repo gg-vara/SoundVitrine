@@ -25,9 +25,14 @@ declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string,
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
 declare function alignConnectSideElements(): void;
 declare function bindResizeFunctions(): void;
-declare function registerXNavigateSwipeEvents(): void;
-declare function preventSET(promise: Promise<unknown>): Promise<unknown>;
 declare function vNavigate(element: unknown, correct?: number): unknown;
+declare function hNavigate(direction?: number): void;
+
+declare class Hammer {
+  static TouchInput: unknown;
+  constructor(element: HTMLElement, options: { inputClass: unknown });
+  on(events: string, handler: (event: { direction: number }) => void): void;
+}
 
 interface ResizeInstructions {
   next: unknown;
@@ -41,4 +46,6 @@ interface Window {
   resizeFeed: () => ResizeInstructions;
   toggleProfile: () => void;
   toggleStats: () => void;
+  updateHeaderClasses: (classes: string) => void;
+  headerToggle: () => void;
 }
