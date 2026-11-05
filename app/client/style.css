@@ -17,6 +17,14 @@
 /* as client/legacy/ does, including on touch screens */
 @custom-variant hover (&:hover);
 
+@custom-variant hidpi (@media (min-resolution: 192dpi));
+
+@media (min-resolution: 192dpi) {
+  :root {
+    font-size: 18px;
+  }
+}
+
 /*
  * The space of the scrollbar is kept : without it, a page which fits only without a scrollbar, and wraps to overflow with one,
  * stays in whichever state it reached, its layout depending on what happened before.

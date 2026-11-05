@@ -3,9 +3,16 @@ import { createScrollDirection, createScrollSpeed, FAST_SCROLL, headerClasses } 
 
 const header = () => document.getElementsByTagName('header')[0] as HTMLElement;
 
+// the header's own classes style it : only these change
+const STATE_CLASSES = ['sticky', 'toHide'];
+
 export function setHeaderClasses(classes: string) {
-  header().setAttribute('class', classes);
+  const { classList } = header();
+  classList.remove(...STATE_CLASSES);
+  if (classes) classList.add(...classes.split(' '));
 }
+
+const headerState = (element: HTMLElement) => STATE_CLASSES.filter(name => element.classList.contains(name)).join(' ');
 
 const directionFrom = createScrollDirection();
 let updating = false;
@@ -18,7 +25,7 @@ function updateHeader() {
     sticky: element.classList.contains('sticky'),
     outOfReach: window.scrollY > element.clientHeight,
   });
-  if (updating || classes === element.getAttribute('class')) return;
+  if (updating || classes === headerState(element)) return;
 
   updating = true;
   window.requestAnimationFrame(() => {
