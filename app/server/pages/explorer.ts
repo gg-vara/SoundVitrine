@@ -122,7 +122,6 @@ export function libraryPage(context: PageContext, user: string): Html {
         <script>
             ${raw(filesOf('client/public/ext/js/polyfills'))}
             ${raw(filesOf('client/legacy/explorer/js/misc'))}
-            ${raw(filesOf('client/legacy/explorer/js/app'))}
         </script>
         ${clientScript()}
         ${adminStyles()}

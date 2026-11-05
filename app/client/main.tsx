@@ -1,10 +1,13 @@
-// Entry of the browser build, on the library page. As a module, it runs before the "load" event that starts client/legacy/
+// Entry of the browser build, on the library page
 import { render } from '@solidjs/web';
 import { createSignal, flush } from 'solid-js';
+import { createActor } from 'xstate';
 import { DiscoverPanel, type DiscoverPanelControls } from './discover/DiscoverPanel';
 import { FeedPanel } from './feed/FeedPanel';
-import { createDataFeeds, type FeedAlbum } from './library/data';
+import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
 import { SearchBand } from './search/SearchBand';
+import { downloadText, removeLoader, showLoader, showPage } from './shell/loader';
+import { startupMachine } from './shell/machine';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
 import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
 import './style.css';
@@ -75,25 +78,8 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
     discoverContainer,
   );
 
-  // called by client/legacy/, once the page shows
-  window.setupLiveUpdatesForShouts = () => panel.start();
+  // called by client/legacy/, on resizing
   window.resizeShout = () => panel.resize();
-
-  // called by client/legacy/, once the library is downloaded
-  window.generateDataFeeds = library => {
-    setFeeds(() =>
-      createDataFeeds(library, {
-        humanizedSince: compareDateFromNomHumanized,
-        now: () => new Date(),
-      }),
-    );
-    // what comes next reads it, and shows the page
-    flush();
-  };
-  window.generateFreshUploads = () => {
-    const library = feeds();
-    if (library) setUploads(library.feedUploads());
-  };
 
   // called by the page and client/legacy/, for what opens and closes under the header
   window.resizeFeed = resizeFeed;
@@ -103,4 +89,36 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
     if (isChecked('showStats')) void stats.open();
     void preventSET(_toggleShutter(STATS_ID, resizeStats).then(vNavigate));
   };
+
+  function useLibrary(library: UnifiedLibrary) {
+    const created = createDataFeeds(library, {
+      humanizedSince: compareDateFromNomHumanized,
+      now: () => new Date(),
+    });
+    setFeeds(() => created);
+    setUploads(created.feedUploads());
+    // the page is about to show
+    flush();
+  }
+
+  window.addEventListener('load', () => {
+    history.scrollRestoration = 'manual';
+    alignConnectSideElements();
+    bindResizeFunctions();
+    registerXNavigateSwipeEvents();
+    _rLoader = new RLoader('xmlRLoader', initialRLoaderUrl);
+
+    createActor(startupMachine, {
+      input: {
+        effects: {
+          showLoader,
+          loadLibrary: async () => useLibrary(JSON.parse(await downloadText(clientURLUnified))),
+          showPage,
+          removeLoader,
+          startLiveUpdates: () => panel.start(),
+          reportFailure: error => console.error('The library could not be loaded', error),
+        },
+      },
+    }).start();
+  });
 }

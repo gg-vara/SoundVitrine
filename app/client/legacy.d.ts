@@ -3,6 +3,13 @@
 declare const i18n: Record<string, string>;
 declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
+declare const clientURLUnified: string;
+declare const initialRLoaderUrl: string;
+declare let _rLoader: unknown;
+
+declare class RLoader {
+  constructor(targetId: string, url: string);
+}
 
 declare function _toggleShutter(targetId: string, resizeInstructionsGetter: () => ResizeInstructions): Promise<unknown>;
 declare function _resizeShutter(targetId: string, reason: boolean): ResizeInstructions;
@@ -16,6 +23,9 @@ declare function updateImgLoader(elem: Element, imgUrl: string): void;
 declare function brokenImgFr(elem: Element): void;
 declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
+declare function alignConnectSideElements(): void;
+declare function bindResizeFunctions(): void;
+declare function registerXNavigateSwipeEvents(): void;
 declare function preventSET(promise: Promise<unknown>): Promise<unknown>;
 declare function vNavigate(element: unknown, correct?: number): unknown;
 
@@ -26,12 +36,9 @@ interface ResizeInstructions {
 
 // what client/legacy/ calls in return
 interface Window {
-  setupLiveUpdatesForShouts: () => void;
   resizeShout: () => ResizeInstructions;
-  generateFreshUploads: () => void;
   toggleFeed: () => void;
   resizeFeed: () => ResizeInstructions;
   toggleProfile: () => void;
   toggleStats: () => void;
-  generateDataFeeds: (library: import('./library/data').UnifiedLibrary) => void;
 }

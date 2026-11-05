@@ -43,10 +43,3 @@ function linkToYoutube(artist, albumOrTitle)
     //
     return yt_query + prepared_query;
 }
-
-function navigatorSpecificParameterization()
-{
-    if (history && history['scrollRestoration'] !== undefined) {
-        history.scrollRestoration = 'manual';
-    }
-}
