@@ -4,6 +4,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: join(import.meta.dirname, 'web'),
+  // where the server serves dist/ (src/app.ts)
+  base: '/web/',
   build: {
     outDir: join(import.meta.dirname, 'dist'),
     emptyOutDir: true,

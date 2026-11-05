@@ -61,7 +61,7 @@ async function plainTextErrors(response: Response): Promise<Response> {
 //
 
 // "path" within "root", if it is a file there
-async function staticFile(root: string, path: string): Promise<Response | undefined> {
+async function staticFile(root: string, path: string, cacheControl = 'public, max-age=3600'): Promise<Response | undefined> {
   let decoded: string;
   try {
     decoded = decodeURIComponent(path);
@@ -74,7 +74,7 @@ async function staticFile(root: string, path: string): Promise<Response | undefi
 
   const content = Bun.file(file);
   if (!(await content.exists())) return undefined;
-  return new Response(content, { headers: extname(file) === '.json' ? {} : { 'cache-control': 'public, max-age=3600' } });
+  return new Response(content, { headers: extname(file) === '.json' ? {} : { 'cache-control': cacheControl } });
 }
 
 //
@@ -298,6 +298,10 @@ export async function handle(request: Request, peerAddress?: string): Promise<Re
 
   if (request.method === 'GET' && path.startsWith('/public/')) {
     return (await staticFile(join(APP_ROOT, 'public'), path.slice('/public/'.length))) ?? text('', 404);
+  }
+  // Vite's build : a file's name changes with its content, it can be kept forever
+  if (request.method === 'GET' && path.startsWith('/web/')) {
+    return (await staticFile(join(APP_ROOT, 'dist'), path.slice('/web/'.length), 'public, max-age=31536000, immutable')) ?? text('', 404);
   }
   if (request.method === 'GET' && path.startsWith('/data/users/')) {
     // the latest shout comes from the database
