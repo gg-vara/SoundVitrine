@@ -147,7 +147,7 @@ function renderSearchResults(criteria, data)
                     let spanElems = [b,c,a].map(
                         function (curr) {
                             let elem = document.createElement('span');
-                            elem.innerHTML = curr;
+                            elem.textContent = curr;
                             return elem;
                         }
                     );
@@ -159,21 +159,14 @@ function renderSearchResults(criteria, data)
                     );
                 } else {
                     let elem = document.createElement('span');
-                    elem.innerHTML = current;
+                    elem.textContent = current;
                     resultDiv.appendChild(elem);
                 }
 
             
                 //add genres
                 var genresElem = document.createElement('span');
-                genresElem.innerHTML += "&nbsp;&nbsp;&nbsp;(";
-                data[current]["Genres"].forEach(
-                    function (val) {
-                        genresElem.innerHTML += val + ", ";
-                    }
-                );
-                genresElem.innerHTML = genresElem.innerHTML.slice(0, -2);
-                genresElem.innerHTML += ")";
+                genresElem.textContent = "   (" + data[current]["Genres"].join(", ") + ")";
                 genresElem.classList.add('g');
                 resultDiv.appendChild(genresElem);
 
@@ -195,7 +188,7 @@ function renderSearchResults(criteria, data)
         //no results
         let noResultDiv = document.createElement('div');
         noResultDiv.classList.add("nr");
-        noResultDiv.innerHTML = i18n['no_found'];
+        noResultDiv.textContent = i18n['no_found'];
         target.appendChild(noResultDiv);
     }
 }

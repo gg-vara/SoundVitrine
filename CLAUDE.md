@@ -44,6 +44,8 @@ Released SoundBuddy versions call `POST /hb/creds`, `/u/{user}/uploadMusicLibrar
 
 Bun's form parser ignores the `Content-Type` of a file, deducing one from its name : uploads are told apart by their content.
 
+Library and shout values come from what any account uploads, and run in its visitors' browsers : browser scripts write them with `textContent`, never `innerHTML` (`tests/browser-scripts.test.ts`). Highcharts reads tags in its texts : names reach it escaped.
+
 ## Conventions
 
 - Push or publish only when asked. Several small commits rather than one large one, messages in lowercase, saying what changed

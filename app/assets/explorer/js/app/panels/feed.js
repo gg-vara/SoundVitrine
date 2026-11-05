@@ -36,7 +36,7 @@ function generateFreshUploads()
             let table = document.createElement('table');
             table.classList.add('sortable');
             let title = document.createElement('h1');
-            title.innerHTML = interval;
+            title.textContent = interval;
             let columns = ['Year', 'Genre', 'Artist', 'Album'];
 
             //head
@@ -45,7 +45,7 @@ function generateFreshUploads()
             columns.forEach(
                 function (head) {
                     let thElem = document.createElement('th');
-                    thElem.innerHTML = i18n[head.toLowerCase()] || head;
+                    thElem.textContent = i18n[head.toLowerCase()] || head;
                     headerRow.appendChild(thElem);
                 }
             );
@@ -65,7 +65,7 @@ function generateFreshUploads()
                             let cellElem = document.createElement('td');
                             let calculatedFilter = genFilterFromFeed(album, columnName);
                 
-                            cellElem.innerHTML = cellVal;
+                            cellElem.textContent = cellVal;
                             if (calculatedFilter) {
                                 cellElem.dataset.nFilter = calculatedFilter;
                                 cellElem.onmousedown = updateFilter;

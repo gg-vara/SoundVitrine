@@ -270,19 +270,22 @@ function _updateShoutDisplayableData(shoutData, changes) {
     //update track name
     if (changes.includes('name')) {
         let aDescr = document.querySelector('#shoutContainer .albumDesc .name');
-        aDescr.innerHTML = '';
-        if (name) aDescr.innerHTML = name;
+        aDescr.textContent = name || '';
     }
 
     //update meta 
     if (changes.includes('artist') || changes.includes('album')) {
         let aMeta = document.querySelector('#shoutContainer .albumDesc .meta');
-        aMeta.innerHTML = '';
-        if (artist && album) aMeta.innerHTML = [artist, album].join(" - ");
-        if (year) aMeta.innerHTML += " (" + year + ")";
+        let meta = artist && album ? [artist, album].join(" - ") : '';
+        if (year) meta += " (" + year + ")";
+        aMeta.textContent = meta;
         if (genre) {
-            aMeta.innerHTML = "<span>" + aMeta.innerHTML + "</span>";
-            aMeta.innerHTML += "<span style='color:grey'>&nbsp;//&nbsp;" + genre + "</span>";
+            let metaElem = document.createElement('span');
+            metaElem.textContent = meta;
+            let genreElem = document.createElement('span');
+            genreElem.style.color = 'grey';
+            genreElem.textContent = " // " + genre;
+            aMeta.replaceChildren(metaElem, genreElem);
         }
     }
 

@@ -12,6 +12,12 @@ function renderStats()
 ///HELPERS UI
 ///
 
+//Highcharts reads tags in its texts, an <a href> becoming a link which runs : a name must reach it as plain text
+function escapeChartText(text)
+{
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 //render a single chart
 var _hcObjects = {};
 function renderHCPie(data, divId)
@@ -21,7 +27,7 @@ function renderHCPie(data, divId)
     data = Object.keys(data).map(
         function (genreName) {
             return {
-                "name" : genreName,
+                "name" : escapeChartText(genreName),
                 "y" : data[genreName]
             };
         }

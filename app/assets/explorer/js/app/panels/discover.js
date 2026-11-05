@@ -167,7 +167,7 @@ function generateFilterUI(id, dataFunc)
         data.map(
             function (current) {
                 let item = document.createElement('div');
-                item.innerHTML = current.nFilter;
+                item.textContent = current.nFilter;
                 item.dataset.count = current.count;
                 item.dataset.order = current.order;
                 item.dataset.nFilter = current.nFilter;
@@ -217,14 +217,14 @@ function alterFilterUI(id, filterCriteria)
     if (filterCriteria) {
         ui.classList.add("hasSelection");
         ui.classList.remove("open");
-        ph.innerHTML = filterCriteria;
+        ph.textContent = filterCriteria;
     } else {
         ui.classList.remove("hasSelection");
-        ph.innerHTML = ""; //resets placeholder
+        ph.textContent = ""; //resets placeholder
     }
 
     //ui filter prefix
-    list.length || ph.innerHTML ? ui.classList.add("active") : ui.classList.remove("active");
+    list.length || ph.textContent ? ui.classList.add("active") : ui.classList.remove("active");
 
     //apply for animations
     applyManualSizesFilterUIs(id);
@@ -282,10 +282,7 @@ function applyManualSizesFilterUIs(id)
     //set manual widths and heights for animations 
     let styleCarrier = document.createElement('style');
     styleCarrier.dataset.ct = id;
-    styleCarrier.innerHTML += genCss("min", "Width");
-    styleCarrier.innerHTML += genCss("max", "Width");
-    styleCarrier.innerHTML += genCss("min", "Height");
-    styleCarrier.innerHTML += genCss("max", "Height");
+    styleCarrier.textContent = genCss("min", "Width") + genCss("max", "Width") + genCss("min", "Height") + genCss("max", "Height");
 
     list.style.position = null; //unforce
 
@@ -419,7 +416,7 @@ function displayAlbumInfos(dataFunc)
             //purge
             [aYear, aGenre, aDateAdded, aTracks].forEach(
                 function (e) {
-                    e.innerHTML = '';
+                    e.textContent = '';
                     e.removeAttribute('title');
                 }
             );
@@ -452,16 +449,18 @@ function displayAlbumInfos(dataFunc)
                     }
                 );
     
-                aYear.innerHTML = data['Year'];
-                aGenre.innerHTML = data['Genre'];
-                aTitle.innerHTML = data['Album'];
-    
-                aDateAdded.innerHTML = compareDateFromNomHumanized(data['DateAdded']);
+                aYear.textContent = data['Year'];
+                aGenre.textContent = data['Genre'];
+                aTitle.textContent = data['Album'];
+
+                aDateAdded.textContent = compareDateFromNomHumanized(data['DateAdded']);
                 aDateAdded.setAttribute('title', data['DateAdded']);
             
                 Object.keys(data['Tracks']).forEach(
                     function (trackId) {
-                        aTracks.innerHTML += '<li>' + data['Tracks'][trackId] + '</li>';
+                        let trackElem = document.createElement('li');
+                        trackElem.textContent = data['Tracks'][trackId];
+                        aTracks.appendChild(trackElem);
                     }
                 );
 

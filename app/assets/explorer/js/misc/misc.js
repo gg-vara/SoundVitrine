@@ -31,14 +31,6 @@ function alignConnectSideElements()
     target.style.top = topMost + "px";
 }
 
-// from https://stackoverflow.com/questions/7394748/whats-the-right-way-to-decode-a-string-that-has-special-html-entities-in-it
-function decodeHtml(html)
-{
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-}
-
 function linkToYoutube(artist, albumOrTitle)
 {
     //
@@ -46,9 +38,7 @@ function linkToYoutube(artist, albumOrTitle)
 
     //link to YT
     const yt_query = 'https://www.youtube.com/results?search_query=';
-    const prepared_query = encodeURIComponent(
-        decodeHtml(raw_search)
-    ).replaceAll('%20', '+');
+    const prepared_query = encodeURIComponent(raw_search).replaceAll('%20', '+');
 
     //
     return yt_query + prepared_query;
