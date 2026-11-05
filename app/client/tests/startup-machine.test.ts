@@ -99,6 +99,36 @@ describe('a library that does not come', () => {
     expect(actor.getSnapshot().value).toBe('failed');
   });
 
+  test('can be asked again, and the page starts if it comes', async () => {
+    let attempts = 0;
+    const { actor, calls } = startup({
+      loadLibrary: () => (++attempts === 1 ? Promise.reject(new Error('status 500')) : Promise.resolve()),
+    });
+    await settle();
+    actor.send({ type: 'RETRY' });
+    await settle();
+    expect(attempts).toBe(2);
+    expect(calls).toContain('startLiveUpdates');
+    expect(actor.getSnapshot().value).toBe('started');
+  });
+
+  test('is told again if it fails again', async () => {
+    const { actor, calls } = startup({ loadLibrary: () => Promise.reject(new Error('status 500')) });
+    await settle();
+    actor.send({ type: 'RETRY' });
+    await settle();
+    expect(calls.filter(call => call === 'failure: status 500')).toHaveLength(2);
+    expect(actor.getSnapshot().value).toBe('failed');
+  });
+
+  test('a retry means nothing once the page started', async () => {
+    const { actor, calls } = startup();
+    await settle();
+    actor.send({ type: 'RETRY' });
+    await settle();
+    expect(calls.filter(call => call === 'loadLibrary')).toHaveLength(1);
+  });
+
   test('a slow one is not given up on', async () => {
     const { actor, clock } = startup({ loadLibrary: never });
     await settle();

@@ -17,6 +17,19 @@
 /* as client/legacy/ does, including on touch screens */
 @custom-variant hover (&:hover);
 
+/*
+ * The space of the scrollbar is kept : without it, a page which fits only without a scrollbar, and wraps to overflow with one,
+ * stays in whichever state it reached, its layout depending on what happened before.
+ * The account panel never scrolls.
+ */
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(body.lock) {
+  scrollbar-gutter: auto;
+}
+
 /* also paused by client/legacy/admin/css/wAnim.css, when the page shows something else */
 .animTimeline {
   animation-name: progress;

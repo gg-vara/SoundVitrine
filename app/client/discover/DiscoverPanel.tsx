@@ -2,13 +2,14 @@
 
 // biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard
 
-import { createEffect, createMemo, createSignal, For, flush } from 'solid-js';
+import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
 import {
   appliedFilters,
   type DiscoverFilter,
   type FilterId,
   filterSizesCss,
+  listToClose,
   NO_FILTER,
   nextSorters,
   parseSorters,
@@ -269,6 +270,21 @@ export function DiscoverPanel(props: {
       },
     );
   }
+
+  function closeListOnEscape(event: KeyboardEvent) {
+    if (event.code !== 'Escape') return;
+    const id = listToClose(opened(), filter());
+    if (!id) return;
+
+    const element = document.getElementById(id);
+    const hadFocus = element?.contains(document.activeElement);
+    setOpened(ids => ids.filter(other => other !== id));
+    flush();
+    // the list is now out of reach, the focus with it
+    if (hadFocus) element?.querySelector<HTMLElement>('button[aria-expanded]')?.focus({ preventScroll: true });
+  }
+  document.addEventListener('keydown', closeListOnEscape);
+  onCleanup(() => document.removeEventListener('keydown', closeListOnEscape));
 
   props.controls({ select });
 

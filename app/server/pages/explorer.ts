@@ -140,6 +140,10 @@ export function libraryPage(context: PageContext, user: string): Html {
                         <img src='/public/images/chrome.svg' alt="Chrome Logo"/>
                         <div style="text-align: center">${tr('worksBest')}</div>
                     </div>
+                <div id='libraryFailure' role='alert' hidden class='pointer-events-auto mb-4 flex flex-col items-center gap-2 text-center [&[hidden]]:hidden'>
+                    <div>${tr('libraryLoadFailed')}</div>
+                    <button type='button' class='cursor-pointer px-3 py-1'>${tr('retry')}</button>
+                </div>
                 <div id='loader-bar'></div>
             </div>
         </div>

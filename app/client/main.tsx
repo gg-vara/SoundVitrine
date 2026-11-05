@@ -6,7 +6,7 @@ import { DiscoverPanel, type DiscoverPanelControls } from './discover/DiscoverPa
 import { FeedPanel } from './feed/FeedPanel';
 import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
 import { SearchBand } from './search/SearchBand';
-import { downloadText, removeLoader, showLoader, showPage } from './shell/loader';
+import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
 import { startupMachine } from './shell/machine';
 import { followScrolling, followSwipes, revealHeaderInReach, setHeaderClasses, withoutFollowingScrolling } from './shell/scrolling';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
@@ -116,17 +116,24 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
     followScrolling();
     _rLoader = new RLoader('xmlRLoader', initialRLoaderUrl);
 
-    createActor(startupMachine, {
+    const startup = createActor(startupMachine, {
       input: {
         effects: {
           showLoader,
-          loadLibrary: async () => useLibrary(JSON.parse(await downloadText(clientURLUnified))),
+          loadLibrary: async () => {
+            hideLibraryFailure();
+            useLibrary(JSON.parse(await downloadText(clientURLUnified)));
+          },
           showPage,
           removeLoader,
           startLiveUpdates: () => panel.start(),
-          reportFailure: error => console.error('The library could not be loaded', error),
+          reportFailure: error => {
+            console.error('The library could not be loaded', error);
+            showLibraryFailure(() => startup.send({ type: 'RETRY' }));
+          },
         },
       },
-    }).start();
+    });
+    startup.start();
   });
 }

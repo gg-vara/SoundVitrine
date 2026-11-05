@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   appliedFilters,
   filterSizesCss,
+  listToClose,
   NO_FILTER,
   nextSorters,
   parseSorters,
@@ -12,6 +13,16 @@ import {
 
 describe('filters', () => {
   const selected = { genreUI: 'Rock', artistUI: 'Björk', albumUI: 'Vespertine' };
+
+  test('Escape closes the list opened last', () => {
+    expect(listToClose(['albumUI', 'genreUI'], selected)).toBe('genreUI');
+  });
+
+  test('Escape has nothing to close', () => {
+    expect(listToClose([], selected)).toBeUndefined();
+    // nothing selected : the list is all there is
+    expect(listToClose(['genreUI'], NO_FILTER)).toBeUndefined();
+  });
 
   test('a filter that changes clears those it narrows', () => {
     expect(appliedFilters(selected, { genreUI: 'Jazz' })).toEqual({ genreUI: 'Jazz', artistUI: null, albumUI: null });

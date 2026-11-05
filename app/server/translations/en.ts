@@ -5,6 +5,8 @@ export const en = {
   or: 'or',
   project_shorthand_descr: 'Share your iTunes library %s and broadcast what you are listening to live !',
   worksBest: 'Works best with',
+  libraryLoadFailed: 'This library could not be loaded.',
+  retry: 'Try again',
   libraryOf: "%s's Library",
   whatsnew: "WHAT'S NEW",
   discover: 'DISCOVER',

@@ -33,6 +33,30 @@ export function downloadText(url: string): Promise<string> {
   });
 }
 
+const failure = () => document.getElementById('libraryFailure');
+
+// the browser is not what failed
+function showBrowserHint(shows: boolean) {
+  const hint = document.getElementById('useChrome');
+  if (hint) hint.style.display = shows ? '' : 'none';
+}
+
+export function showLibraryFailure(retry: () => void) {
+  const element = failure();
+  if (!element) return;
+  element.hidden = false;
+  showBrowserHint(false);
+  const button = element.querySelector('button');
+  if (button) button.onclick = retry;
+}
+
+export function hideLibraryFailure() {
+  const element = failure();
+  if (element) element.hidden = true;
+  showBrowserHint(true);
+  moveLoaderBar(0);
+}
+
 export function showPage(): Promise<unknown> {
   moveLoaderBar(100);
   const loader = document.getElementById(LOADER_ID);

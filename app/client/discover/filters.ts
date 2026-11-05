@@ -35,6 +35,9 @@ export const pickedFilter = (current: DiscoverFilter, id: FilterId, name: string
   [id]: current[id] === name ? null : name,
 });
 
+// what Escape closes : the list opened last. Only a selected filter's list can close, as it is all there is otherwise
+export const listToClose = (opened: FilterId[], current: DiscoverFilter): FilterId | undefined => opened.filter(id => current[id]).at(-1);
+
 export type SortCategory = 'count' | 'order';
 export type SortDirection = 'asc' | 'desc';
 

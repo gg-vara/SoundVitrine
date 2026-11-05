@@ -5,6 +5,8 @@ export const fr = {
   or: 'ou',
   project_shorthand_descr: 'Partagez votre librarie iTunes %s et diffusez ce que vous écoutez en live !',
   worksBest: 'Fonctionne mieux avec',
+  libraryLoadFailed: "Cette bibliothèque n'a pas pu être chargée.",
+  retry: 'Réessayer',
   libraryOf: 'Bibliothèque | %s',
   whatsnew: 'QUOI DE NEUF',
   discover: 'DECOUVRIR',

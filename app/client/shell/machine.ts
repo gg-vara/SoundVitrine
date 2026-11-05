@@ -17,6 +17,7 @@ export const startupMachine = setup({
   types: {
     context: {} as { effects: StartupEffects },
     input: {} as { effects: StartupEffects },
+    events: {} as { type: 'RETRY' },
   },
   actors: {
     showLoader: fromPromise<unknown, StartupEffects>(({ input }) => input.showLoader()),
@@ -68,7 +69,9 @@ export const startupMachine = setup({
         context.effects.startLiveUpdates();
       },
     },
-    // the loader stays
-    failed: { type: 'final' },
+    // the loader stays, telling so
+    failed: {
+      on: { RETRY: 'loadingLibrary' },
+    },
   },
 });
