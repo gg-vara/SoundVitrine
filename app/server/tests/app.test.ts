@@ -8,7 +8,7 @@ import { handle, prepareState } from '../app';
 import { auth } from '../auth';
 import { APP_ROOT, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
-import { entryFile } from '../pages/layout';
+import { clientEntryIn } from '../pages/layout';
 import { userFolder } from '../users';
 
 const USER = 'curator';
@@ -204,8 +204,9 @@ describe('shouts', () => {
 
 describe("Vite's build", () => {
   test('pages find its entry in the manifest', () => {
-    expect(entryFile(JSON.stringify({ 'main.tsx': { file: 'assets/main-abc.js', isEntry: true } }))).toBe('assets/main-abc.js');
-    expect(entryFile('{}')).toBeUndefined();
+    const entry = { file: 'assets/main-abc.js', css: ['assets/main-def.css'], isEntry: true };
+    expect(clientEntryIn(JSON.stringify({ 'main.tsx': entry }))).toEqual(entry);
+    expect(clientEntryIn('{}')).toBeUndefined();
   });
 
   // a file of its own : client/dist/ only exists after a build, and tests must not depend on one
@@ -291,7 +292,7 @@ describe('pages', () => {
     expect(page).toContain('app-music-library');
     expect(page).toContain(`const shoutStreamUrl = "/u/${USER}/shouts"`);
     // what fills it comes from Vite's build
-    expect(page).toContain(`<div id='shoutContainer' class="subFrame"></div>`);
+    expect(page).toContain(`<div id='shoutContainer' class="subFrame group bg-[#e0e0e0] z-500"></div>`);
     expect(page).not.toContain('function setupLiveUpdatesForShouts');
   });
 

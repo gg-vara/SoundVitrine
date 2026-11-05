@@ -8,6 +8,11 @@
   "files": {
     "includes": ["server/**", "client/**", "!client/legacy", "!client/public", "*.json", "*.ts", "!**/node_modules"]
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

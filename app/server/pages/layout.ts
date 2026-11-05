@@ -30,26 +30,39 @@ export interface PageContext {
 const cache = new Map<string, string>();
 const caching = process.env.NODE_ENV === 'production';
 
-// the file of Vite's entry in its manifest, relative to client/dist/
-export function entryFile(manifest: string): string | undefined {
-  return (JSON.parse(manifest) as Record<string, { file: string; isEntry?: boolean }>)['main.tsx']?.file;
+// the files of Vite's entry, relative to client/dist/
+export interface ClientEntry {
+  file: string;
+  css?: string[];
+}
+
+export function clientEntryIn(manifest: string): ClientEntry | undefined {
+  return (JSON.parse(manifest) as Record<string, ClientEntry>)['main.tsx'];
+}
+
+let cachedClientEntry: ClientEntry | undefined;
+
+function clientEntry(): ClientEntry | undefined {
+  if (cachedClientEntry) return cachedClientEntry;
+
+  let entry: ClientEntry | undefined;
+  try {
+    entry = clientEntryIn(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'));
+  } catch {}
+  if (!entry) console.error('No browser build in client/dist : run "bun run build"');
+  if (caching) cachedClientEntry = entry;
+  return entry;
 }
 
 // the script of Vite's build : without it, the page misses what moved there
 export function clientScript(): Html {
-  const key = 'client script';
-  let file = cache.get(key);
-  if (file === undefined) {
-    try {
-      file = entryFile(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'));
-    } catch {}
-    if (file === undefined) {
-      console.error('No browser build in client/dist : run "bun run build"');
-      return html``;
-    }
-    if (caching) cache.set(key, file);
-  }
-  return html`<script type="module" src="/web/${file}"></script>`;
+  const entry = clientEntry();
+  return entry ? html`<script type="module" src="/web/${entry.file}"></script>` : html``;
+}
+
+// after the styles of client/legacy/ : they share the same weight at times, where the last one wins
+export function clientStyles(): Html {
+  return html`${(clientEntry()?.css ?? []).map(file => html`<link rel="stylesheet" href="/web/${file}">`)}`;
 }
 
 // the files of an application folder, concatenated in alphabetical order (not recursive)

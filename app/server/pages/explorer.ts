@@ -5,7 +5,19 @@ import type { Html } from '../html';
 import { html, raw } from '../html';
 import { findUser, publicUserFolder } from '../users';
 import type { PageContext } from './layout';
-import { adminScripts, adminStyles, clientScript, colorsCss, externalStyles, filesOf, footer, metadata, pageTitle, wAnim } from './layout';
+import {
+  adminScripts,
+  adminStyles,
+  clientScript,
+  clientStyles,
+  colorsCss,
+  externalStyles,
+  filesOf,
+  footer,
+  metadata,
+  pageTitle,
+  wAnim,
+} from './layout';
 
 // the button opening the account panel, notifying when not logged in
 const connectButton = (
@@ -67,7 +79,7 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
         ${wAnim(user)}
     </header>
     <div id='mainFrame'>
-        <div id='shoutContainer' class="subFrame"></div>
+        <div id='shoutContainer' class="subFrame group bg-[#e0e0e0] z-500"></div>
         <div id='statsContainer' class='subFrame'>
             <div class='subContent' data-cat="STATS">
                 <div class='statsWrapper'>
@@ -205,6 +217,7 @@ export function libraryPage(context: PageContext, user: string): Html {
         <style>
             ${raw(colorsCss(user, profile?.customColors))}
         </style>
+        ${clientStyles()}
     </head>
     <body>
         <div id='loader-container'>
@@ -216,7 +229,7 @@ export function libraryPage(context: PageContext, user: string): Html {
                 <div id='loader-bar'></div>
             </div>
         </div>
-        <div id='shoutNotificationWidget'>
+        <div id='shoutNotificationWidget' class="fixed z-1000 -right-8 top-[4.25rem] py-[.15rem] px-1 bg-white opacity-50 overflow-hidden text-[.7rem] [&.show]:[animation:progNotOut_2s]">
             <i class="fas fa-forward"></i>
         </div>
         <main id="main-app">

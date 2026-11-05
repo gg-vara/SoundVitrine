@@ -1,0 +1,42 @@
+/*
+ * Tailwind's utilities, outside of its layers and without its reset (Preflight), while client/legacy/ shares the page :
+ * its styles have no layer, so they would win over any layer, whatever their weight ("* { position: relative }"),
+ * and the reset would change how what is not moved yet looks.
+ * Only what moved is scanned : client/public/ has large libraries, whose text would pass for class names.
+ */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css" source(none);
+
+@source "./shout";
+@source "../server/pages/explorer.ts";
+
+/* as client/legacy/ does, including on touch screens */
+@custom-variant hover (&:hover);
+
+/* also paused by client/legacy/admin/css/wAnim.css, when the page shows something else */
+.animTimeline {
+  animation-name: progress;
+  animation-timing-function: linear;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes progNotOut {
+  0% {
+    right: -2rem;
+  }
+  30%,
+  70% {
+    right: 0;
+  }
+  100% {
+    right: -2rem;
+  }
+}

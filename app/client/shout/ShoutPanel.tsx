@@ -1,4 +1,5 @@
-// What the owner of the library is listening to. Its styles are still in client/legacy/explorer/css/shout.css
+// What the owner of the library is listening to. Its cover also has styles in client/legacy/explorer/css/imgloader.css,
+// shared with the album panel
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
 import { followShouts } from './live';
@@ -121,29 +122,36 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
 
   return (
     <>
-      <div id="shoutNotification" ref={notification}>
+      <div
+        id="shoutNotification"
+        class="absolute z-20 flex h-full w-full items-center justify-center overflow-hidden bg-white [transition:all_.5s_ease] [&.fade]:h-0"
+        ref={notification}
+      >
         {i18n.nowPlaying}
       </div>
-      <div class="shout">
-        <a title={i18n.playOnYT} rel="noopener" href={track()} target={track() ? '_blank' : undefined}>
-          <div id="shoutImgLoader" class="imgLoader cover" ref={cover}>
-            <img onLoad={imgLoaded} onError={brokenImg} alt="" />
-            <i class="fab fa-youtube" />
+      <div class="flex w-full flex-row items-center justify-center py-4">
+        <a class="ml-2" title={i18n.playOnYT} rel="noopener" href={track()} target={track() ? '_blank' : undefined}>
+          <div class="imgLoader group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]" ref={cover}>
+            <img class="group-hover/cover:opacity-50" onLoad={imgLoaded} onError={brokenImg} alt="" />
+            <i class="fab fa-youtube absolute top-[.5em] left-2 z-5000 text-[1rem] text-[red] opacity-0 [transition:all_.3s_ease] group-hover/cover:opacity-100" />
           </div>
         </a>
-        <div class="albumDesc">
+        <div class="z-1 mx-2">
           <div>
-            <div class="name">{shown() ? (shown()?.name ?? '') : PLACEHOLDER}</div>
-            <div class="meta">
+            <div>{shown() ? (shown()?.name ?? '') : PLACEHOLDER}</div>
+            <div class="text-[.7rem]">
               <Show when={shown()?.genre} fallback={shown() ? metaText(shown() as Shout) : PLACEHOLDER}>
                 <span>{metaText(shown() as Shout)}</span>
-                <span style={{ color: 'grey' }}>{` // ${shown()?.genre}`}</span>
+                <span class="text-[grey]">{` // ${shown()?.genre}`}</span>
               </Show>
             </div>
           </div>
         </div>
-        <div class="timeline" ref={timeline} />
-        <label class="mute clickable">
+        <div
+          class="absolute bottom-0 left-0 z-0 h-[.1rem] w-full bg-black opacity-10 [transition:all_.1s_ease] group-hover:h-full"
+          ref={timeline}
+        />
+        <label class="clickable absolute right-0 mr-4 text-[.7rem] text-[grey] opacity-0 [transition:all_.3s_ease] group-hover:opacity-100">
           <input id="muzzleShout" type="checkbox" onChange={toggleMuted} autocomplete="off" />
           <i class={`fas ${muted() ? 'fa-bell-slash' : 'fa-bell'}`} title={muted() ? i18n.playSound : i18n.muteNotif} />
         </label>
