@@ -192,20 +192,3 @@ function renderSearchResults(criteria, data)
         target.appendChild(noResultDiv);
     }
 }
-
-function searchBand_foundRange(displayedName, slugFc, searchIndex)
-{
-    let begin = searchIndex;
-    let slugCurrent = slugify(displayedName, true);
-    slugCurrent = slugCurrent.substring(searchIndex);
-    searchIndex = 0;
-    fcIndex = 0;
-    
-    for(searchIndex; fcIndex < slugFc.length; searchIndex++) {
-        if (slugCurrent[searchIndex] == slugFc[fcIndex]) {
-            fcIndex++;
-        }
-    }
-
-    return [begin, begin + searchIndex];
-}

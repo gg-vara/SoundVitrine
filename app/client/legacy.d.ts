@@ -3,6 +3,8 @@
 declare const i18n: Record<string, string>;
 declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
+declare const _discoverFilter: import('./library/data').DiscoverFilter;
+declare const _discoverSorter: string;
 
 declare function _toggleShutter(targetId: string, resizeInstructionsGetter: () => ResizeInstructions): Promise<unknown>;
 declare function _resizeShutter(targetId: string, reason: boolean): ResizeInstructions;
@@ -15,6 +17,7 @@ declare function resetImgLoader(elem: Element): void;
 declare function updateImgLoader(elem: Element, imgUrl: string): void;
 declare function brokenImgFr(elem: Element): void;
 declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
+declare function compareDateFromNomHumanized(date: string, now: Date): string;
 
 interface ResizeInstructions {
   next: unknown;
@@ -25,4 +28,5 @@ interface ResizeInstructions {
 interface Window {
   setupLiveUpdatesForShouts: () => void;
   resizeShout: () => ResizeInstructions;
+  generateDataFeeds: (library: import('./library/data').UnifiedLibrary) => ReturnType<typeof import('./library/data').createDataFeeds>;
 }
