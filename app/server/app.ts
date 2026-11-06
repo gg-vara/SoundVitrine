@@ -118,7 +118,7 @@ async function login(context: PageContext): Promise<{ cookies?: string[]; result
 
   if (context.session.loggedAs === username) return { result: { isError: false, description: tr('e_log_identical') } };
   if (!username) return refused(tr('e_log_nouser'));
-  if (!password) return refused(tr('e_nopass'));
+  if (!password) return refused(tr('e_log_nopass'));
   if (!findUser(username)) return refused(tr('e_unsu', username));
   if (isBlocked(clientIp, username)) return refused(tr('e_too_many'));
 
@@ -129,7 +129,7 @@ async function login(context: PageContext): Promise<{ cookies?: string[]; result
   } catch (error) {
     if (!(error instanceof APIError)) throw error;
     recordFailure(clientIp, username);
-    return refused(tr('e_pmm'));
+    return refused(tr('e_log_wrongpass'));
   }
 }
 

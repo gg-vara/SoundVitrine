@@ -425,7 +425,10 @@ describe('pages', () => {
 
   test('login, then the account page', async () => {
     const refused = await browserPost('/account', { username: USER, password: 'wrong' });
-    expect(await refused.text()).toContain('popup error');
+    const refusedPage = await refused.text();
+    expect(refusedPage).toContain('popup error');
+    // nothing is being uploaded here, unlike where the same check serves SoundBuddy
+    expect(refusedPage.match(/class="content">([^<]*)</)?.[1]).toMatch(/^(Wrong password\.|Mot de passe incorrect\.)$/);
 
     const logged = await browserPost('/account', { username: USER, password: PASSWORD });
     expect(logged.status).toBe(302);
