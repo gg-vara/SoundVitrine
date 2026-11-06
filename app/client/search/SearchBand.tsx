@@ -50,7 +50,7 @@ export function SearchBand(props: {
 
   return (
     <div
-      class="relative flex min-w-[12rem] grow"
+      class="relative flex min-w-48 grow"
       ref={box}
       onFocusOut={event => {
         if (!box.contains(event.relatedTarget as Node | null)) setOpen(false);
@@ -70,7 +70,7 @@ export function SearchBand(props: {
       />
       <div
         class={[
-          'searchResults absolute top-[1.65rem] z-50 hidden max-h-[10rem] w-full overflow-x-hidden overflow-y-auto bg-white p-2 [font-family:Arial] [outline:none] [transition:all_.3s_ease_0s] [&.show]:block shadow-[0_3px_8px_0_rgba(0,0,0,.2),0_0_0_1px_rgba(0,0,0,.08)]',
+          'searchResults absolute top-[1.65rem] z-50 hidden max-h-40 w-full overflow-x-hidden overflow-y-auto bg-white p-2 [font-family:Arial] [outline:none] [transition:all_.3s_ease_0s] [&.show]:block shadow-[0_3px_8px_0_rgba(0,0,0,.2),0_0_0_1px_rgba(0,0,0,.08)]',
           { show: open() },
         ]}
         ref={results}
@@ -99,7 +99,7 @@ export function SearchBand(props: {
         </Show>
       </div>
       <Show when={found().length > 0}>
-        <span class="absolute top-[.5rem] right-[.2rem] text-[.5rem] text-[grey] [font-family:Arial]">{`${found().length} ${i18n.found}`}</span>
+        <span class="absolute top-2 right-[.2rem] text-[.5rem] text-[grey] [font-family:Arial]">{`${found().length} ${i18n.found}`}</span>
       </Show>
     </div>
   );

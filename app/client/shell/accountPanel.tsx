@@ -7,8 +7,7 @@ import { play } from './motion';
 
 const FADE_SECONDS = 0.5;
 
-const IN_ACCOUNT_PANEL =
-  'absolute top-4 left-[.5rem] z-1 text-black [&_i]:text-[1.2rem] [&_i]:[transform:rotate(180deg)] [&.anima]:text-[#EEE]';
+const IN_ACCOUNT_PANEL = 'absolute top-4 left-2 z-1 text-black [&_i]:text-[1.2rem] [&_i]:[transform:rotate(180deg)] [&.anima]:text-[#EEE]';
 
 export interface AccountPanelControls {
   // once the panel is in view

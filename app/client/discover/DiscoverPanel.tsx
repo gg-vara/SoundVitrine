@@ -71,7 +71,7 @@ function slidingItems(items: () => Iterable<HTMLElement>, change: () => void) {
 
 // their width and height come from applyFilterSizes, which needs the "open" class
 const FILTER =
-  'ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-[1.25rem] portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0 [&::before]:absolute [&::before]:top-[-.9rem] [&::before]:left-[-.3rem] [&::before]:z-30 [&::before]:text-[.65em] [&::before]:text-[grey] [&::before]:[content:attr(data-sl)]';
+  'ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-5 portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0 [&::before]:absolute [&::before]:top-[-.9rem] [&::before]:left-[-.3rem] [&::before]:z-30 [&::before]:text-[.65em] [&::before]:text-[grey] [&::before]:[content:attr(data-sl)]';
 // what a button has of its own, as they look like the text around them
 const PLAIN_BUTTON = 'cursor-pointer appearance-none [border:none] bg-transparent p-0 text-start [unicode-bidi:isolate] [font:inherit]';
 const PLACEHOLDER = `${PLAIN_BUTTON} absolute [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] focus-visible:[transform:translate(.35rem,0)]`;
@@ -297,7 +297,7 @@ export function DiscoverPanel(props: {
 
   return (
     <>
-      <div class="absolute top-[3.5rem] left-[6.6rem] flex flex-row text-[.8rem] text-[grey] portrait:top-[1.4rem] portrait:left-[8rem]">
+      <div class="absolute top-14 left-[6.6rem] flex flex-row text-[.8rem] text-[grey] portrait:top-[1.4rem] portrait:left-32">
         <For each={SORT_CATEGORIES}>
           {category => (
             <button

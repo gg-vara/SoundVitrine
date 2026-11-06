@@ -7,15 +7,15 @@ import { ConnectButton, type Notification } from './ConnectButton';
 import { LOGO_CONTENT, LOGO_LOWER, LOGO_UPPER, MAIN_PANEL } from './layout';
 
 // which one shows depends on the orientation of the page
-const IN_MENU = 'mr-[.75rem] text-white [&_i]:text-[1.2rem] portrait:hidden! landscape:[display:inherit]!';
+const IN_MENU = 'mr-3 text-white [&_i]:text-[1.2rem] portrait:hidden! landscape:[display:inherit]!';
 const IN_BANNER = 'text-white landscape:hidden! portrait:[display:inherit]!';
 
 // what opens under the header : it closes without a height, which shell/navigation.ts gives
 const SUB_FRAME = 'flex shrink-0 flex-wrap overflow-hidden not-last:max-h-0';
-const SUB_CONTENT = 'flex grow flex-wrap items-start px-4 py-[1.5rem] portrait:flex-col portrait:px-[.75rem] portrait:py-4';
+const SUB_CONTENT = 'flex grow flex-wrap items-start px-4 py-6 portrait:flex-col portrait:px-3 portrait:py-4';
 // each one has its own color and position
 const CATEGORY =
-  "[&::before]:mr-4 [&::before]:mb-4 [&::before]:w-[7.5rem] [&::before]:text-right [&::before]:text-[1.5em] [&::before]:whitespace-nowrap [&::before]:[content:attr(data-cat)_'_||'] portrait:[&::before]:text-left";
+  "[&::before]:mr-4 [&::before]:mb-4 [&::before]:w-30 [&::before]:text-right [&::before]:text-[1.5em] [&::before]:whitespace-nowrap [&::before]:[content:attr(data-cat)_'_||'] portrait:[&::before]:text-left";
 const CATEGORY_IN_FLOW = `${CATEGORY} [&::before]:relative`;
 
 // whose texts come in a language that puts the name anywhere
@@ -65,13 +65,13 @@ export function LibraryPage(props: {
                 </div>
                 <span class="text-[.5em]">©</span>
               </span>
-              <div class="flex grow flex-row flex-wrap items-center justify-between py-[.35rem] hidpi:py-[.75rem] [&>*]:mx-4 [&>*]:my-[.2rem]">
+              <div class="flex grow flex-row flex-wrap items-center justify-between py-[.35rem] hidpi:py-3 [&>*]:mx-4 [&>*]:my-[.2rem]">
                 <LibraryOf user={pageData.user} />
-                <div class="flex grow-[10000] justify-between text-[.5rem] text-white [font-family:sans-serif] hidpi:[&_i]:text-[1.3rem] [&_i]:text-[1rem] [&>*]:mx-[.25rem] [&>*]:flex [&>*]:items-center [&>*:first-child]:ml-0 [&>*:last-child]:mr-0">
+                <div class="flex grow-[10000] justify-between text-[.5rem] text-white [font-family:sans-serif] hidpi:[&_i]:text-[1.3rem] [&_i]:text-[1rem] [&>*]:mx-1 [&>*]:flex [&>*]:items-center [&>*:first-child]:ml-0 [&>*:last-child]:mr-0">
                   <label class="clickable" title={filled(i18n.users_profile, pageData.user)}>
                     <input id="showProfile" type="checkbox" autocomplete="off" onChange={props.toggleProfile} />
                     {pageData.profilePicture ? (
-                      <img class="box-content w-[1rem] rounded-[25%] bg-[#f7f7f7] p-[.2rem]" src={pageData.profilePicture} alt="" />
+                      <img class="box-content w-4 rounded-[25%] bg-[#f7f7f7] p-[.2rem]" src={pageData.profilePicture} alt="" />
                     ) : (
                       <i class="fas fa-user" />
                     )}
