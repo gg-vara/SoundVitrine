@@ -48,7 +48,6 @@ As I always wanted to tell about my discoveries to my friends when I was outside
 - Vanilla Javascript, alongside 
     - [Chart.js](https://www.chartjs.org/) for graphs
     - [Hammer.js](https://hammerjs.github.io/) for gesture handling
-    - [Moment.js](https://momentjs.com/) for time
 - MusicBrainz API (https://musicbrainz.org/doc/MusicBrainz_API)
 
 ## Using SoundVitrine

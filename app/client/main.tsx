@@ -6,7 +6,7 @@ import { createActor } from 'xstate';
 import { DiscoverPanel, type DiscoverPanelControls } from './discover/DiscoverPanel';
 import { FeedPanel } from './feed/FeedPanel';
 import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
-import { humanizedSince } from './library/humanizedDate';
+import { humanizedDate } from './library/humanizedDate';
 import { SearchBand } from './search/SearchBand';
 import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
 import { startupMachine } from './shell/machine';
@@ -108,7 +108,7 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
 
   function useLibrary(library: UnifiedLibrary) {
     const created = createDataFeeds(library, {
-      humanizedSince,
+      humanizedSince: (date, now) => humanizedDate(date, now, document.documentElement.lang),
       now: () => new Date(),
     });
     setFeeds(() => created);

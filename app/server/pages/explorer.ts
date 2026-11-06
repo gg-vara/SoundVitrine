@@ -11,7 +11,6 @@ import {
   clientStyles,
   colorsCss,
   externalStyles,
-  filesOf,
   footer,
   metadata,
   pageTitle,
@@ -131,7 +130,6 @@ export function libraryPage(context: PageContext, user: string): Html {
     <head>
         ${metadata(context, pageTitle(tr('libraryOf', user)))}
         ${externalStyles}
-        <script type="text/javascript" src="/public/ext/js/moment-with-locales.min.js"></script>
         <script type="text/javascript" src="/public/ext/js/hammer.min.js"></script>
         <script>
             'use strict';
@@ -143,9 +141,6 @@ export function libraryPage(context: PageContext, user: string): Html {
             const shoutStreamUrl = ${scriptJson(`/u/${user}/shouts`)};
         </script>
         ${translationsScript(context)}
-        <script>
-            ${raw(filesOf('client/public/ext/js/polyfills'))}
-        </script>
         ${clientScript()}
         ${adminStyles()}
         <style>

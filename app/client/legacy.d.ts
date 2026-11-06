@@ -5,11 +5,6 @@ declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
 declare const clientURLUnified: string;
 
-declare function moment(date: string): {
-  locale(language: string): void;
-  from(now: Date): string;
-};
-
 declare class Hammer {
   static TouchInput: unknown;
   constructor(element: HTMLElement, options: { inputClass: unknown });

@@ -5,7 +5,7 @@
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
 import { searchAlbumCover } from '../library/coverSearch';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
-import { humanizedSince } from '../library/humanizedDate';
+import { humanizedDate } from '../library/humanizedDate';
 import { youtubeSearchUrl } from '../library/youtube';
 import { COVER } from '../shell/cover';
 import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
@@ -357,7 +357,7 @@ export function DiscoverPanel(props: {
             <div class={CAPTION}>
               {i18n.dateAddition}
               <div class={VALUE} title={album()?.DateAdded}>
-                {album() ? humanizedSince(album()?.DateAdded ?? '', new Date()) : ''}
+                {album() ? humanizedDate(album()?.DateAdded ?? '', new Date(), document.documentElement.lang) : ''}
               </div>
             </div>
           </div>
