@@ -1,5 +1,6 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
+import { pauseBackground, playBackground } from './background';
 import { play } from './motion';
 
 const SHUTTER_SECONDS = 0.3;
@@ -97,8 +98,7 @@ export function switchPanel(swipe?: Swipe) {
   });
 
   // the background video only shows behind the account panel
-  const video = document.getElementById('bg') as HTMLVideoElement;
-  if (target !== LIBRARY_PANEL) void video.play();
+  if (target !== LIBRARY_PANEL) playBackground();
 
   const from = main.style.transform || 'translateX(0%)';
   const to = `translateX(-${target * 100}%)`;
@@ -106,7 +106,7 @@ export function switchPanel(swipe?: Swipe) {
   void play(main, { transform: [from, to] }, PANEL_SECONDS)
     .then(alignConnectSideElements)
     .then(() => {
-      if (target === LIBRARY_PANEL) video.pause();
+      if (target === LIBRARY_PANEL) pauseBackground();
       if (target === ACCOUNT_PANEL) onAccountPanelShown?.();
       else document.body.classList.remove('lock');
     });

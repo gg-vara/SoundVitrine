@@ -173,16 +173,30 @@ test('closes what it opened, and fits it when the window changes', async ({ page
   await expectOpen(page, '#feedContainer');
 });
 
-test('downloads the background video only once the account panel opens', async ({ page }) => {
+test('downloads the background video once the account panel opens, a small copy first, then the full one', async ({ page }) => {
   const requested: string[] = [];
-  page.on('request', request => requested.push(request.url()));
+  page.on('request', request => {
+    const file = /videos\/(bg[^/?]*)/.exec(request.url())?.[1];
+    if (file && !requested.includes(file)) requested.push(file);
+  });
   await page.reload();
   await expect(discover(page).getByText('Rock', { exact: true })).toBeVisible();
-  expect(requested.filter(url => url.includes('bg.mp4'))).toEqual([]);
+  expect(requested).toEqual([]);
 
   await openAccountPanel(page);
-  await expect.poll(() => requested.filter(url => url.includes('bg.mp4')).length).toBeGreaterThan(0);
-  await expect.poll(() => page.locator('video').evaluate(video => (video as HTMLVideoElement).paused)).toBe(false);
+  await expect.poll(() => requested).toEqual(['bg-480.webm', 'bg.mp4']);
+
+  const videos = page.locator('#bg video');
+  // a browser without H.264 keeps the small one, which plays
+  const playsFull = await videos
+    .last()
+    .evaluate(video => (video as HTMLVideoElement).canPlayType('video/mp4; codecs="avc1.42E01E"') !== '');
+  if (playsFull) await expect(videos).toHaveCount(1);
+  await expect(videos.first()).toHaveAttribute('src', playsFull ? /bg\.mp4/ : /bg-480\.webm/);
+  await expect.poll(() => videos.first().evaluate(video => (video as HTMLVideoElement).paused)).toBe(false);
+
+  await page.locator('#accountPanel').getByTitle('Login / Create an account').click();
+  await expect.poll(() => videos.first().evaluate(video => (video as HTMLVideoElement).paused)).toBe(true);
 });
 
 test.describe('on a touch screen', () => {

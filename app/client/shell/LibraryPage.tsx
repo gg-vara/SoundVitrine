@@ -132,16 +132,19 @@ export function LibraryPage(props: {
           controls={props.accountControls}
         />
       </main>
-      <video
-        id="bg"
-        class="fixed top-0 -z-20 h-[100vh] w-full object-cover opacity-0 [transition:opacity_.5s_ease] [&.show]:opacity-100"
-        muted
-        loop
-        // only behind the account panel : it is not downloaded before that opens, shell/navigation.ts plays it
-        preload="none"
-        poster="/public/images/bg-poster.jpg"
-        src="/public/videos/bg.mp4"
-      />
+      <div id="bg" class="fixed top-0 -z-20 h-[100vh] w-full opacity-0 [transition:opacity_.5s_ease] [&.show]:opacity-100">
+        {/* shell/background.ts : the first one, then the second over it */}
+        <video
+          data-active
+          class="absolute h-full w-full object-cover"
+          muted
+          loop
+          preload="none"
+          poster="/public/images/bg-poster.jpg"
+          src="/public/videos/bg-480.webm"
+        />
+        <video class="absolute h-full w-full object-cover opacity-0" muted loop preload="none" src="/public/videos/bg.mp4" />
+      </div>
     </>
   );
 }
