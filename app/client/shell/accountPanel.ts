@@ -1,4 +1,5 @@
 // The account panel : shows the account pages of the server, whose links and forms stay within it
+import { startEditors } from '../account/editors';
 import { type AccountHistory, firstHistory, historyAfter } from './accountHistory';
 
 interface Loaded {
@@ -85,9 +86,7 @@ export function createAccountPanel(elementId: string, firstUrl: string): Account
     if (history.showBack) addBackButton();
     followLinksAndForm();
 
-    // each looks for its element, only there when logged in
-    new PPEditor('ProfilePicEditor');
-    new BBEditor('bBandEditor');
+    startEditors();
   }
 
   const loadFirstPage = () =>

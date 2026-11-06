@@ -5,14 +5,6 @@ declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
 declare const clientURLUnified: string;
 
-declare class PPEditor {
-  constructor(targetId: string);
-}
-
-declare class BBEditor {
-  constructor(targetId: string);
-}
-
 // with nothing to do, it gives null at once
 declare function waitTransitionEnd(eventEmitter: Element, action: (() => void) | null): Promise<Element | null>;
 declare function calculateMillisecondsElapsed(dateFrom: string): number;

@@ -9,10 +9,6 @@ const ASSETS = join(import.meta.dir, '..', '..', 'client', 'legacy');
 const RAW_HTML = /\.(innerHTML|outerHTML)\s*\+?=|insertAdjacentHTML|document\.write/;
 
 // never given what users upload
-const ALLOWED: Record<string, string> = {
-  'admin/js/bbEditor.js': 'a style, of a username and colors the server checks',
-};
-
 const ALLOWED_IN_VITE: Record<string, string> = {
   'shell/accountPanel.ts': "this server's own pages, which escape what they show",
 };
@@ -22,7 +18,6 @@ describe('browser scripts', () => {
   test('uploaded values are not written as HTML', () => {
     const offenders = [...new Glob('**/*.js').scanSync(ASSETS)]
       .map(file => file.replaceAll('\\', '/'))
-      .filter(file => !(file in ALLOWED))
       .flatMap(file =>
         readFileSync(join(ASSETS, file), 'utf8')
           .split('\n')

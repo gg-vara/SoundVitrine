@@ -6,7 +6,7 @@ import { html, raw } from '../html';
 import type { User } from '../users';
 import { findUser, publicUserFolder } from '../users';
 import type { FormResult, LengthRule, PageContext } from './layout';
-import { adminPage, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
+import { ACCOUNT_ENTRY, adminPage, clientScript, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
 
 export function welcomePage(context: PageContext, users: User[]): Html {
   const { tr } = context;
@@ -184,14 +184,8 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
 </div>`;
   }
 
-  // within the library page, its account panel starts them
-  if (!context.isXhr) {
-    content = html`${content}
-<script>
-    let ppe = new PPEditor("ProfilePicEditor");
-    let bbe = new BBEditor("bBandEditor");
-</script>`;
-  }
+  // within the library page, its account panel starts the editors
+  if (user && !context.isXhr) content = html`${content}${clientScript(ACCOUNT_ENTRY)}`;
 
   return adminPage(context, pageTitle(tr(user ? 'e_log_manage' : 'e_log_home')), content);
 }

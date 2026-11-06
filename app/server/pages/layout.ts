@@ -36,27 +36,32 @@ export interface ClientEntry {
   css?: string[];
 }
 
-export function clientEntryIn(manifest: string): ClientEntry | undefined {
-  return (JSON.parse(manifest) as Record<string, ClientEntry>)['main.tsx'];
+// the entries of Vite's build (vite.config.ts) : the library page's, and the account page's when it stands alone
+export const LIBRARY_ENTRY = 'main.tsx';
+export const ACCOUNT_ENTRY = 'account/main.ts';
+
+export function clientEntryIn(manifest: string, name = LIBRARY_ENTRY): ClientEntry | undefined {
+  return (JSON.parse(manifest) as Record<string, ClientEntry>)[name];
 }
 
-let cachedClientEntry: ClientEntry | undefined;
+const cachedClientEntries = new Map<string, ClientEntry>();
 
-function clientEntry(): ClientEntry | undefined {
-  if (cachedClientEntry) return cachedClientEntry;
+function clientEntry(name = LIBRARY_ENTRY): ClientEntry | undefined {
+  const cachedEntry = cachedClientEntries.get(name);
+  if (cachedEntry) return cachedEntry;
 
   let entry: ClientEntry | undefined;
   try {
-    entry = clientEntryIn(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'));
+    entry = clientEntryIn(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'), name);
   } catch {}
   if (!entry) console.error('No browser build in client/dist : run "bun run build"');
-  if (caching) cachedClientEntry = entry;
+  if (caching && entry) cachedClientEntries.set(name, entry);
   return entry;
 }
 
 // the script of Vite's build : without it, the page misses what moved there
-export function clientScript(): Html {
-  const entry = clientEntry();
+export function clientScript(name = LIBRARY_ENTRY): Html {
+  const entry = clientEntry(name);
   return entry ? html`<script type="module" src="/web/${entry.file}"></script>` : html``;
 }
 
