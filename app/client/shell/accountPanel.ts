@@ -1,6 +1,8 @@
 // The account panel : shows the account pages of the server, whose links and forms stay within it
+
 import { startEditors } from '../account/editors';
 import { type AccountHistory, firstHistory, historyAfter } from './accountHistory';
+import { waitAnimationEnd, waitTransitionEnd } from './waiting';
 
 interface Loaded {
   content: string;

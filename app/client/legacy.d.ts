@@ -1,15 +1,14 @@
-// What client/legacy/ and the page's inline scripts define as globals, used here until they move too
+// What the page's own scripts define as globals
 
 declare const i18n: Record<string, string>;
 declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
 declare const clientURLUnified: string;
 
-// with nothing to do, it gives null at once
-declare function waitTransitionEnd(eventEmitter: Element, action: (() => void) | null): Promise<Element | null>;
-declare function calculateMillisecondsElapsed(dateFrom: string): number;
-declare function waitAnimationEnd(eventEmitter: Element, action: () => void, pseudoElement: string): Promise<Element | null>;
-declare function compareDateFromNomHumanized(date: string, now: Date): string;
+declare function moment(date: string): {
+  locale(language: string): void;
+  from(now: Date): string;
+};
 
 declare class Hammer {
   static TouchInput: unknown;

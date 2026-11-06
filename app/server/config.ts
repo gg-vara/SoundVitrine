@@ -24,7 +24,7 @@ export const SHOUT_PROFILE_FILE_NAME = 'shout.json';
 // as these colors can be customized by users
 export const DEFAULT_BACKGROUND_COLORS = ['#EE7752', '#E73C7E', '#23A6D5', '#23D5AB'];
 
-// application folder : static files (client/public/), browser scripts and styles (client/legacy/)
+// application folder : static files (client/public/), the last styles to move (client/legacy/)
 export const APP_ROOT = resolve(import.meta.dir, '..');
 
 // state files, on the filesystem : users database, users folders, sessions key

@@ -1,5 +1,15 @@
 import { describe, expect, test } from 'bun:test';
-import { changedFields, isNewTrack, isNoMusic, isShout, isWorthDisplaying, metaText, movesTimeline, type Shout } from '../shout/logic';
+import {
+  changedFields,
+  elapsedSince,
+  isNewTrack,
+  isNoMusic,
+  isShout,
+  isWorthDisplaying,
+  metaText,
+  movesTimeline,
+  type Shout,
+} from '../shout/logic';
 
 const playing: Shout = { date: '2026-01-01T00:00:00Z', duration: 200, playerPositionMS: 100_000, playerState: true };
 const elapsed = (milliseconds: number) => () => milliseconds;
@@ -61,5 +71,15 @@ describe('meta', () => {
 
   test('needs both the artist and the album', () => {
     expect(metaText({ artist: 'a' })).toBe('');
+  });
+});
+
+describe('the time since a shout', () => {
+  test('counts from its date, in UTC', () => {
+    expect(elapsedSince('2026-01-01T00:00:00Z', Date.UTC(2026, 0, 1, 0, 0, 5))).toBe(5000);
+  });
+
+  test('is negative when the date is ahead', () => {
+    expect(elapsedSince('2026-01-01T00:00:05Z', Date.UTC(2026, 0, 1))).toBe(-5000);
   });
 });

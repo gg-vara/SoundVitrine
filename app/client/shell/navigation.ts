@@ -1,8 +1,10 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
+
 import { type AccountPanel, createAccountPanel } from './accountPanel';
 import { nextPanel } from './panels';
 import { createResizeHandler, debounced, type OnResize } from './resizing';
 import { setHeaderClasses } from './scrolling';
+import { waitTransitionEnd } from './waiting';
 
 // what changes the height of something, null if it fits already
 export type ApplyHeight = (() => void) | null;

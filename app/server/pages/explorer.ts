@@ -6,7 +6,6 @@ import { html, raw } from '../html';
 import { findUser, publicUserFolder } from '../users';
 import type { PageContext } from './layout';
 import {
-  adminScripts,
   adminStyles,
   clientScript,
   clientStyles,
@@ -16,6 +15,7 @@ import {
   footer,
   metadata,
   pageTitle,
+  translationsScript,
   wAnim,
 } from './layout';
 
@@ -142,7 +142,7 @@ export function libraryPage(context: PageContext, user: string): Html {
             // server-sent events of the user's shouts (see server/api.ts)
             const shoutStreamUrl = ${scriptJson(`/u/${user}/shouts`)};
         </script>
-        ${adminScripts(context)}
+        ${translationsScript(context)}
         <script>
             ${raw(filesOf('client/public/ext/js/polyfills'))}
         </script>

@@ -1,4 +1,5 @@
 // What shows until the library is there. The loader's markup comes with the page : it must show before any script runs
+import { waitTransitionEnd } from './waiting';
 
 const LOADER_ID = 'loader-container';
 const PAGE_ID = 'app-music-library';

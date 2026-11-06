@@ -5,10 +5,12 @@
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
 import { searchAlbumCover } from '../library/coverSearch';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
+import { humanizedSince } from '../library/humanizedDate';
 import { youtubeSearchUrl } from '../library/youtube';
 import { COVER } from '../shell/cover';
 import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
 import { scrollToElement } from '../shell/navigation';
+import { waitTransitionEnd } from '../shell/waiting';
 import {
   appliedFilters,
   type DiscoverFilter,
@@ -355,7 +357,7 @@ export function DiscoverPanel(props: {
             <div class={CAPTION}>
               {i18n.dateAddition}
               <div class={VALUE} title={album()?.DateAdded}>
-                {album() ? compareDateFromNomHumanized(album()?.DateAdded ?? '', new Date()) : ''}
+                {album() ? humanizedSince(album()?.DateAdded ?? '', new Date()) : ''}
               </div>
             </div>
           </div>

@@ -108,7 +108,7 @@ export interface FormResult {
 
 export function popup(result: FormResult | null): Html {
   if (!result?.description) return html``;
-  return html`<div onclick="_popup(event)" class="popup ${result.isError ? 'error' : 'info'}"><div class="content">${result.description}</div></div>`;
+  return html`<div onclick="this.classList.toggle('hide')" class="popup ${result.isError ? 'error' : 'info'}"><div class="content">${result.description}</div></div>`;
 }
 
 export interface LengthRule {
@@ -193,10 +193,9 @@ ${raw(filesOf('client/legacy/admin/css'))}${colorsCss()}
 // JSON in a <script>, which must not close it
 const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
 
-export const adminScripts = (context: PageContext) => html`<script>
+// the texts of the library page's panels
+export const translationsScript = (context: PageContext) => html`<script>
     const i18n = ${scriptJson(dictionaries[context.lang])};
-    const lang = ${scriptJson(context.lang)};
-    ${raw(filesOf('client/legacy/admin/js'))}
 </script>`;
 
 const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
@@ -245,7 +244,6 @@ export function adminPage(context: PageContext, title: string, content: Html): H
         ${metadata(context, title)}
         ${externalStyles}
         ${adminStyles()}
-        ${adminScripts(context)}
     </head>
     <body>
         <div id="mainFrame" style="margin: 0 1rem;">

@@ -46,3 +46,6 @@ export function metaText(shout: Shout): string {
   const track = shout.artist && shout.album ? `${shout.artist} - ${shout.album}` : '';
   return shout.year ? `${track} (${shout.year})` : track;
 }
+
+// since a date given with its time zone, UTC+0 for shouts
+export const elapsedSince = (date: string, now: number) => now - Date.parse(date);

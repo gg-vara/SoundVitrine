@@ -1,4 +1,5 @@
 // What an album's cover shows, on an element holding its image (shell/cover.ts styles these classes)
+import { waitTransitionEnd } from './waiting';
 
 export function searchCover(cover: Element) {
   cover.firstElementChild?.removeAttribute('src');

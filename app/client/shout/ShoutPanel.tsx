@@ -1,4 +1,5 @@
 // What the owner of the library is listening to
+
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
 import { searchAlbumCover } from '../library/coverSearch';
@@ -6,8 +7,9 @@ import { youtubeSearchUrl } from '../library/youtube';
 import { COVER } from '../shell/cover';
 import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
 import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
+import { waitTransitionEnd } from '../shell/waiting';
 import { followShouts } from './live';
-import { metaText, movesTimeline, type Shout } from './logic';
+import { elapsedSince, metaText, movesTimeline, type Shout } from './logic';
 import { shoutMachine } from './machine';
 
 const CONTAINER_ID = 'shoutContainer';
@@ -20,6 +22,12 @@ export interface ShoutPanelControls {
 
 // the height of the closed panel is measured with these : they never show, as a shout comes before it opens
 const PLACEHOLDER = 'PLACEHOLDER';
+
+function millisecondsSince(date: string): number {
+  const elapsed = elapsedSince(date, Date.now());
+  if (elapsed < 0) console.warn('A shout cannot come from the future : its date must be UTC+0', date);
+  return elapsed;
+}
 
 export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => void }) {
   const [shown, setShown] = createSignal<Shout | null>(null);
@@ -69,7 +77,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
     // for the animation to start over
     void timeline.offsetWidth;
 
-    const position = (shout.playerPositionMS ?? 0) + (playing && shout.date ? calculateMillisecondsElapsed(shout.date) : 0);
+    const position = (shout.playerPositionMS ?? 0) + (playing && shout.date ? millisecondsSince(shout.date) : 0);
     timeline.style.animationDuration = `${shout.duration}s`;
     timeline.style.animationDelay = `${-position}ms`;
     if (!playing) timeline.style.animationPlayState = 'paused';
@@ -120,7 +128,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
             notification.classList.add('fade');
           });
         },
-        millisecondsSince: calculateMillisecondsElapsed,
+        millisecondsSince,
       },
     },
   });

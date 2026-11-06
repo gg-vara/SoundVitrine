@@ -1,4 +1,5 @@
 // Choosing the colors of the user's animated band, on the account page
+import { waitTransitionEnd } from '../shell/waiting';
 import { bandRule, colorsOfGradient } from './bandColors';
 
 const STYLE_ID = 'bbStyle';

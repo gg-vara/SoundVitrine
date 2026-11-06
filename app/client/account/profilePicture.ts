@@ -1,4 +1,5 @@
 // Choosing the user's picture, on the account page
+import { waitTransitionEnd } from '../shell/waiting';
 
 // its address once stored, nothing if the server refuses the file
 async function upload(file: File): Promise<string> {
