@@ -1,30 +1,13 @@
-// Pages of the admin layout : welcome, account (login, management, creation), library upload
+// Pages of the admin layout : welcome, account, library upload
 
-import { APP_NAME, COMPANION_APP_GITHUB_LATEST_RELEASE_URL, COMPANION_APP_NAME, MUSIC_LIB_UPLOAD_FILE_NAME } from '../config';
+import { COMPANION_APP_GITHUB_LATEST_RELEASE_URL, MUSIC_LIB_UPLOAD_FILE_NAME } from '../config';
 import type { Html } from '../html';
 import { html, raw } from '../html';
 import type { User } from '../users';
-import { findUser, publicUserFolder } from '../users';
-import {
-  ACCOUNT_CREATION,
-  ACCOUNT_MANAGEMENT,
-  BAND_COLOR_PICKER,
-  BAND_COLORS,
-  BAND_CONTROLS,
-  BAND_EDITOR,
-  DOWNLOAD_EXPLAIN,
-  DOWNLOAD_NAME,
-  EDITORS,
-  HYPE_BUTTON,
-  HYPE_SUBMIT,
-  LOGIN_RACK,
-  PICTURE_EDITOR,
-  PICTURE_HOLDER,
-  PICTURE_IMAGE,
-  TEXT_INPUT,
-} from './controls';
-import type { FormResult, LengthRule, PageContext } from './layout';
-import { ACCOUNT_ENTRY, adminPage, clientScript, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
+import { publicUserFolder } from '../users';
+import { HYPE_BUTTON, HYPE_SUBMIT, TEXT_INPUT } from './controls';
+import type { PageContext } from './layout';
+import { ACCOUNT_ENTRY, adminPage, clientScript, pageTitle, translationsScript } from './layout';
 
 export function welcomePage(context: PageContext, users: User[]): Html {
   const { tr } = context;
@@ -96,143 +79,11 @@ export function welcomePage(context: PageContext, users: User[]): Html {
   return adminPage(context, pageTitle(tr('welcome')), content);
 }
 
-// a button going to "url" : within the page scripts' loader, unless "leaving"
-function buttonLink(context: PageContext, url: string, leaving = false, noBackButton = false): Html {
-  const target = context.isXhr && !leaving ? html`href="${url}"` : html`onclick="window.location='${url}'"`;
-  return html`${target}${context.isXhr && noBackButton ? ' no-back' : ''}`;
-}
-
-function loginForm(context: PageContext, result: FormResult | null): Html {
+// what the browser renders, from GET /account/me (client/account/)
+export function accountPage(context: PageContext): Html {
   const { tr } = context;
-  const action = context.url.pathname + context.url.search;
-  return html`<h1>${tr('e_log_connect')}</h1>
-${popup(result)}
-<form method="POST" action="${action}">
-    ${magnifikInput(context, { name: 'username', placeholder: 'e_log_username', autocomplete: 'username', required: true })}
-    ${magnifikInput(context, { type: 'password', placeholder: 'userPwd', autocomplete: 'current-password', required: true })}
-    <input class="${HYPE_SUBMIT}" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_connect')}" />
-</form>`;
-}
-
-function downloadButtons(context: PageContext): Html {
-  return html`<div>
-    <a target="_blank" href="${COMPANION_APP_GITHUB_LATEST_RELEASE_URL}">
-        <div class="${DOWNLOAD_EXPLAIN}">
-            <span>
-                <span>${context.tr('obtainCompanionApp_1')}</span>
-                <span class="${DOWNLOAD_NAME}">${COMPANION_APP_NAME}</span>
-            </span>
-            <span>${context.tr('obtainCompanionApp_2')}</span>
-        </div>
-    </a>
-</div>`;
-}
-
-function editors(context: PageContext, user: string): Html {
-  const { tr } = context;
-  const profilePic = findUser(user)?.profilePic;
-  return html`<div id='EditorWrapper' class="${EDITORS}">
-    <div id="bBandEditor" class="${BAND_EDITOR}" title="${tr('updateBBand')}">
-        ${wAnim(user)}
-        <div class="colorPicker ${BAND_COLOR_PICKER}">
-            <div class="${BAND_CONTROLS}">
-                <input class="cancel" type="button" value="✕" title="${tr('cancel')}"/>
-                <input class="validate" type="button" value="✓" title="${tr('validate')}"/>
-            </div>
-            <div class="colors ${BAND_COLORS}">
-                <input id="color1" type="color" title="" />
-                <input id="color2" type="color" title="" />
-                <input id="color3" type="color" title="" />
-                <input id="color4" type="color" title="" />
-            </div>
-        </div>
-    </div>
-    <span id="ProfilePicEditor" class="${PICTURE_EDITOR}" title="${tr('updateProfilePic')}">
-        <input class="PPPicker hidden" type="file" name="profile_pic" accept="image/*">
-        <div class="imgHolder ${PICTURE_HOLDER}">
-            <i class="fas fa-user ph"></i>
-            <img class="${PICTURE_IMAGE}" ${profilePic ? html`src='${publicUserFolder(user) + profilePic}'` : ''} />
-        </div>
-    </span>
-</div>`;
-}
-
-// the user's library, from the library the page scripts were on (Referer), as "/u/<user>"
-function libraryOfReferer(context: PageContext): string {
-  const referer = context.request.headers.get('referer');
-  const path = context.isXhr && referer ? URL.parse(referer)?.pathname : context.url.pathname;
-  const user = path?.split('/').filter(Boolean)[1] ?? '';
-  return `/u/${user}`.toLowerCase();
-}
-
-// account : login form, or management of the logged user's account
-export function accountPage(context: PageContext, loginResult: FormResult | null): Html {
-  const { tr } = context;
-  const user = context.session.loggedAs;
-
-  let content: Html;
-  if (user) {
-    const myLibrary = `/u/${user}`.toLowerCase();
-    const isNotMyLibrary = libraryOfReferer(context) !== myLibrary;
-    content = html`<div id="accountManagement" class="${ACCOUNT_MANAGEMENT}">
-    ${editors(context, user)}
-    <div>${tr('welcome_back', user)}</div>
-    <div class="loginRack ${LOGIN_RACK}">
-        ${
-          isNotMyLibrary
-            ? html`<button class="${HYPE_BUTTON}" ${buttonLink(context, myLibrary, true)}>
-                <i class="fas fa-book"></i>
-                <span>${tr('log_accessMyLib')}</span>
-            </button>`
-            : ''
-        }
-        <button class="${HYPE_BUTTON}" ${buttonLink(context, '/account/disconnect', false, true)}>
-            <i class="fas fa-power-off"></i>
-            <span>${tr('log_disconnect')}</span>
-        </button>
-    </div>
-    ${downloadButtons(context)}
-</div>
-<style>${raw(colorsCss(user, findUser(user)?.customColors))}</style>`;
-  } else {
-    content = html`<div id="accountManagement" class="${ACCOUNT_MANAGEMENT}">
-    <div class="loginRack ${LOGIN_RACK}">
-        ${loginForm(context, loginResult)}
-        <hr/>
-        <button class="${HYPE_BUTTON}" ${buttonLink(context, '/account/create')}>
-            <i class="fas fa-user-circle"></i>
-            <span>${tr('log_createAccount')}</span>
-        </button>
-    </div>
-</div>`;
-  }
-
-  // within the library page, its account panel starts the editors
-  if (user && !context.isXhr) content = html`${content}${clientScript(ACCOUNT_ENTRY)}`;
-
-  return adminPage(context, pageTitle(tr(user ? 'e_log_manage' : 'e_log_home')), content);
-}
-
-export const accountRules: Record<'username' | 'password', LengthRule> = {
-  username: { min: 6, max: 20 },
-  password: { min: 8, max: 128 },
-};
-
-export function createAccountPage(context: PageContext, result: FormResult | null): Html {
-  const { tr } = context;
-  const action = context.url.pathname + context.url.search;
-  const content = html`<div class="${ACCOUNT_CREATION}">
-    <h1>${tr('e_log_createAccount')}</h1>
-    ${popup(result)}
-    <form class="${LOGIN_RACK}" method="POST" autocomplete="off" action="${action}">
-        ${magnifikInput(context, { name: 'username', placeholder: 'e_log_username', required: true, autocomplete: 'username' }, accountRules)}
-        ${magnifikInput(context, { type: 'password', placeholder: 'userPwd', required: true, autocomplete: 'current-password' }, accountRules)}
-        ${magnifikInput(context, { type: 'email', placeholder: 'e_log_email', required: true })}
-        <input class="${HYPE_SUBMIT}" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_createAccount')}" />
-    </form>
-</div>`;
-
-  return adminPage(context, APP_NAME, content);
+  const content = html`<div id="account" class="contents"></div>${translationsScript(context)}${clientScript(ACCOUNT_ENTRY)}`;
+  return adminPage(context, pageTitle(tr(context.session.loggedAs ? 'e_log_manage' : 'e_log_home')), content);
 }
 
 export function uploadPage(context: PageContext): Html {

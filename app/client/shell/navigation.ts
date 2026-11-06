@@ -1,6 +1,5 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
-import { type AccountPanel, createAccountPanel } from './accountPanel';
 import { waitTransitionEnd } from './waiting';
 
 // what changes the height of something, null if it fits already
@@ -42,10 +41,10 @@ export function alignConnectSideElements() {
   (document.querySelector('#app-connect .connect-side') as HTMLElement).style.top = `${Math.max(...tops)}px`;
 }
 
-let accountPanel: AccountPanel | undefined;
+let onAccountPanelShown: (() => void) | undefined;
 
-export function startAccountPanel() {
-  accountPanel = createAccountPanel('xmlRLoader', '/account');
+export function followAccountPanel(shown: () => void) {
+  onAccountPanelShown = shown;
 }
 
 // as Hammer tells them : what is swiped left shows the panel on the right
@@ -91,7 +90,7 @@ export function switchPanel(direction?: number) {
     .then(alignConnectSideElements)
     .then(() => {
       if (target === LIBRARY_PANEL) video.pause();
-      if (target === ACCOUNT_PANEL) void accountPanel?.reveal();
+      if (target === ACCOUNT_PANEL) onAccountPanelShown?.();
       else document.body.classList.remove('lock');
     });
 }

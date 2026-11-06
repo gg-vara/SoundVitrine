@@ -9,14 +9,23 @@ import { APIError } from 'better-auth/api';
 import { API_TITLE, hasLibrary, router } from './api';
 import { auth, prepareAuth } from './auth';
 import { compressedResponse } from './compressed-response';
-import { ALLOW_SSE_TESTING, APP_ROOT, APP_VERSION, COMPANION_APP_NAME, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import {
+  ALLOW_SSE_TESTING,
+  APP_ROOT,
+  APP_VERSION,
+  COMPANION_APP_GITHUB_LATEST_RELEASE_URL,
+  COMPANION_APP_NAME,
+  DEFAULT_BACKGROUND_COLORS,
+  STATE_FOLDER_PATH,
+  TRUST_PROXY,
+} from './config';
 import { latestShout } from './db';
 import type { Html } from './html';
 import type { Lang } from './i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n';
-import { accountPage, accountRules, createAccountPage, uploadPage, welcomePage } from './pages/admin';
+import { accountPage, uploadPage, welcomePage } from './pages/admin';
 import { libraryPage, mockPage } from './pages/explorer';
-import type { FormResult, PageContext } from './pages/layout';
+import type { PageContext } from './pages/layout';
 import { clearFailures, isBlocked, recordFailure } from './rate-limit';
 import { chosenLang, langCookie, readSession } from './session';
 import { publishShout } from './shouts';
@@ -107,29 +116,55 @@ async function formFields(request: Request): Promise<Record<string, string>> {
   return fields;
 }
 
-// where a user goes once logged in
-const afterLogin = (context: PageContext, username: string) => redirect(context.isXhr ? '/account' : `/u/${username}`);
+const json = (body: unknown, status = 200, cookies: string[] = []) => {
+  const response = Response.json(body, { status });
+  for (const cookie of cookies) response.headers.append('set-cookie', cookie);
+  return response;
+};
 
-async function login(context: PageContext): Promise<{ cookies?: string[]; result: FormResult | null; response?: Response }> {
+const refused = (error: string, status = 400) => json({ error }, status);
+
+const fieldsOf = async (request: Request) => (await request.json().catch(() => ({}))) as Record<string, unknown>;
+
+const textOf = (value: unknown) => (typeof value === 'string' ? value : '');
+
+const accountRules = {
+  username: { min: 6, max: 20 },
+  password: { min: 8, max: 128 },
+};
+
+// what the account page needs to know
+function me(context: PageContext) {
+  const username = context.session.loggedAs ?? null;
+  const user = username ? findUser(username) : undefined;
+  return {
+    username,
+    profilePicture: username && user?.profilePic ? publicUserFolder(username) + user.profilePic : null,
+    colors: user?.customColors ?? DEFAULT_BACKGROUND_COLORS,
+    rules: accountRules,
+    companionApp: { name: COMPANION_APP_NAME, url: COMPANION_APP_GITHUB_LATEST_RELEASE_URL },
+  };
+}
+
+async function login(context: PageContext): Promise<Response> {
   const { tr, clientIp, request } = context;
-  const username = (context.form.username ?? '').trim().toLowerCase();
-  const password = context.form.password ?? '';
-  const refused = (description: string) => ({ result: { isError: true, description } });
+  const fields = await fieldsOf(request);
+  const username = textOf(fields.username).trim().toLowerCase();
+  const password = textOf(fields.password);
 
-  if (context.session.loggedAs === username) return { result: { isError: false, description: tr('e_log_identical') } };
   if (!username) return refused(tr('e_log_nouser'));
   if (!password) return refused(tr('e_log_nopass'));
-  if (!findUser(username)) return refused(tr('e_unsu', username));
-  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'));
+  if (!findUser(username)) return refused(tr('e_unsu', username), 401);
+  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'), 429);
 
   try {
     const { headers } = await auth.api.signInUsername({ body: { username, password }, headers: request.headers, returnHeaders: true });
     clearFailures(clientIp, username);
-    return { cookies: headers.getSetCookie(), result: null, response: afterLogin(context, username) };
+    return json({ username }, 200, headers.getSetCookie());
   } catch (error) {
     if (!(error instanceof APIError)) throw error;
     recordFailure(clientIp, username);
-    return refused(tr('e_log_wrongpass'));
+    return refused(tr('e_log_wrongpass'), 401);
   }
 }
 
@@ -143,62 +178,68 @@ function randomColor(): string {
 }
 
 // why the account cannot be created, if so
-function accountCreationRefusal(context: PageContext): string | null {
-  const { tr, form } = context;
-  const username = (form.username ?? '').trim().toLowerCase();
+function accountCreationRefusal(context: PageContext, username: string, password: string): string | null {
+  const { tr } = context;
 
-  for (const field of ['username', 'password'] as const) {
-    if (!form[field]) return tr('crea_miss_p_u', tr(field));
-  }
+  if (!username) return tr('crea_miss_p_u', tr('username'));
+  if (!password) return tr('crea_miss_p_u', tr('password'));
   if (context.session.loggedAs) return tr('err_nocreate_onlog');
   if (userExists(username)) return tr('user_already_exist', username);
   if (!/^[a-zA-Z0-9]+([_-]?[a-zA-Z0-9])*$/.test(username)) return tr('username_invalid', username);
 
-  for (const field of ['username', 'password'] as const) {
+  for (const [field, value] of [
+    ['username', username],
+    ['password', password],
+  ] as const) {
     const { min, max } = accountRules[field];
-    const length = (field === 'username' ? username : (form[field] ?? '')).length;
-    if (length < min || length > max) return tr('field_nc_pattern', tr(field), min, max);
+    if (value.length < min || value.length > max) return tr('field_nc_pattern', tr(field), min, max);
   }
 
   return null;
 }
 
+async function createAccount(context: PageContext): Promise<Response> {
+  const { request, tr } = context;
+  const fields = await fieldsOf(request);
+  const username = textOf(fields.username).trim().toLowerCase();
+  const password = textOf(fields.password);
+
+  const refusal = accountCreationRefusal(context, username, password);
+  if (refusal !== null) return refused(refusal);
+
+  try {
+    const { headers } = await auth.api.signUpEmail({
+      body: { name: username, username, displayUsername: username, email: textOf(fields.email), password },
+      headers: request.headers,
+      returnHeaders: true,
+    });
+    updateProfile(username, { customColors: [randomColor(), randomColor(), randomColor(), randomColor()] });
+    mkdirSync(userFolder(username), { recursive: true });
+    return json({ username }, 200, headers.getSetCookie());
+  } catch (error) {
+    if (!(error instanceof APIError)) throw error;
+    return refused(tr('e_email_unusable'));
+  }
+}
+
 async function accountRoute(context: PageContext, action: string | undefined): Promise<Response> {
   const { request, session } = context;
+  const posted = request.method === 'POST';
 
   switch (action) {
-    case 'create': {
-      if (request.method !== 'POST') return page(createAccountPage(context, null));
+    case 'me':
+      return json(me(context));
 
-      const refusal = accountCreationRefusal(context);
-      if (refusal !== null) return page(createAccountPage(context, { isError: true, description: refusal }));
+    case 'login':
+      return posted ? login(context) : text('', 405);
 
-      const username = (context.form.username ?? '').trim().toLowerCase();
-      try {
-        const { headers } = await auth.api.signUpEmail({
-          body: {
-            name: username,
-            username,
-            displayUsername: username,
-            email: context.form.email ?? '',
-            password: context.form.password ?? '',
-          },
-          headers: request.headers,
-          returnHeaders: true,
-        });
-        updateProfile(username, { customColors: [randomColor(), randomColor(), randomColor(), randomColor()] });
-        mkdirSync(userFolder(username), { recursive: true });
-        return page(afterLogin(context, username), headers.getSetCookie());
-      } catch (error) {
-        if (!(error instanceof APIError)) throw error;
-        return page(createAccountPage(context, { isError: true, description: context.tr('e_email_unusable') }));
-      }
-    }
+    case 'create':
+      return posted ? createAccount(context) : page(accountPage(context));
 
     case 'disconnect': {
-      const referer = request.headers.get('referer');
+      if (!posted) return text('', 405);
       const { headers } = await auth.api.signOut({ headers: request.headers, returnHeaders: true });
-      return page(redirect(context.isXhr ? '/account' : (referer ?? '/')), headers.getSetCookie());
+      return json({}, 200, headers.getSetCookie());
     }
 
     // profile picture
@@ -235,13 +276,8 @@ async function accountRoute(context: PageContext, action: string | undefined): P
       return text('OK');
     }
 
-    default: {
-      if (request.method === 'POST' && (context.form.username !== undefined || context.form.password !== undefined)) {
-        const loggedIn = await login(context);
-        return page(loggedIn.response ?? accountPage(context, loggedIn.result), loggedIn.cookies);
-      }
-      return page(accountPage(context, null));
-    }
+    default:
+      return page(accountPage(context));
   }
 }
 
@@ -336,7 +372,6 @@ async function respond(request: Request, peerAddress?: string): Promise<Response
     clientIp,
     lang,
     tr,
-    isXhr: request.headers.get('x-requested-with')?.toLowerCase() === 'xmlhttprequest',
     form: await formFields(request),
   };
 

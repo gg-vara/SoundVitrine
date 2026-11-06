@@ -431,35 +431,43 @@ describe('pages', () => {
     expect(await (await handle(new Request(`${base}/u/emptyuser`))).text()).toContain('name="SoundVitrine_file"');
   });
 
-  test('login, then the account page', async () => {
-    const refused = await browserPost('/account', { username: USER, password: 'wrong' });
-    const refusedPage = await refused.text();
-    expect(refusedPage).toContain('popup error');
-    // nothing is being uploaded here, unlike where the same check serves SoundBuddy
-    expect(refusedPage.match(/class="popup [^"]*"><div class="[^"]*">([^<]*)</)?.[1]).toMatch(
-      /^(Wrong password\.|Mot de passe incorrect\.)$/,
+  const accountPost = (path: string, fields: Record<string, string> = {}, headers: Record<string, string> = {}, client?: string) =>
+    handle(
+      new Request(`${base}${path}`, {
+        method: 'POST',
+        body: JSON.stringify(fields),
+        headers: { 'Content-Type': 'application/json', 'Accept-Language': 'en', ...headers },
+      }),
+      client,
     );
 
-    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
-    expect(logged.status).toBe(302);
-    expect(logged.headers.get('location')).toBe(`/u/${USER}`);
+  const meOf = async (cookie: string) =>
+    (await (await handle(new Request(`${base}/account/me`, { headers: { cookie } }))).json()) as { username: string | null };
 
-    const account = await handle(new Request(`${base}/account`, { headers: { cookie: cookieOf(logged) } }));
-    expect(await account.text()).toContain("id='EditorWrapper'");
+  test('login, then who is logged', async () => {
+    const refused = await accountPost('/account/login', { username: USER, password: 'wrong' });
+    expect(refused.status).toBe(401);
+    // nothing is being uploaded here, unlike where the same check serves SoundBuddy
+    expect(await refused.json()).toEqual({ error: 'Wrong password.' });
+
+    const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
+    expect(logged.status).toBe(200);
+    expect((await meOf(cookieOf(logged))).username).toBe(USER);
   });
 
-  test('a tampered session is ignored', async () => {
-    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+  test('nobody is logged without a session, or with a tampered one', async () => {
+    const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
     const [payload] = cookieOf(logged).split('.');
-    const account = await handle(new Request(`${base}/account`, { headers: { cookie: `${payload}.forged` } }));
-    expect(await account.text()).not.toContain("id='EditorWrapper'");
+    expect((await meOf('')).username).toBeNull();
+    expect((await meOf(`${payload}.forged`)).username).toBeNull();
   });
 
-  test('scripts of the pages only get the content', async () => {
-    const page = await (await handle(new Request(`${base}/account`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }))).text();
-    expect(page).not.toContain('<!DOCTYPE');
-    expect(page).toContain('accountManagement');
-    expect(page).not.toContain('<script');
+  test('the account page is what the browser renders', async () => {
+    for (const path of ['/account', '/account/create']) {
+      const page = await (await handle(new Request(`${base}${path}`))).text();
+      expect(page).toContain('<div id="account"');
+      expect(page).toContain('const i18n =');
+    }
   });
 
   test('passwords are stored hashed', () => {
@@ -469,31 +477,20 @@ describe('pages', () => {
   });
 
   test('logging out ends the session in the database, not only in the browser', async () => {
-    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
     const cookie = cookieOf(logged);
-    await handle(new Request(`${base}/account/disconnect`, { headers: { cookie } }));
-    expect(await (await handle(new Request(`${base}/account`, { headers: { cookie } }))).text()).not.toContain("id='EditorWrapper'");
+    await accountPost('/account/disconnect', {}, { cookie });
+    expect((await meOf(cookie)).username).toBeNull();
   });
 
   test('too many failures block that client on that account, even with the right password', async () => {
     await createUser('guessed1');
-    const form = (password: string) => new URLSearchParams({ username: 'guessed1', password });
-    const post = (password: string, client: string) =>
-      handle(
-        new Request(`${base}/account`, {
-          method: 'POST',
-          body: form(password),
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        }),
-        client,
-      );
+    const post = (password: string, client: string) => accountPost('/account/login', { username: 'guessed1', password }, {}, client);
 
-    for (let i = 0; i < 10; i++) expect((await post('wrong', '10.0.0.1')).status).toBe(200);
-    const blocked = await post(PASSWORD, '10.0.0.1');
-    expect(blocked.status).toBe(200);
-    expect(await blocked.text()).toContain('popup error');
+    for (let i = 0; i < 10; i++) expect((await post('wrong', '10.0.0.1')).status).toBe(401);
+    expect((await post(PASSWORD, '10.0.0.1')).status).toBe(429);
 
-    expect((await post(PASSWORD, '10.0.0.2')).status).toBe(302);
+    expect((await post(PASSWORD, '10.0.0.2')).status).toBe(200);
   });
 
   test('SoundBuddy gets a 429 when blocked, which does not make it give up', async () => {
@@ -510,30 +507,24 @@ describe('pages', () => {
   });
 
   test('an email cannot serve two accounts', async () => {
-    const taken = await browserPost('/account/create', { username: 'secondcurator', password: PASSWORD, email: `${USER}@example.com` });
-    expect(await taken.text()).toContain('popup error');
+    const taken = await accountPost('/account/create', { username: 'secondcurator', password: PASSWORD, email: `${USER}@example.com` });
+    expect(taken.status).toBe(400);
   });
 
   test('account creation', async () => {
-    const tooShort = await browserPost('/account/create', { username: 'abc', password: PASSWORD, email: 'a@example.com' });
-    expect(await tooShort.text()).toContain('popup error');
+    const tooShort = await accountPost('/account/create', { username: 'abc', password: PASSWORD, email: 'a@example.com' });
+    expect(tooShort.status).toBe(400);
 
-    const created = await browserPost('/account/create', { username: 'NewCurator', password: PASSWORD, email: 'a@example.com' });
-    expect(created.status).toBe(302);
-    expect(created.headers.get('location')).toBe('/u/newcurator');
+    const created = await accountPost('/account/create', { username: 'NewCurator', password: PASSWORD, email: 'a@example.com' });
+    expect(created.status).toBe(200);
+    expect((await meOf(cookieOf(created))).username).toBe('newcurator');
 
-    const again = await browserPost('/account/create', { username: 'newcurator', password: PASSWORD, email: 'a@example.com' });
-    expect(await again.text()).toContain('popup error');
-  });
-
-  test('what is posted comes back escaped', async () => {
-    const username = '"><script>alert(1)</script>';
-    const page = await (await browserPost('/account/create', { username, password: 'x', email: 'a@example.com' })).text();
-    expect(page).not.toContain('<script>alert(1)');
+    const again = await accountPost('/account/create', { username: 'newcurator', password: PASSWORD, email: 'a@example.com' });
+    expect(again.status).toBe(400);
   });
 
   test('the band colors only take colors', async () => {
-    const logged = await browserPost('/account', { username: USER, password: PASSWORD });
+    const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
     const post = (body: unknown) =>
       handle(new Request(`${base}/account/bb`, { method: 'POST', body: JSON.stringify(body), headers: { cookie: cookieOf(logged) } }));
 

@@ -8,7 +8,7 @@ import { html, raw } from '../html';
 import type { Lang, TranslationKey, Translator } from '../i18n';
 import { dictionaries } from '../i18n';
 import type { Session } from '../session';
-import { CREDITS, FOOTER, FOOTER_MIDDLE, LANGUAGES, MAGNIFIK, MAGNIFIK_INPUT, MAIN_FRAME, POPUP, POPUP_CONTENT } from './controls';
+import { CREDITS, FOOTER, FOOTER_MIDDLE, LANGUAGES, MAIN_FRAME } from './controls';
 
 // what a page is rendered from
 export interface PageContext {
@@ -18,8 +18,6 @@ export interface PageContext {
   clientIp: string;
   lang: Lang;
   tr: Translator;
-  // called by the scripts of the pages, which then only want the content of the page (X-Requested-With)
-  isXhr: boolean;
   // posted fields, to fill the form back
   form: Record<string, string>;
 }
@@ -38,7 +36,7 @@ export interface ClientEntry {
 
 // the entries of Vite's build (vite.config.ts) : the library page's, and the account page's when it stands alone
 export const LIBRARY_ENTRY = 'main.tsx';
-export const ACCOUNT_ENTRY = 'account/main.ts';
+export const ACCOUNT_ENTRY = 'account/main.tsx';
 
 export function clientEntryIn(manifest: string, name = LIBRARY_ENTRY): ClientEntry | undefined {
   return (JSON.parse(manifest) as Record<string, ClientEntry>)[name];
@@ -81,43 +79,6 @@ export function colorsCss(owner?: string, colors?: string[]): string {
   const target = owner && colors ? `[data-owner="${owner}"]` : '';
   const [a, b, c, d] = owner && colors ? colors : DEFAULT_BACKGROUND_COLORS;
   return `.wAnim${target}::after { background: linear-gradient(-45deg, ${a}, ${b}, ${c}, ${d});}`;
-}
-
-export interface FormResult {
-  isError: boolean;
-  description: string | null;
-}
-
-export function popup(result: FormResult | null): Html {
-  if (!result?.description) return html``;
-  return html`<div onclick="this.classList.toggle('hide')" class="popup ${result.isError ? 'error' : 'info'} ${POPUP}"><div class="${POPUP_CONTENT}">${result.description}</div></div>`;
-}
-
-export interface LengthRule {
-  min: number;
-  max: number;
-}
-
-interface InputParams {
-  name?: string;
-  type?: string;
-  placeholder?: TranslationKey;
-  required?: boolean;
-  autocomplete?: string;
-}
-
-// input of the forms, filled back with what was posted
-export function magnifikInput(context: PageContext, params: InputParams, rules?: Record<string, LengthRule>): Html {
-  const type = params.type ?? 'text';
-  const name = type === 'password' || type === 'email' ? type : (params.name ?? '');
-  const rule = rules?.[name];
-  const value = context.form[name];
-
-  return html`<div class="${MAGNIFIK}" ${params.placeholder ? html`placeholder="${context.tr(params.placeholder)}"` : ''}>
-                <input class="${MAGNIFIK_INPUT}" ${params.required ? 'required' : ''} ${value ? html`value="${value}"` : ''} ${
-                  rule ? html`pattern=".{${rule.min},${rule.max}}" placeholder="${context.tr('e_log_rule', rule.min, rule.max)}"` : ''
-                } type="${type}" name="${name}" ${params.autocomplete ? html`autocomplete="${params.autocomplete}"` : ''} />
-            </div>`;
 }
 
 //
@@ -172,7 +133,7 @@ export const defaultColorsStyle = () => html`<style>${raw(colorsCss())}</style>`
 // JSON in a <script>, which must not close it
 export const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
 
-// the texts of the library page's panels
+// the texts of what the browser renders
 export const translationsScript = (context: PageContext) => html`<script>
     const i18n = ${scriptJson(dictionaries[context.lang])};
 </script>`;
@@ -214,10 +175,8 @@ export function footer(context: PageContext): Html {
 </footer>`;
 }
 
-// a page of the admin layout : the content only, when the page scripts ask for it
+// a page of the admin layout
 export function adminPage(context: PageContext, title: string, content: Html): Html {
-  if (context.isXhr) return content;
-
   return html`<!DOCTYPE html>
 <html lang="${context.lang}">
     <head>

@@ -7,15 +7,16 @@ import { FeedPanel } from './feed/FeedPanel';
 import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
 import { humanizedDate } from './library/humanizedDate';
 import { SearchBand } from './search/SearchBand';
+import { createAccountPanel } from './shell/accountPanel';
 import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
 import {
   type ApplyHeight,
   alignConnectSideElements,
+  followAccountPanel,
   followResizing,
   followSwipes,
   resizeShutter,
   scrollToElement,
-  startAccountPanel,
   switchPanel,
   toggleShutter,
 } from './shell/navigation';
@@ -140,7 +141,8 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
       alignConnectSideElements,
     ]);
     followSwipes();
-    startAccountPanel();
+    const accountPanel = createAccountPanel('xmlRLoader');
+    followAccountPanel(() => void accountPanel.reveal());
 
     await showLoader();
     await loadLibraryThenShowPage();
