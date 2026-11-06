@@ -147,7 +147,7 @@ test('shows the cover found for an album, or tells there is none', async ({ page
   await panel.getByText('Rock', { exact: true }).click();
   await panel.getByText('Sigur Rós', { exact: true }).click();
   await panel.getByText('Album 0 of Sigur Rós', { exact: true }).click();
-  await expect(cover).toHaveClass(/(^|s)noImgFound(s|$)/);
+  await expect(cover).toHaveClass(/(^|\s)noImgFound(\s|$)/);
 
   await page.route('https://musicbrainz.org/**', route => route.fulfill({ json: { 'release-groups': [{ id: 'found' }] } }));
   await page.route('https://coverartarchive.org/**', route => route.fulfill({ ...pictureFile(), body: pictureFile().buffer }));
@@ -155,7 +155,7 @@ test('shows the cover found for an album, or tells there is none', async ({ page
   await panel.getByText('Rock', { exact: true }).click();
   await panel.getByText('Sigur Rós', { exact: true }).click();
   await panel.getByText('Album 1 of Sigur Rós', { exact: true }).click();
-  await expect(cover).not.toHaveClass(/(^|s)(noImgFound|searchingCover)(s|$)/);
+  await expect(cover).not.toHaveClass(/(^|\s)(noImgFound|searchingCover)(\s|$)/);
   await expect(cover.locator('img')).toHaveAttribute('src', /coverartarchive/);
 });
 
