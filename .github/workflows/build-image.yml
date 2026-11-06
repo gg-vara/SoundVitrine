@@ -70,8 +70,12 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
+      - name: Release notes, from CHANGELOG.md
+        run: awk -v title="## ${{ steps.data-from-package.outputs.appVersion }}" '$0 == title { found = 1; next } /^## / { found = 0 } found' CHANGELOG.md > release-notes.md
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.data-from-package.outputs.appVersion }}
+          body_path: release-notes.md
 

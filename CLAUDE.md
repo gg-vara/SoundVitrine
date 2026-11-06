@@ -54,5 +54,5 @@ Library and shout values come from what any account uploads, and run in its visi
 
 - Push or publish only when asked. Several small commits rather than one large one, messages in lowercase, saying what changed
 - Comments say why, in the style of the surrounding code
-- The version in `app/package.json` triggers the image's publication on `main`
+- The version in `app/package.json` triggers the image's publication on `main`, with the notes of its section of `CHANGELOG.md`. Versions are shared with SoundBuddy
 - Each text the pages show goes in `server/translations/`, in both languages
