@@ -3,8 +3,11 @@
 // biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard
 
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
+import { searchAlbumCover } from '../library/coverSearch';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
+import { youtubeSearchUrl } from '../library/youtube';
 import { COVER } from '../shell/cover';
+import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
 import { scrollToElement } from '../shell/navigation';
 import {
   appliedFilters,
@@ -206,15 +209,15 @@ export function DiscoverPanel(props: {
   function updateCover() {
     const asked = ++coverAsked;
     const current = album();
-    resetImgLoader(cover);
+    searchCover(cover);
     if (!current) return;
     // an answer can come for what is no longer shown, if only the request cancelled by this one
-    queryMusicBrainzForAlbumCover('albumInfos', current.Album, current.Artist).then(
+    searchAlbumCover('albumInfos', current.Album, current.Artist).then(
       imgUrl => {
-        if (asked === coverAsked) updateImgLoader(cover, imgUrl);
+        if (asked === coverAsked) showCover(cover, imgUrl);
       },
       () => {
-        if (asked === coverAsked) brokenImgFr(cover);
+        if (asked === coverAsked) showNoCover(cover);
       },
     );
   }
@@ -370,7 +373,7 @@ export function DiscoverPanel(props: {
                 data-no-cover-found={i18n.no_cover_found}
                 ref={cover}
               >
-                <img class="min-h-[250px] min-w-[250px]" onLoad={imgLoaded} onError={brokenImg} alt="" />
+                <img class="min-h-[250px] min-w-[250px]" onLoad={onCoverLoaded} onError={onCoverBroken} alt="" />
               </div>
             </div>
             <div class={[CAPTION, 'my-4 mr-0 ml-8']}>
@@ -384,7 +387,7 @@ export function DiscoverPanel(props: {
             <a
               class="animated bg-[#efefef] p-2 text-[grey] shadow-[0px_0px_5px_0px_#afafaf] [transition:all_.4s] hover:text-black hover:[&_i]:text-[red]"
               rel="noopener"
-              href={album() && linkToYoutube(album()?.Artist ?? '', album()?.Album ?? '')}
+              href={album() && youtubeSearchUrl(album()?.Artist ?? '', album()?.Album ?? '')}
               target={album() ? '_blank' : undefined}
             >
               <i class="fab fa-youtube" />

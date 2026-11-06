@@ -10,6 +10,7 @@ import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, sho
 import { startupMachine } from './shell/machine';
 import {
   type ApplyHeight,
+  alignConnectSideElements,
   followResizing,
   followSwipes,
   resizeShutter,

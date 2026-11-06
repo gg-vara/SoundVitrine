@@ -57,6 +57,18 @@ export async function scrollToElement(element: Element | null, correction = 0): 
   await Promise.all([headerGone, scrolled]);
 }
 
+// the button of the account panel, at the height of the library's. Measured from the header, as the page may be scrolled,
+// and from what shows of the library's, which depends on the width of the page
+export function alignConnectSideElements() {
+  const headerTop = (document.getElementsByTagName('header')[0] as HTMLElement).getBoundingClientRect().top;
+  const tops = [...document.querySelectorAll('#app-music-library .connect-side')]
+    .filter(element => element.getClientRects().length)
+    .map(element => element.getBoundingClientRect().top - headerTop);
+  if (!tops.length) return;
+
+  (document.querySelector('#app-connect .connect-side') as HTMLElement).style.top = `${Math.max(...tops)}px`;
+}
+
 let accountPanel: AccountPanel | undefined;
 
 export function startAccountPanel() {

@@ -109,7 +109,11 @@ export function createAccountPanel(elementId: string, firstUrl: string): Account
       if (revealed) return;
       revealed = true;
 
-      removeNotification('.connect-side.notif');
+      for (const button of document.querySelectorAll('.connect-side.notif')) {
+        void waitAnimationEnd(button, () => button.classList.add('notifOut'), '::after').then(() => {
+          button.classList.remove('notif', 'notifOut');
+        });
+      }
       document.querySelector('#app-connect .connect-side')?.classList.add('anima');
       document.getElementById('bg')?.classList.add('show');
 

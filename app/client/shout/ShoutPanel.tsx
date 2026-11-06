@@ -1,7 +1,10 @@
 // What the owner of the library is listening to
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
+import { searchAlbumCover } from '../library/coverSearch';
+import { youtubeSearchUrl } from '../library/youtube';
 import { COVER } from '../shell/cover';
+import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
 import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
 import { followShouts } from './live';
 import { metaText, movesTimeline, type Shout } from './logic';
@@ -28,10 +31,11 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
   let notification!: HTMLDivElement;
   let cover!: HTMLDivElement;
   let timeline!: HTMLDivElement;
+  let coverAsked = 0;
 
   const track = () => {
     const shout = shown();
-    return shout?.artist && shout.name ? linkToYoutube(shout.artist, shout.name) : undefined;
+    return shout?.artist && shout.name ? youtubeSearchUrl(shout.artist, shout.name) : undefined;
   };
 
   function toggleMuted() {
@@ -41,11 +45,17 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
   }
 
   function updateCover(shout: Shout) {
-    resetImgLoader(cover);
+    const asked = ++coverAsked;
+    searchCover(cover);
     if (!shout.album || !shout.artist) return;
-    queryMusicBrainzForAlbumCover('shout', shout.album, shout.artist).then(
-      imgUrl => updateImgLoader(cover, imgUrl),
-      () => brokenImgFr(cover),
+    // a shout coming during the search cancels it : that is no missing cover
+    searchAlbumCover('shout', shout.album, shout.artist).then(
+      imgUrl => {
+        if (asked === coverAsked) showCover(cover, imgUrl);
+      },
+      () => {
+        if (asked === coverAsked) showNoCover(cover);
+      },
     );
   }
 
@@ -133,7 +143,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
       <div class="flex w-full flex-row items-center justify-center py-4">
         <a class="ml-2" title={i18n.playOnYT} rel="noopener" href={track()} target={track() ? '_blank' : undefined}>
           <div class={[COVER, 'group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]']} ref={cover}>
-            <img class="group-hover/cover:opacity-50" onLoad={imgLoaded} onError={brokenImg} alt="" />
+            <img class="group-hover/cover:opacity-50" onLoad={onCoverLoaded} onError={onCoverBroken} alt="" />
             <i class="fab fa-youtube absolute top-[.5em] left-2 z-5000 text-[1rem] text-[red] opacity-0 [transition:all_.3s_ease] group-hover/cover:opacity-100" />
           </div>
         </a>

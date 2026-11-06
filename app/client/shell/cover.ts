@@ -1,4 +1,4 @@
 // An album's cover, or what tells it is searched for or missing. "searchingCover", "noImgFound" and "fo" come from
-// client/legacy/explorer/js/misc/imgLoader.js. What shows when there is none is in style.css, with its text
+// coverStates.ts. What shows when there is none is in style.css, with its text
 export const COVER =
   'imgLoader rounded-[.5em] bg-white [transition:all_.3s_ease] [&_img]:h-full [&_img]:w-full [&_img]:rounded-[.5em] [&_img]:bg-white [&_img]:[transition:all_.3s_ease] [&::before]:absolute [&::before]:z-100 [&::before]:flex [&::before]:h-full [&::before]:w-full [&::before]:items-center [&::before]:justify-center [&::before]:rounded-[.5em] [&::before]:bg-white [&::before]:whitespace-pre [&::before]:text-[grey] [&::before]:[font-family:Verdana,Geneva,Tahoma,sans-serif] [&::before]:[transition:all_.3s_ease] [&.searchingCover::before]:flex-col [&.searchingCover::before]:bg-[url(/public/images/loader.svg)] [&.searchingCover::before]:bg-[length:50%] [&.searchingCover::before]:bg-center [&.searchingCover::before]:bg-no-repeat [&.searchingCover::before]:[content:""] [&.fo::before]:opacity-0';

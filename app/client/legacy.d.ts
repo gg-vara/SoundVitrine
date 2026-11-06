@@ -8,16 +8,8 @@ declare const clientURLUnified: string;
 // with nothing to do, it gives null at once
 declare function waitTransitionEnd(eventEmitter: Element, action: (() => void) | null): Promise<Element | null>;
 declare function calculateMillisecondsElapsed(dateFrom: string): number;
-declare function linkToYoutube(artist: string, albumOrTitle: string): string;
-declare function imgLoaded(event: Event): void;
-declare function brokenImg(event: Event): void;
-declare function resetImgLoader(elem: Element): void;
-declare function updateImgLoader(elem: Element, imgUrl: string): void;
-declare function brokenImgFr(elem: Element): void;
-declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
+declare function waitAnimationEnd(eventEmitter: Element, action: () => void, pseudoElement: string): Promise<Element | null>;
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
-declare function alignConnectSideElements(): void;
-declare function removeNotification(selector: string): void;
 
 declare class Hammer {
   static TouchInput: unknown;
