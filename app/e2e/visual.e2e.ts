@@ -7,7 +7,7 @@ const shot = async (page: Page, name: string) => {
   await expect(page).toHaveScreenshot(`${name}.png`, {
     animations: 'disabled',
     maxDiffPixelRatio: 0.002,
-    mask: [page.locator('video'), page.locator('.wAnim'), page.locator('.band'), page.locator('.animTimeline')],
+    mask: [page.locator('video'), page.locator('.band'), page.locator('.band'), page.locator('.animTimeline')],
   });
 };
 
@@ -73,7 +73,7 @@ for (const [label, size] of [
     test('account panel', async ({ page }) => {
       await openLibrary(page);
       await openAccountPanel(page);
-      const panel = page.locator('#xmlRLoader, #accountContent');
+      const panel = page.locator('#accountContent, #accountContent');
       await expect(panel.getByRole('button', { name: 'create an account' })).toBeVisible();
       await shot(page, `${label}-panel-login`);
       await panel.getByRole('button', { name: 'create an account' }).click();

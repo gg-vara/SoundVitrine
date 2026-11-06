@@ -122,7 +122,7 @@ label.clickable.unselected {
   }
 }
 
-.wAnim {
+.band {
   position: absolute;
   overflow: hidden;
   display: flex;
@@ -138,12 +138,12 @@ label.clickable.unselected {
 }
 
 /* not to use the processor for what does not show */
-main > *:not(.focused) .wAnim,
+main > *:not(.focused) .band,
 main > *:not(.focused) .animTimeline {
   animation-play-state: paused;
 }
 
-.wAnim::after {
+.band::after {
   background-repeat: repeat;
   animation: Gradient 60s ease-in infinite;
   animation-fill-mode: both;

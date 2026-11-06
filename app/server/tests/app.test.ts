@@ -523,7 +523,7 @@ describe('pages', () => {
   test('the band colors only take colors', async () => {
     const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
     const post = (body: unknown) =>
-      handle(new Request(`${base}/account/bb`, { method: 'POST', body: JSON.stringify(body), headers: { cookie: cookieOf(logged) } }));
+      handle(new Request(`${base}/account/colors`, { method: 'POST', body: JSON.stringify(body), headers: { cookie: cookieOf(logged) } }));
 
     expect(await (await post(['#000000', '#111111', '#222222', '#333333'])).text()).toBe('OK');
     expect(await (await post(['</style><script>', '#111111', '#222222', '#333333'])).text()).toBe('');

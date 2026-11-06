@@ -88,12 +88,12 @@ test('tells when the library fails to load, and retries', async ({ page }) => {
   failing = false;
   await retry.click();
   await expect(discover(page).getByText('Rock', { exact: true })).toBeVisible();
-  await expect(page.locator('#loader-container')).toHaveCount(0);
+  await expect(page.locator('#loader')).toHaveCount(0);
 });
 
 test('the account panel : refusal, account creation form, login, logout', async ({ page }) => {
   await openAccountPanel(page);
-  const panel = page.locator('#xmlRLoader');
+  const panel = page.locator('#accountContent');
   await expect(panel.getByRole('heading', { name: 'Connect' })).toBeVisible();
 
   await submitLogin(page, 'wrongpassword');
@@ -120,7 +120,7 @@ test('the account panel : refusal, account creation form, login, logout', async 
 
 test('the account panel creates an account', async ({ page }) => {
   await openAccountPanel(page);
-  const panel = page.locator('#xmlRLoader');
+  const panel = page.locator('#accountContent');
   await panel.getByRole('button', { name: 'create an account' }).click();
   await expect(panel.getByRole('heading', { name: 'Create account' })).toBeVisible();
 
@@ -135,19 +135,19 @@ test('the account panel creates an account', async ({ page }) => {
 
 test('going to the account panel and back keeps the page', async ({ page }) => {
   await openAccountPanel(page);
-  await expect(page.locator('#xmlRLoader').getByRole('heading', { name: 'Connect' })).toBeVisible();
+  await expect(page.locator('#accountContent').getByRole('heading', { name: 'Connect' })).toBeVisible();
 
-  await page.locator('#app-connect').getByTitle('Login / Create an account').click();
+  await page.locator('#accountPanel').getByTitle('Login / Create an account').click();
   await expect(discover(page).getByText('Rock', { exact: true })).toBeInViewport();
 });
 
 test('shows the cover found for an album, or tells there is none', async ({ page }) => {
   const panel = discover(page);
-  const cover = panel.locator('.imgLoader');
+  const cover = panel.locator('.cover');
   await panel.getByText('Rock', { exact: true }).click();
   await panel.getByText('Sigur Rós', { exact: true }).click();
   await panel.getByText('Album 0 of Sigur Rós', { exact: true }).click();
-  await expect(cover).toHaveClass(/(^|\s)noImgFound(\s|$)/);
+  await expect(cover).toHaveClass(/(^|\s)noCover(\s|$)/);
 
   await page.route('https://musicbrainz.org/**', route => route.fulfill({ json: { 'release-groups': [{ id: 'found' }] } }));
   await page.route('https://coverartarchive.org/**', route => route.fulfill({ ...pictureFile(), body: pictureFile().buffer }));
@@ -155,7 +155,7 @@ test('shows the cover found for an album, or tells there is none', async ({ page
   await panel.getByText('Rock', { exact: true }).click();
   await panel.getByText('Sigur Rós', { exact: true }).click();
   await panel.getByText('Album 1 of Sigur Rós', { exact: true }).click();
-  await expect(cover).not.toHaveClass(/(^|\s)(noImgFound|searchingCover)(\s|$)/);
+  await expect(cover).not.toHaveClass(/(^|\s)(noCover|searchingCover)(\s|$)/);
   await expect(cover.locator('img')).toHaveAttribute('src', /coverartarchive/);
 });
 

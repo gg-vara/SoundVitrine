@@ -1,9 +1,8 @@
 // What the account page offers to change : the colors of the user's animated band, and their picture
 import { createSignal, For } from 'solid-js';
 import { bandRule } from './bandColors';
-import { BAND_COLOR_PICKER, BAND_COLORS, BAND_CONTROLS, BAND_EDITOR, PICTURE_EDITOR, PICTURE_HOLDER, PICTURE_IMAGE } from './styles';
 
-const STYLE_ID = 'bbStyle';
+const STYLE_ID = 'bandStyle';
 
 // it stays for the rest of the page's life, as the library's own band follows it
 function bandStyle(): HTMLElement {
@@ -47,10 +46,10 @@ function BandEditor(props: { owner: string; colors: string[]; opened: (opened: b
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: it opens by a click anywhere on it, its inputs do the rest
     // biome-ignore lint/a11y/useKeyWithClickEvents: as above
-    <div id="bBandEditor" class={[BAND_EDITOR, { open: open() }]} title={i18n.updateBBand} onClick={() => toggle(true)}>
-      <div class="wAnim" data-owner={props.owner} />
-      <div class={BAND_COLOR_PICKER}>
-        <div class={BAND_CONTROLS}>
+    <div id="bandEditor" class={['bandEditor', { open: open() }]} title={i18n.updateBBand} onClick={() => toggle(true)}>
+      <div class="band" data-owner={props.owner} />
+      <div class="bandColorPicker">
+        <div class="absolute right-0 -bottom-5 z-10 flex w-full flex-row justify-between">
           <input type="button" value="✕" title={i18n.cancel} onClick={event => close(event, saved())} />
           <input
             type="button"
@@ -60,13 +59,13 @@ function BandEditor(props: { owner: string; colors: string[]; opened: (opened: b
               const kept = colors();
               setSaved(kept);
               close(event, kept);
-              fetch('/account/bb', { method: 'POST', body: JSON.stringify(kept) }).catch(error => {
+              fetch('/account/colors', { method: 'POST', body: JSON.stringify(kept) }).catch(error => {
                 console.error('The colors could not be saved', error);
               });
             }}
           />
         </div>
-        <div class={BAND_COLORS}>
+        <div class="bandColors">
           <For each={[0, 1, 2, 3]}>
             {index => (
               <input
@@ -88,8 +87,8 @@ function BandEditor(props: { owner: string; colors: string[]; opened: (opened: b
 async function uploadPicture(file: File): Promise<string> {
   const body = new FormData();
   body.append('file', file);
-  const response = await fetch('/account/pp', { method: 'POST', body });
-  if (!response.ok) throw new Error(`/account/pp : ${response.status}`);
+  const response = await fetch('/account/picture', { method: 'POST', body });
+  if (!response.ok) throw new Error(`/account/picture : ${response.status}`);
   return response.text();
 }
 
@@ -122,8 +121,8 @@ function PictureEditor(props: { picture: string | null; hidden: boolean }) {
     // biome-ignore lint/a11y/noStaticElementInteractions: it opens the picker by a click anywhere on it
     // biome-ignore lint/a11y/useKeyWithClickEvents: as above
     <span
-      id="ProfilePicEditor"
-      class={[PICTURE_EDITOR, { uploading: uploading() }]}
+      id="pictureEditor"
+      class={['pictureEditor', { uploading: uploading() }]}
       style={props.hidden ? { opacity: 0, 'pointer-events': 'none' } : undefined}
       title={i18n.updateProfilePic}
       onClick={() => {
@@ -138,9 +137,9 @@ function PictureEditor(props: { picture: string | null; hidden: boolean }) {
         onClick={event => event.stopPropagation()}
         onChange={() => void upload()}
       />
-      <div class={PICTURE_HOLDER}>
+      <div class="pictureHolder">
         <i class="fas fa-user" />
-        <img class={PICTURE_IMAGE} src={picture()} alt="" />
+        <img src={picture()} alt="" />
       </div>
     </span>
   );
@@ -149,7 +148,7 @@ function PictureEditor(props: { picture: string | null; hidden: boolean }) {
 export function Editors(props: { owner: string; colors: string[]; picture: string | null }) {
   const [bandOpen, setBandOpen] = createSignal(false);
   return (
-    <div id="EditorWrapper" class="flex justify-center">
+    <div class="flex justify-center">
       <BandEditor owner={props.owner} colors={props.colors} opened={setBandOpen} />
       <PictureEditor picture={props.picture} hidden={bandOpen()} />
     </div>

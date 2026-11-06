@@ -242,8 +242,7 @@ async function accountRoute(context: PageContext, action: string | undefined): P
       return json({}, 200, headers.getSetCookie());
     }
 
-    // profile picture
-    case 'pp': {
+    case 'picture': {
       const user = session.loggedAs;
       if (request.method !== 'POST' || !user) return text('');
 
@@ -264,8 +263,8 @@ async function accountRoute(context: PageContext, action: string | undefined): P
       return text(publicUserFolder(user) + pictureName);
     }
 
-    // colors of the user's band
-    case 'bb': {
+    // of the user's band
+    case 'colors': {
       const user = session.loggedAs;
       const colors: unknown = await request.json().catch(() => undefined);
       // checked : they end up in the styles of the pages

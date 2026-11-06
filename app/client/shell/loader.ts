@@ -1,12 +1,12 @@
 // What shows until the library is there. The loader's markup comes with the page : it must show before any script runs
 import { play } from './motion';
 
-const LOADER_ID = 'loader-container';
-const PAGE_ID = 'app-music-library';
+const LOADER_ID = 'loader';
+const PAGE_ID = 'libraryPanel';
 const FADE_SECONDS = 0.5;
 
 function moveLoaderBar(percent: number) {
-  const bar = document.getElementById('loader-bar');
+  const bar = document.getElementById('loaderBar');
   if (bar) bar.style.transform = `translateX(${percent - 100}%)`;
 }
 

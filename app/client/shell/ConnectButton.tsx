@@ -1,10 +1,5 @@
 // The button going to the other panel of the library page, notifying when not logged in
 
-const NOTIFICATION =
-  '[&.notif]:after:pointer-events-none [&.notif]:after:absolute [&.notif]:after:top-[5%] [&.notif]:after:right-[10%] [&.notif]:after:flex [&.notif]:after:min-h-[1em] [&.notif]:after:min-w-[1em] [&.notif]:after:items-center [&.notif]:after:justify-center [&.notif]:after:rounded-[50%] [&.notif]:after:bg-[red] [&.notif]:after:p-[.1em] [&.notif]:after:text-center [&.notif]:after:text-[.6rem] [&.notif]:after:leading-[0] [&.notif]:after:shadow-[0px_1px_5px_1px_rgba(56,56,56,.2)] [&.notif]:after:content-[attr(data-notif)] [&.notif]:after:[animation-duration:1s] [&.notif]:after:[animation-iteration-count:infinite] [&.notif]:after:[animation-name:bounceIn] [&.notif.notifOut]:after:[animation-fill-mode:forwards]! [&.notif.notifOut]:after:[animation-iteration-count:1]! [&.notif.notifOut]:after:[animation-name:bounceOut]! [&.notif:hover]:after:[animation:none]!';
-
-const CONNECT_BUTTON = `bg-[rgba(255,255,255,.3)] p-1 [transition:top_.5s] hover:[animation-name:pulse] hover:[animation-duration:1s] hover:[animation-iteration-count:infinite] hover:[animation-fill-mode:forwards] ${NOTIFICATION}`;
-
 export type Notification = 'shown' | 'leaving' | 'gone';
 
 export function ConnectButton(props: {
@@ -19,8 +14,7 @@ export function ConnectButton(props: {
   return (
     <div
       class={[
-        'connect-side',
-        CONNECT_BUTTON,
+        'connectButton',
         props.place,
         { notif: props.notification !== 'gone', notifOut: props.notification === 'leaving', anima: props.lit },
       ]}

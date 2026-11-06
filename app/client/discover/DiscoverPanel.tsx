@@ -6,7 +6,7 @@ import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 's
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
 import { humanizedDate } from '../library/humanizedDate';
 import { youtubeSearchUrl } from '../library/youtube';
-import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
+import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
 import { play } from '../shell/motion';
 import { scrollToElement } from '../shell/navigation';
 import {
@@ -71,12 +71,11 @@ function slidingItems(items: () => Iterable<HTMLElement>, change: () => void) {
 
 // their width and height come from applyFilterSizes, which needs the "open" class
 const FILTER =
-  'ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-5 portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0 [&::before]:absolute [&::before]:top-[-.9rem] [&::before]:left-[-.3rem] [&::before]:z-30 [&::before]:text-[.65em] [&::before]:text-[grey] [&::before]:[content:attr(data-sl)]';
-// what a button has of its own, as they look like the text around them
-const PLAIN_BUTTON = 'cursor-pointer appearance-none [border:none] bg-transparent p-0 text-start [unicode-bidi:isolate] [font:inherit]';
-const PLACEHOLDER = `${PLAIN_BUTTON} absolute [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] focus-visible:[transform:translate(.35rem,0)]`;
-const ITEM = `${PLAIN_BUTTON} [transition:transform_.3s_ease] hover:[transform:translate(.35rem,0)] focus-visible:[transform:translate(.35rem,0)] [&[data-count]::after]:ml-1 [&[data-count]::after]:align-middle [&[data-count]::after]:text-[grey]`;
-const SORT_BUTTON = `${PLAIN_BUTTON} mx-[.1rem] my-0 flex shrink-0 grow-0 opacity-60 [transition:all_.1s_ease] hover:[&>*]:opacity-80! [&>i]:cursor-pointer [&>i]:[transition:all_.3s_ease]`;
+  'discoverFilter ml-[.7rem] mt-4 min-h-4 flex-col [transition:all_.3s_ease] last:mr-4 last:mb-5 portrait:mt-[1.3rem] portrait:first:mt-2 landscape:first:ml-0';
+const PLACEHOLDER = 'plainButton slidesOnHover absolute';
+const ITEM = 'plainButton slidesOnHover discoverItem';
+const SORT_BUTTON =
+  'plainButton mx-[.1rem] my-0 flex shrink-0 grow-0 opacity-60 [transition:all_.1s_ease] hover:[&>*]:opacity-80! [&>i]:cursor-pointer [&>i]:[transition:all_.3s_ease]';
 
 const isActivation = (event: KeyboardEvent) => event.code === 'Enter' || event.code === 'Space' || event.code === 'NumpadEnter';
 
@@ -352,8 +351,7 @@ export function DiscoverPanel(props: {
               </div>
               <div
                 class={[
-                  COVER,
-                  'noCoverMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]',
+                  'cover coverWithMessage mb-2 flex min-h-[250px] min-w-[250px] text-[.6rem] shadow-[0px_0px_13px_1px_rgba(255,255,255,.25)] [&:not(.searchingCover)]:min-w-[20vw]',
                 ]}
                 data-no-cover-found={i18n.no_cover_found}
                 ref={cover}
@@ -380,7 +378,7 @@ export function DiscoverPanel(props: {
             </a>
           </div>
         </div>
-        <div class="wAnim" data-owner={props.owner} />
+        <div class="band" data-owner={props.owner} />
       </div>
     </>
   );

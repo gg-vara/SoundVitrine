@@ -1,3 +1,3 @@
 // over what the server rendered for this user
 export const bandRule = (owner: string, colors: string[]) =>
-  `.wAnim[data-owner="${owner}"]::after { background:linear-gradient(-45deg, ${colors.join(',')}) !important; }`;
+  `.band[data-owner="${owner}"]::after { background:linear-gradient(-45deg, ${colors.join(',')}) !important; }`;

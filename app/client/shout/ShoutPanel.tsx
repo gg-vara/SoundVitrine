@@ -3,7 +3,7 @@
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
 import { youtubeSearchUrl } from '../library/youtube';
-import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
+import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
 import { play } from '../shell/motion';
 import { fitShutter, setShutter } from '../shell/navigation';
 import { followShouts } from './live';
@@ -81,7 +81,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
   }
 
   function showWidget() {
-    const widget = document.getElementById('shoutNotificationWidget');
+    const widget = document.getElementById('shoutWidget');
     if (!widget) return;
     requestAnimationFrame(() => {
       widget.classList.remove('show');
@@ -138,7 +138,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
       </div>
       <div class="flex w-full flex-row items-center justify-center py-4">
         <a class="ml-2" title={i18n.playOnYT} rel="noopener" href={track()} target={track() ? '_blank' : undefined}>
-          <div class={[COVER, 'group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]']} ref={cover}>
+          <div class={['cover', 'group/cover z-1 h-8 w-8 text-[.5rem] shadow-[0px_0px_10px_#a9a9a9]']} ref={cover}>
             <img class="group-hover/cover:opacity-50" onLoad={onCoverLoaded} onError={onCoverBroken} alt="" />
             <i class="fab fa-youtube absolute top-[.5em] left-2 z-5000 text-[1rem] text-[red] opacity-0 [transition:all_.3s_ease] group-hover/cover:opacity-100" />
           </div>

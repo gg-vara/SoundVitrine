@@ -1,9 +1,8 @@
 // Logging in, creating an account, and managing it : on a page of its own, or in the panel of the library page
 import { createSignal, Show } from 'solid-js';
-import { HYPE_BUTTON, HYPE_SUBMIT, TEXT_INPUT } from '../../server/pages/controls';
 import { filled } from '../library/texts';
 import { Editors } from './Editors';
-import { ACCOUNT_CREATION, ACCOUNT_MANAGEMENT, DOWNLOAD_EXPLAIN, DOWNLOAD_NAME, FIELD, LOGIN_RACK, POPUP, POPUP_CONTENT } from './styles';
+import { ACCOUNT_CREATION, ACCOUNT_MANAGEMENT, LOGIN_RACK } from './styles';
 
 interface LengthRule {
   min: number;
@@ -43,8 +42,8 @@ function Popup(props: { message: string | null; hidden: boolean; hide: () => voi
     <Show when={props.message}>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: a click anywhere dismisses it, and it is no more than a message */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: as above */}
-      <div class={['popup error', POPUP, { hide: props.hidden }]} onClick={props.hide}>
-        <div class={POPUP_CONTENT}>{props.message}</div>
+      <div class={['popup error', { hide: props.hidden }]} onClick={props.hide}>
+        <div class="popupMessage">{props.message}</div>
       </div>
     </Show>
   );
@@ -52,12 +51,9 @@ function Popup(props: { message: string | null; hidden: boolean; hide: () => voi
 
 function Field(props: { label: string | undefined; type: string; name: string; autocomplete?: string; rule?: LengthRule }) {
   return (
-    <div class={FIELD} {...{ placeholder: props.label }}>
+    <div class="field" {...{ placeholder: props.label }}>
       <input
-        class={[
-          TEXT_INPUT,
-          '[background:rgba(255,255,255,.75)] [&:-webkit-autofill]:[animation-fill-mode:both] [&:-webkit-autofill]:[animation-name:autofill]',
-        ]}
+        class="textInput"
         required
         type={props.type}
         name={props.name}
@@ -100,10 +96,10 @@ function Login(props: { accepted: () => Promise<void>; toCreation: () => void })
         <form onSubmit={submit}>
           <Field label={i18n.e_log_username} type="text" name="username" autocomplete="username" />
           <Field label={i18n.userPwd} type="password" name="password" autocomplete="current-password" />
-          <input class={HYPE_SUBMIT} type="submit" value={`✓ ${i18n.validate}`} title={i18n.e_log_connect} />
+          <input class="submitButton" type="submit" value={`✓ ${i18n.validate}`} title={i18n.e_log_connect} />
         </form>
         <hr />
-        <button class={HYPE_BUTTON} type="button" onClick={props.toCreation}>
+        <button class="actionButton" type="button" onClick={props.toCreation}>
           <i class="fas fa-user-circle" />
           <span>{i18n.log_createAccount}</span>
         </button>
@@ -123,7 +119,7 @@ function Creation(props: { rules: Me['rules']; accepted: () => Promise<void>; ba
           <Field label={i18n.e_log_username} type="text" name="username" autocomplete="username" rule={props.rules.username} />
           <Field label={i18n.userPwd} type="password" name="password" autocomplete="current-password" rule={props.rules.password} />
           <Field label={i18n.e_log_email} type="email" name="email" />
-          <input class={HYPE_SUBMIT} type="submit" value={`✓ ${i18n.validate}`} title={i18n.e_log_createAccount} />
+          <input class="submitButton" type="submit" value={`✓ ${i18n.validate}`} title={i18n.e_log_createAccount} />
         </form>
       </div>
       <Show when={props.back}>
@@ -145,7 +141,7 @@ function Management(props: { me: Me; username: string; disconnected: () => Promi
       <div class={LOGIN_RACK}>
         <Show when={location.pathname.toLowerCase() !== library()}>
           <button
-            class={HYPE_BUTTON}
+            class="actionButton"
             type="button"
             onClick={() => {
               location.href = library();
@@ -156,7 +152,7 @@ function Management(props: { me: Me; username: string; disconnected: () => Promi
           </button>
         </Show>
         <button
-          class={HYPE_BUTTON}
+          class="actionButton"
           type="button"
           onClick={() => {
             void fetch('/account/disconnect', { method: 'POST' }).then(props.disconnected);
@@ -168,10 +164,10 @@ function Management(props: { me: Me; username: string; disconnected: () => Promi
       </div>
       <div>
         <a target="_blank" href={props.me.companionApp.url} rel="noopener">
-          <div class={DOWNLOAD_EXPLAIN}>
+          <div class="flex flex-col bg-white px-0 py-[.25em] text-[#515151] [transition:opacity_.2s] hover:opacity-80">
             <span>
               <span>{i18n.obtainCompanionApp_1} </span>
-              <span class={DOWNLOAD_NAME}>{props.me.companionApp.name}</span>
+              <span class="text-[#d20068] [text-shadow:white_0_0_2px]">{props.me.companionApp.name}</span>
             </span>
             <span>{i18n.obtainCompanionApp_2}</span>
           </div>

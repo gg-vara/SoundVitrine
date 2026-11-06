@@ -4,6 +4,7 @@
  * Only what uses them is scanned : client/public/ has large libraries, whose text would pass for class names.
  */
 @import "./base.css";
+@import "./components.css";
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 
@@ -42,16 +43,6 @@ body:has(main):not(.lock) {
 .animTimeline {
   animation-name: progress;
   animation-timing-function: linear;
-}
-
-/* a text Tailwind cannot read, for its unbalanced parenthesis */
-.imgLoader.noImgFound::before {
-  content: ":'(";
-}
-
-/* its text comes from the page, which Tailwind cannot write with the line breaks it has */
-.noCoverMessage.noImgFound::before {
-  content: ":'( \A\A " attr(data-no-cover-found);
 }
 
 @keyframes autofill {

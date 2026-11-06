@@ -1,9 +1,6 @@
-// An album's cover, or what tells it is searched for or missing. What shows when there is none is in style.css, with its text
+// An album's cover, or what tells it is searched for or missing (components.css)
 import { searchAlbumCover } from '../library/coverSearch';
 import { play } from './motion';
-
-export const COVER =
-  'imgLoader rounded-[.5em] bg-white [transition:all_.3s_ease] [&_img]:h-full [&_img]:w-full [&_img]:rounded-[.5em] [&_img]:bg-white [&_img]:[transition:all_.3s_ease] [&::before]:absolute [&::before]:z-100 [&::before]:flex [&::before]:h-full [&::before]:w-full [&::before]:items-center [&::before]:justify-center [&::before]:rounded-[.5em] [&::before]:bg-white [&::before]:whitespace-pre [&::before]:text-[grey] [&::before]:[font-family:Verdana,Geneva,Tahoma,sans-serif] [&.searchingCover::before]:flex-col [&.searchingCover::before]:bg-[url(/public/images/loader.svg)] [&.searchingCover::before]:bg-[length:50%] [&.searchingCover::before]:bg-center [&.searchingCover::before]:bg-no-repeat [&.searchingCover::before]:[content:""]';
 
 const FADE_SECONDS = 0.3;
 
@@ -14,7 +11,7 @@ async function showNoCover(cover: Element) {
   await fadeSearch(cover);
   cover.firstElementChild?.removeAttribute('src');
   cover.classList.remove('searchingCover');
-  cover.classList.add('noImgFound');
+  cover.classList.add('noCover');
 }
 
 const coverOf = (event: Event) => (event.currentTarget as Element).parentElement as Element;
@@ -36,7 +33,7 @@ export function createCoverFinder(searchName: string, cover: () => Element) {
     const current = ++asked;
     const element = cover();
     element.firstElementChild?.removeAttribute('src');
-    element.classList.remove('noImgFound');
+    element.classList.remove('noCover');
     element.classList.add('searchingCover');
     if (!album || !artist) return;
 

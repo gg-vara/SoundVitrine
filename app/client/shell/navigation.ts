@@ -42,12 +42,12 @@ export function scrollToElement(element: Element | null, correction = 0) {
 // and from what shows of the library's, which depends on the width of the page
 export function alignConnectSideElements() {
   const headerTop = (document.getElementsByTagName('header')[0] as HTMLElement).getBoundingClientRect().top;
-  const tops = [...document.querySelectorAll('#app-music-library .connect-side')]
+  const tops = [...document.querySelectorAll('#libraryPanel .connectButton')]
     .filter(element => element.getClientRects().length)
     .map(element => element.getBoundingClientRect().top - headerTop);
   if (!tops.length) return;
 
-  (document.querySelector('#app-connect .connect-side') as HTMLElement).style.top = `${Math.max(...tops)}px`;
+  (document.querySelector('#accountPanel .connectButton') as HTMLElement).style.top = `${Math.max(...tops)}px`;
 }
 
 let onAccountPanelShown: (() => void) | undefined;

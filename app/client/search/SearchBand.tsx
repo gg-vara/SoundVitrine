@@ -1,5 +1,4 @@
-// The search bar of the library page. "searchResults" and "show" are read by client/shell/scrolling.ts :
-// the header stays while searching
+// The search bar of the library page
 import { createSignal, For, Show } from 'solid-js';
 import type { SearchResult } from '../library/data';
 
@@ -57,7 +56,7 @@ export function SearchBand(props: {
       }}
     >
       <input
-        class="w-full flex-1 [border:none] p-2 text-[.55rem] opacity-80 shadow-[0_2px_2px_0_rgba(0,0,0,.16),0_0_0_1px_rgba(0,0,0,.08)] hover:[outline:none] focus:opacity-100 focus:[outline:none] hover:shadow-[0_3px_8px_0_rgba(0,0,0,.2),0_0_0_1px_rgba(0,0,0,.08)] focus:shadow-[0_3px_8px_0_rgba(0,0,0,.2),0_0_0_1px_rgba(0,0,0,.08)]"
+        class="searchInput"
         type="text"
         aria-label={i18n.phSearch}
         spellcheck={false}
@@ -68,13 +67,7 @@ export function SearchBand(props: {
         onFocus={() => setOpen(input.value !== '')}
         onKeyDown={keyOnInput}
       />
-      <div
-        class={[
-          'searchResults absolute top-[1.65rem] z-50 hidden max-h-40 w-full overflow-x-hidden overflow-y-auto bg-white p-2 [font-family:Arial] [outline:none] [transition:all_.3s_ease_0s] [&.show]:block shadow-[0_3px_8px_0_rgba(0,0,0,.2),0_0_0_1px_rgba(0,0,0,.08)]',
-          { show: open() },
-        ]}
-        ref={results}
-      >
+      <div class={['searchResults', { show: open() }]} ref={results}>
         <Show when={found().length > 0} fallback={<div class="text-center text-[grey]">{i18n.no_found}</div>}>
           <For each={found()}>
             {entry => {
@@ -82,7 +75,7 @@ export function SearchBand(props: {
               return (
                 <button
                   type="button"
-                  class="block w-full cursor-pointer appearance-none [border:none] bg-transparent px-2 py-0 text-start [unicode-bidi:isolate] [font:inherit] [color:inherit] [transition:all_.2s] hover:bg-[rgba(128,128,128,.05)] hover:[transform:translate(.15rem,0)] focus:bg-[rgba(128,128,128,.05)] focus:[transform:translate(.15rem,0)]"
+                  class="plainButton searchResult"
                   title={artist}
                   data-n-filter={JSON.stringify({ genreUI: genres[0], artistUI: artist })}
                   onMouseDown={select}

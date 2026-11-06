@@ -8,7 +8,6 @@ import { html, raw } from '../html';
 import type { Lang, TranslationKey, Translator } from '../i18n';
 import { dictionaries } from '../i18n';
 import type { Session } from '../session';
-import { CREDITS, FOOTER, FOOTER_MIDDLE, LANGUAGES, MAIN_FRAME } from './controls';
 
 // what a page is rendered from
 export interface PageContext {
@@ -75,7 +74,7 @@ export function clientStyles(): Html {
 export function colorsCss(owner?: string, colors?: string[]): string {
   const target = owner && colors ? `[data-owner="${owner}"]` : '';
   const [a, b, c, d] = owner && colors ? colors : DEFAULT_BACKGROUND_COLORS;
-  return `.wAnim${target}::after { background: linear-gradient(-45deg, ${a}, ${b}, ${c}, ${d});}`;
+  return `.band${target}::after { background: linear-gradient(-45deg, ${a}, ${b}, ${c}, ${d});}`;
 }
 
 //
@@ -135,6 +134,8 @@ export const translationsScript = (context: PageContext) => html`<script>
     const i18n = ${scriptJson(dictionaries[context.lang])};
 </script>`;
 
+const FOOTER_PART = 'flex h-full items-center bg-white text-[.65rem]';
+
 const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
   .filter(name => name.endsWith('.svg'))
   .sort();
@@ -142,19 +143,19 @@ const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
 export function footer(context: PageContext): Html {
   const action = context.url.pathname + context.url.search;
 
-  return html`<footer class="${FOOTER}" style="text-align: center">
-    <div class="${CREDITS}" style="gap: .4rem">
+  return html`<footer class="mb-2 flex w-full flex-row-reverse items-center justify-between bg-[#dcdcdc] text-center">
+    <div class="${FOOTER_PART} mr-[5%] gap-[.4rem] self-end p-[.35rem] text-[#525252] [&_a]:h-3 [&_img]:h-3">
         <span>${APP_NAME} 2018-${new Date().getFullYear()}</span>
-        <span style="color:black">${APP_VERSION} Beta</span>
+        <span class="text-black">${APP_VERSION} Beta</span>
         <a href='https://www.linkedin.com/in/guillaumevara/' title="${context.tr('devLinkedin')}" target="_blank" rel="noopener">
             <img src='/public/images/linkedin.png' alt="${context.tr('devLinkedin')}"/>
         </a>
     </div>
-    <div class="${FOOTER_MIDDLE}" style="background-color: transparent; font-size: .6em; gap: .75em">
-        <a href="/account"><i class="fas fa-user-circle" style="margin-right: .25em;"></i>${context.tr('my_account')}</a>
-        <a href="/api/docs" title="${context.tr('api_docs')}"><i class="fas fa-code" style="margin-right: .25em;"></i>API</a>
+    <div class="flex h-full items-center gap-[.75em] bg-transparent p-[.35rem] text-[.6em]">
+        <a href="/account"><i class="fas fa-user-circle mr-[.25em]"></i>${context.tr('my_account')}</a>
+        <a href="/api/docs" title="${context.tr('api_docs')}"><i class="fas fa-code mr-[.25em]"></i>API</a>
     </div>
-    <div id="langs" class="${LANGUAGES}">
+    <div id="langs" class="${FOOTER_PART} languages ml-[5%] self-start px-[.35rem] py-0">
         ${flags.map(file => {
           const flagLang = basename(file, '.svg');
           const isCurrent = flagLang === context.lang;
@@ -162,7 +163,7 @@ export function footer(context: PageContext): Html {
           return html`<form method="POST" action="${action}">
             <label ${isCurrent ? '' : html`title="${context.tr('switch_lang', context.tr(langName))}"`} class="${isCurrent ? '' : 'clickable unselected'}">
                 <input type="hidden" name="set_lang" value="${flagLang}" />
-                <button ${isCurrent ? 'disabled' : ''} style="all:unset; display: flex; align-items: center">
+                <button ${isCurrent ? 'disabled' : ''} class="flex items-center [all:unset]">
                     <img src="/public/images/flags/${file}" />
                 </button>
             </label>
@@ -183,7 +184,7 @@ export function adminPage(context: PageContext, title: string, content: Html): H
         ${clientStyles()}
     </head>
     <body>
-        <div class="${MAIN_FRAME} justify-center" style="margin: 0 1rem;">
+        <div class="z-0 mx-4 flex grow flex-col justify-center">
             ${content}
         </div>
         ${footer(context)}

@@ -13,10 +13,8 @@ const IN_BANNER = 'text-white landscape:hidden! portrait:[display:inherit]!';
 // what opens under the header : it closes without a height, which shell/navigation.ts gives
 const SUB_FRAME = 'flex shrink-0 flex-wrap overflow-hidden not-last:max-h-0';
 const SUB_CONTENT = 'flex grow flex-wrap items-start px-4 py-6 portrait:flex-col portrait:px-3 portrait:py-4';
-// each one has its own color and position
-const CATEGORY =
-  "[&::before]:mr-4 [&::before]:mb-4 [&::before]:w-30 [&::before]:text-right [&::before]:text-[1.5em] [&::before]:whitespace-nowrap [&::before]:[content:attr(data-cat)_'_||'] portrait:[&::before]:text-left";
-const CATEGORY_IN_FLOW = `${CATEGORY} [&::before]:relative`;
+// each one has its own color and position, and its title in components.css
+const CATEGORY_IN_FLOW = 'category before:relative';
 
 // whose texts come in a language that puts the name anywhere
 function LibraryOf(props: { user: string }) {
@@ -54,8 +52,8 @@ export function LibraryPage(props: {
 
   return (
     <>
-      <main id="main-app" class="flex w-full [transform:translateX(0px)]">
-        <div id="app-music-library" class={`focused ${MAIN_PANEL} bg-[rgb(239,238,238)] opacity-0`}>
+      <main class="flex w-full [transform:translateX(0px)]">
+        <div id="libraryPanel" class={`focused ${MAIN_PANEL} bg-[rgb(239,238,238)] opacity-0`}>
           <header class="sticky top-0 z-10 flex w-full shrink-0 flex-col shadow-[0px_0px_.5rem_#e0e0e0]">
             <div class="flex w-full flex-row items-center">
               <span class="flex h-full items-center justify-center gap-[.2rem] bg-[#f7f7f7] pr-[.25em] pl-[.5em] text-center text-[2.5rem] portrait:hidden">
@@ -67,7 +65,7 @@ export function LibraryPage(props: {
               </span>
               <div class="flex grow flex-row flex-wrap items-center justify-between py-[.35rem] hidpi:py-3 [&>*]:mx-4 [&>*]:my-[.2rem]">
                 <LibraryOf user={pageData.user} />
-                <div class="flex grow-[10000] justify-between text-[.5rem] text-white [font-family:sans-serif] hidpi:[&_i]:text-[1.3rem] [&_i]:text-[1rem] [&>*]:mx-1 [&>*]:flex [&>*]:items-center [&>*:first-child]:ml-0 [&>*:last-child]:mr-0">
+                <div class="headerIcons">
                   <label class="clickable" title={filled(i18n.users_profile, pageData.user)}>
                     <input id="showProfile" type="checkbox" autocomplete="off" onChange={props.toggleProfile} />
                     {pageData.profilePicture ? (
@@ -95,7 +93,7 @@ export function LibraryPage(props: {
             <div id="profileContainer" class={`${SUB_FRAME} w-full shadow-[1px_.5rem_.5rem_rgb(0,0,0,.05)]`}>
               <div class={`${SUB_CONTENT} ${CATEGORY_IN_FLOW} grow [&::before]:text-white`} data-cat={i18n.profile} />
             </div>
-            <div class="wAnim" data-owner={pageData.user} />
+            <div class="band" data-owner={pageData.user} />
           </header>
           <div class="z-0 flex grow flex-col justify-start">
             <div id="shoutContainer" class={`${SUB_FRAME} group z-500 bg-[#e0e0e0]`}>
@@ -103,7 +101,7 @@ export function LibraryPage(props: {
             </div>
             <div id="statsContainer" class={`${SUB_FRAME} bg-[#f9f9f9] shadow-[0px_0px_.05rem_#b7b7b7]`}>
               <div
-                class={`${SUB_CONTENT} ${CATEGORY} min-w-0 [align-items:initial]! [&::before]:absolute [&::before]:text-[grey]`}
+                class={`${SUB_CONTENT} category min-w-0 [align-items:initial]! [&::before]:absolute [&::before]:text-[grey]`}
                 data-cat="STATS"
               >
                 <div class="flex min-w-0 flex-1 flex-col">{props.stats}</div>
