@@ -108,33 +108,9 @@ function albumsById(tracks: Track[]): Ordered {
   return albums;
 }
 
-// as PHP's iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE')
-function transliterate(text: string): string {
-  return text
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .replace(/ß/g, 'ss')
-    .replace(/[æÆ]/g, 'ae')
-    .replace(/[œŒ]/g, 'oe')
-    .replace(/[øØ]/g, 'o')
-    .replace(/[^\p{ASCII}]/gu, '');
-}
-
-export function slugify(text: string): string {
-  // as PHP 8's strtolower : ASCII letters only
-  return transliterate(text.replace(/[A-Z]/g, letter => letter.toLowerCase()).replace(/\s+/g, '-'))
-    .replace(/[·/_,:;]/g, '-')
-    .replace(/&/g, '-and-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-')
-    .replace(/^-+/, '');
-}
-
-// [slug, artist] pairs, the shortest artist names first, then alphabetically
-function slugs(artists: Iterable<string>): [string, string][] {
-  return [...artists]
-    .sort((a, b) => Buffer.byteLength(a) - Buffer.byteLength(b) || Buffer.compare(Buffer.from(a), Buffer.from(b)))
-    .map(artist => [slugify(artist), artist]);
+// the shortest names first, then alphabetically : the order the search relies on
+function artistNames(artists: Iterable<string>): string[] {
+  return [...artists].sort((a, b) => Buffer.byteLength(a) - Buffer.byteLength(b) || Buffer.compare(Buffer.from(a), Buffer.from(b)));
 }
 
 // the data of the library page, from the uploaded tracks
@@ -150,7 +126,7 @@ export function unifiedLibrary(tracks: Track[]): Record<string, unknown> {
     arbgc: counts(artistsByGenre),
     glul: albumsById(tracks),
     abal: artists,
-    slug: slugs(artists.keys()),
+    artists: artistNames(artists.keys()),
   };
 }
 

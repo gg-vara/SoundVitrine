@@ -14,7 +14,6 @@ import {
   BAND_EDITOR,
   DOWNLOAD_EXPLAIN,
   DOWNLOAD_NAME,
-  DOWNLOADS,
   EDITORS,
   HYPE_BUTTON,
   HYPE_SUBMIT,
@@ -126,7 +125,6 @@ function downloadButtons(context: PageContext): Html {
             <span>${context.tr('obtainCompanionApp_2')}</span>
         </div>
     </a>
-    <div class="${DOWNLOADS}"></div>
 </div>`;
 }
 

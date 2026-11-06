@@ -165,13 +165,12 @@ export const pageTitle = (subtitle?: string) => (subtitle ? `${APP_NAME} - ${sub
 
 export const externalStyles = html`<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/solid.css" async>
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/brands.css" async>
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/fontawesome.css" async>
-<link rel="stylesheet" href="/public/ext/css/animate.min.css">`;
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/fontawesome.css" async>`;
 
 export const defaultColorsStyle = () => html`<style>${raw(colorsCss())}</style>`;
 
 // JSON in a <script>, which must not close it
-const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
+export const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
 
 // the texts of the library page's panels
 export const translationsScript = (context: PageContext) => html`<script>

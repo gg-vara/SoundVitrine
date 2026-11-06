@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import type { Track } from '../library';
-import { slugify, toJson, unifiedLibrary } from '../library';
+import { toJson, unifiedLibrary } from '../library';
 
 const track = (name: string, album: string, artist: string, genre: string, added: string, number = 1): Track => ({
   Name: name,
@@ -44,12 +44,8 @@ describe('unifiedLibrary', () => {
     expect(unified().glul['First_Long Artist_1997'].DateAdded).toBe('2021-01-01T00:00:00Z');
   });
 
-  test('slugs : the shortest artists first, then alphabetically', () => {
-    expect(unified().slug).toEqual([
-      ['abc', 'Abc'],
-      ['bcd', 'Bcd'],
-      ['long-artist', 'Long Artist'],
-    ]);
+  test('artists : the shortest first, then alphabetically', () => {
+    expect(unified().artists).toEqual(['Abc', 'Bcd', 'Long Artist']);
   });
 });
 
@@ -67,17 +63,5 @@ describe('toJson', () => {
 
   test('missing values are null, empty maps arrays, as PHP wrote them', () => {
     expect(toJson({ missing: undefined, empty: new Map() })).toBe('{"missing":null,"empty":[]}');
-  });
-});
-
-describe('slugify', () => {
-  test.each([
-    ['Sigur Rós', 'sigur-ros'],
-    ['AC/DC', 'ac-dc'],
-    ['Simon & Garfunkel', 'simon-and-garfunkel'],
-    ['  Leading', 'leading'],
-    ['Björk: Live', 'bjork-live'],
-  ])('%s', (name, slug) => {
-    expect(slugify(name)).toBe(slug);
   });
 });

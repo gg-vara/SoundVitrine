@@ -15,6 +15,7 @@ import {
   footer,
   metadata,
   pageTitle,
+  scriptJson,
   translationsScript,
   wAnim,
 } from './layout';
@@ -117,9 +118,6 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
     ${footer(context)}
 </div>`;
 }
-
-// JSON in a <script>, which must not close it
-const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
 
 export function libraryPage(context: PageContext, user: string): Html {
   const { tr } = context;

@@ -26,8 +26,6 @@ export const DOWNLOAD_EXPLAIN = 'flex flex-col bg-white px-0 py-[.25em] text-[#5
 
 export const DOWNLOAD_NAME = 'text-[#d20068] [text-shadow:white_0_0_2px]';
 
-export const DOWNLOADS = 'm-[.5rem] flex flex-row justify-evenly';
-
 // the editors of the account page : the classes without a look of their own are what client/account/ looks for
 export const EDITORS = 'flex justify-center';
 

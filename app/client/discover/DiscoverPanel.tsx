@@ -387,7 +387,7 @@ export function DiscoverPanel(props: {
           </div>
           <div class="flex items-center justify-center p-2 pt-8 select-auto">
             <a
-              class="animated bg-[#efefef] p-2 text-[grey] shadow-[0px_0px_5px_0px_#afafaf] [transition:all_.4s] hover:text-black hover:[&_i]:text-[red]"
+              class="bg-[#efefef] p-2 text-[grey] shadow-[0px_0px_5px_0px_#afafaf] [transition:all_.4s] hover:text-black hover:[&_i]:text-[red]"
               rel="noopener"
               href={album() && youtubeSearchUrl(album()?.Artist ?? '', album()?.Album ?? '')}
               target={album() ? '_blank' : undefined}

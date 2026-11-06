@@ -17,10 +17,7 @@ const library: UnifiedLibrary = {
     Björk: { Genres: ['Rock', 'Jazz'], Albums: { Vespertine: album(2001, '2020-01-01'), Homogenic: album(1997, '2020-01-02') } },
     Røyksopp: { Genres: ['Rock'], Albums: { Melody: album(2001, '2024-01-03') } },
   },
-  slug: [
-    ['bjork', 'Björk'],
-    ['royksopp', 'Røyksopp'],
-  ],
+  artists: ['Björk', 'Røyksopp'],
   glul: {
     a: { Album: 'Vespertine', Artist: 'Björk', Year: 2001, DateAdded: '2020-01-01', Genre: 'Rock' },
     b: { Album: 'Homogenic', Artist: 'Björk', Year: 1997, DateAdded: '2020-01-02', Genre: 'Rock' },
@@ -119,7 +116,7 @@ describe('search', () => {
     const many = Array.from({ length: 150 }, (_, index) => `band ${index}`);
     const large: UnifiedLibrary = {
       ...library,
-      slug: many.map(name => [name, name]),
+      artists: many,
       abal: Object.fromEntries(many.map(name => [name, { Genres: [], Albums: {} }])),
     };
     const found = createDataFeeds(large, {
@@ -167,7 +164,7 @@ describe('feed', () => {
 
 describe('an empty library', () => {
   // empty lists come as [] from the server
-  const empty = { arbgl: [], arbgc: [], albgl: [], albgc: [], abal: [], slug: [], glul: [] } as unknown as UnifiedLibrary;
+  const empty = { arbgl: [], arbgc: [], albgl: [], albgc: [], abal: [], artists: [], glul: [] } as unknown as UnifiedLibrary;
   const it = createDataFeeds(empty, {
     humanizedSince: () => '',
     now: () => new Date(),

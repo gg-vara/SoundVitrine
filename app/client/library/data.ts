@@ -24,8 +24,8 @@ export interface UnifiedLibrary {
   albgl: Record<string, string[]>;
   albgc: Record<string, number>;
   abal: Record<string, { Genres: string[]; Albums: Record<string, Album> }>;
-  // [slug, artist] pairs
-  slug: [string, string][];
+  // the shortest names first : the server sorts them so
+  artists: string[];
   // albums by id
   glul: Record<string, FeedAlbum>;
 }
@@ -68,8 +68,7 @@ export function sortItems(items: FilterItem[], sorter: string): FilterItem[] {
 }
 
 export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsContext) {
-  // the shortest names first : the server sorts them so
-  const searchNames = createNameSearch(library.slug.map(([, artist]) => artist));
+  const searchNames = createNameSearch(library.artists);
 
   return {
     genreUI: () => itemsOf(library.albgc),
