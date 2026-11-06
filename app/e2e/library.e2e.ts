@@ -125,12 +125,13 @@ test('the account panel creates an account', async ({ page }) => {
   await panel.getByRole('button', { name: 'create an account' }).click();
   await expect(panel.getByRole('heading', { name: 'Create account' })).toBeVisible();
 
-  await page.locator('input[name=username]').fill('e2ecurator');
+  const username = `e2e${Date.now() % 1_000_000_000}`;
+  await page.locator('input[name=username]').fill(username);
   await page.locator('input[name=password]').fill(PASSWORD);
-  await page.locator('input[name=email]').fill('e2e@example.com');
+  await page.locator('input[name=email]').fill(`${username}@example.com`);
   await page.locator('input[type=submit]').click();
 
-  await expect(panel.getByText('Welcome back, e2ecurator')).toBeVisible();
+  await expect(panel.getByText(`Welcome back, ${username}`)).toBeVisible();
   await logOut(page);
 });
 
@@ -162,7 +163,7 @@ test('shows the cover found for an album, or tells there is none', async ({ page
 
 test('closes what it opened, and fits it when the window changes', async ({ page }) => {
   await page.getByTitle('Feed', { exact: true }).click();
-  await expectOpen(page, '#feedContainer');
+  // while it opens : it must not end at the height it was going to
   await page.setViewportSize({ width: 600, height: 700 });
   await expect
     .poll(() => page.locator('#feedContainer').evaluate(element => element.scrollHeight - element.clientHeight))

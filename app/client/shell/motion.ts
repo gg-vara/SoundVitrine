@@ -11,7 +11,11 @@ export function play(
   options: { pseudoElement?: string } = {},
 ): Promise<void> {
   return Promise.race([
-    Promise.resolve(animate(element, keyframes, { duration: seconds, ease: 'easeInOut', ...options })).then(() => undefined),
+    Promise.resolve(animate(element, keyframes, { duration: seconds, ease: 'easeInOut', ...options })).then(
+      () => undefined,
+      // cancelled : what comes next does not depend on it
+      () => undefined,
+    ),
     new Promise<void>(resolve => setTimeout(resolve, seconds * 1000 + HIDDEN_TAB_MARGIN_MS)),
   ]);
 }

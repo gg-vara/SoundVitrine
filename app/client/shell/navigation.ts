@@ -27,6 +27,8 @@ export async function setShutter(targetId: string, open: boolean): Promise<Eleme
 // to what it now holds, at once
 export function fitShutter(targetId: string, open: boolean) {
   const target = document.getElementById(targetId) as HTMLElement;
+  // what it was going to would be written back when it ends
+  for (const animation of target.getAnimations()) animation.cancel();
   const height = shutterHeight(target, open);
   shutters.set(target, height);
   target.style.maxHeight = height;
