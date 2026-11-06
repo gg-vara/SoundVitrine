@@ -1,54 +1,45 @@
-# Build vendors with only prod dependencies
-FROM composer:2 AS vendor-builder
+# What needs the development dependencies : Vite's build, and Scalar's browser script, without the large package it comes with
+# Not on Alpine : Solid's compiler has no build for musl. The result is plain JavaScript, whichever system made it
+FROM oven/bun:1.4.4 AS build
 
 WORKDIR /app
 
-# Copy only files needed to install dependencies
-COPY ./files/composer.json ./files/composer.lock ./
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-# Install only production dependencies
-RUN composer install --no-dev --optimize-autoloader
+COPY client ./client
+# Tailwind also reads the classes of the pages (client/style.css)
+COPY server/pages ./server/pages
+COPY vite.config.ts tsconfig.json ./
+RUN bun run build
 
 ##
 ##
 ##
 
-# https://frankenphp.dev/docs/docker/
-# note: prefer non-alpine for compatibility and performance (https://frankenphp.dev/fr/docs/performance/)
-FROM dunglas/frankenphp:1-php8.3.36-alpine AS runner
-RUN install-php-extensions \
-	intl
+FROM oven/bun:1.4.4-alpine
 
-# "empty" so we can debug it on all local loops (127.0.0.1, localhost, 0.0.0.0)
-ENV SERVER_NAME=""
+WORKDIR /app
 
-COPY ./files /app/public
-COPY --from=vendor-builder /app/vendor /app/public/vendor
-COPY ./Caddyfile /etc/frankenphp/Caddyfile
+# only production dependencies, as locked
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+
+COPY --from=build /app/node_modules/@scalar/api-reference/dist/browser/standalone.js ./node_modules/@scalar/api-reference/dist/browser/standalone.js
+COPY --from=build /app/client/dist ./client/dist
+
+COPY server ./server
+COPY client/public ./client/public
+COPY tsconfig.json ./
+
+ENV NODE_ENV=production
+ENV PORT=80
 
 # can be overriden
-ENV SOUNDVITRINE_STATE_PATH="/app/_state"
+ENV SOUNDVITRINE_STATE_PATH=/app/_state
 
-# would otherwise resort to check for Caddy admin API on port "2019", which might be disabled
-HEALTHCHECK CMD curl -f http://localhost/healthz || exit 1
+EXPOSE 80
 
-##
-##
-##
+HEALTHCHECK CMD bun -e "process.exit((await fetch('http://localhost:' + process.env.PORT + '/healthz')).ok ? 0 : 1)"
 
-#
-FROM runner AS runtime-xdebug
-RUN install-php-extensions \
-	xdebug
-RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-	&& echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-
-#
-#
-#
-
-# must be last, as default stage to be built if not selecting a specific target
-FROM runner
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+CMD ["bun", "server/index.ts"]

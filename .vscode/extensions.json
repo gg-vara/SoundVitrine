@@ -1,9 +1,6 @@
 {
     "recommendations": [
-        "bmewburn.vscode-intelephense-client",
-        "devsense.composer-php-vscode",
-        "matthewpi.caddyfile-support",
-        "xdebug.php-debug",
-        "obliviousharmony.vscode-php-codesniffer"
+        "biomejs.biome",
+        "oven.bun-vscode"
     ]
 }

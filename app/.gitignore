@@ -1,1 +1,7 @@
-vendor/
+node_modules
+_state
+_state-dev
+dist
+_state-e2e
+test-results
+playwright-report

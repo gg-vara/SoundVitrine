@@ -1,7 +1,4 @@
 {
-    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
-    // Pointez pour afficher la description des attributs existants.
-    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -14,44 +11,17 @@
                 "order": 1
             },
         },
-        //
-        //
-        //
-        {
-            "name": "1a) Bind XDebug",
-            "type": "php",
-            "request": "launch",
-            "port": 9003,
-            "pathMappings": {
-                "/app/public": "${workspaceFolder}/app/files"
-            },
-            "presentation": {
-                "hidden": false,
-                "group": "1. Compose",
-                "order": 2
-            },
-        },
         {
             "name": "1) Run - Docker Compose",
             "type": "node-terminal",
             "request": "launch",
             "command": "docker compose up --watch --build",
             "cwd": "${workspaceFolder}/.dev",
-            "serverReadyAction": {
-                "action": "startDebugging",
-                "pattern": "server running",  
-                "name": "1a) Bind XDebug",
-                "killOnServerStop": true
-            },
             "presentation": {
                 "hidden": false,
                 "group": "1. Compose",
                 "order": 1
             },
-            "cascadeTerminateToConfigurations": [
-                "1a) Bind XDebug",
-                "2) Open SoundVitrine locally"
-            ]
         },
     ],
 }

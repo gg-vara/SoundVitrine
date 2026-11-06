@@ -1,0 +1,41 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: app/package.json
+
+      - name: Check, then test
+        run: |
+          bun install --frozen-lockfile
+          bun x --bun tsc --noEmit
+          bun x --bun tsc --noEmit -p client
+          bun x biome ci .
+          bun test
+
+      - name: Test the pages in a browser
+        run: |
+          bun x playwright install --with-deps chromium
+          bun run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: app/test-results
+          retention-days: 7
+
+      # what the published image is made from : its Dockerfile names folders of the project
+      - name: Build the image
+        run: docker build -t soundvitrine:check .

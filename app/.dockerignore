@@ -1,2 +1,13 @@
-files/vendor/
+node_modules
+_state
+_state-dev
+server/tests
+server/scripts
 .env*
+client/dist
+client/tests
+_state-e2e
+e2e
+playwright.config.ts
+test-results
+playwright-report

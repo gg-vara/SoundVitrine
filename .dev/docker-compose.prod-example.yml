@@ -7,8 +7,7 @@ services:
     volumes:
      - soundvitrine-state:/app/_state:rw
     environment:
-      MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"   # required, please configure in `.env` file
-      MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}" # required, please configure in `.env` file
+      SOUNDVITRINE_TRUST_PROXY: "1" # Traefik gives the client's address, to limit password guessing by client
     networks:
       - traefik
     labels:
