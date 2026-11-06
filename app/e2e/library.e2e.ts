@@ -173,6 +173,18 @@ test('closes what it opened, and fits it when the window changes', async ({ page
   await expectOpen(page, '#feedContainer');
 });
 
+test('downloads the background video only once the account panel opens', async ({ page }) => {
+  const requested: string[] = [];
+  page.on('request', request => requested.push(request.url()));
+  await page.reload();
+  await expect(discover(page).getByText('Rock', { exact: true })).toBeVisible();
+  expect(requested.filter(url => url.includes('bg.mp4'))).toEqual([]);
+
+  await openAccountPanel(page);
+  await expect.poll(() => requested.filter(url => url.includes('bg.mp4')).length).toBeGreaterThan(0);
+  await expect.poll(() => page.locator('video').evaluate(video => (video as HTMLVideoElement).paused)).toBe(false);
+});
+
 test.describe('on a touch screen', () => {
   test.use({ hasTouch: true, viewport: { width: 500, height: 800 } });
 

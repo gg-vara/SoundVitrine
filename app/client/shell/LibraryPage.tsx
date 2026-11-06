@@ -137,7 +137,9 @@ export function LibraryPage(props: {
         class="fixed top-0 -z-20 h-[100vh] w-full object-cover opacity-0 [transition:opacity_.5s_ease] [&.show]:opacity-100"
         muted
         loop
-        autoplay
+        // only behind the account panel : it is not downloaded before that opens, shell/navigation.ts plays it
+        preload="none"
+        poster="/public/images/bg-poster.jpg"
         src="/public/videos/bg.mp4"
       />
     </>
