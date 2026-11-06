@@ -48,3 +48,22 @@ export const PICTURE_EDITOR = `${PICTURE_SIZE} m-[1rem] flex self-center rounded
 export const PICTURE_HOLDER = `${PICTURE_SIZE} top-0 left-0 flex [transition:all_.5s_ease] [.uploading>&]:opacity-0 [&>*]:flex [&>*]:h-[5rem] [&>*]:w-[5rem] [&>*]:items-center [&>*]:justify-center [&>*]:text-[3.5rem]`;
 
 export const PICTURE_IMAGE = 'absolute overflow-hidden [&:not([src])]:opacity-0 [&[src]]:rounded-[40%] [&[src]]:bg-[#f3f3f3]';
+
+// what holds a page's content
+export const MAIN_FRAME = 'z-0 flex grow flex-col';
+
+export const LOGIN_RACK = 'm-[.5rem] flex flex-col';
+
+export const ACCOUNT_CREATION = 'flex flex-col text-center';
+
+export const ACCOUNT_MANAGEMENT = `${ACCOUNT_CREATION} [&_button:not(:first-child):not(:only-child)]:mt-[1rem] [&>*:not(:first-child):not(:only-child)]:mt-[1rem]`;
+
+export const FOOTER = 'mb-[.5rem] flex w-full flex-row-reverse items-center justify-between bg-[#dcdcdc]';
+
+const FOOTER_PART = 'flex h-full items-center bg-white text-[.65rem]';
+
+export const FOOTER_MIDDLE = `${FOOTER_PART} p-[.35rem]`;
+
+export const CREDITS = `${FOOTER_PART} mr-[5%] self-end p-[.35rem] text-[#525252] [&_a]:h-[.75rem] [&_img]:h-[.75rem]`;
+
+export const LANGUAGES = `${FOOTER_PART} ml-[5%] self-start px-[.35rem] py-0 [&_img]:h-[1.3rem] [&>*]:flex [&>*:not(:first-child)]:ml-[.5rem] [&>*:not(.unselected)_img]:border [&>*:not(.unselected)_img]:border-dashed [&>*:not(.unselected)_img]:border-[#6a67bd57] [&>*:not(.unselected)_img]:px-[.2rem] [&>*:not(.unselected)_img]:py-0`;

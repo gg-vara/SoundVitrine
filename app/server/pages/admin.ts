@@ -6,6 +6,8 @@ import { html, raw } from '../html';
 import type { User } from '../users';
 import { findUser, publicUserFolder } from '../users';
 import {
+  ACCOUNT_CREATION,
+  ACCOUNT_MANAGEMENT,
   BAND_COLOR_PICKER,
   BAND_COLORS,
   BAND_CONTROLS,
@@ -16,6 +18,7 @@ import {
   EDITORS,
   HYPE_BUTTON,
   HYPE_SUBMIT,
+  LOGIN_RACK,
   PICTURE_EDITOR,
   PICTURE_HOLDER,
   PICTURE_IMAGE,
@@ -167,10 +170,10 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
   if (user) {
     const myLibrary = `/u/${user}`.toLowerCase();
     const isNotMyLibrary = libraryOfReferer(context) !== myLibrary;
-    content = html`<div id="accountManagement">
+    content = html`<div id="accountManagement" class="${ACCOUNT_MANAGEMENT}">
     ${editors(context, user)}
     <div>${tr('welcome_back', user)}</div>
-    <div class="loginRack">
+    <div class="loginRack ${LOGIN_RACK}">
         ${
           isNotMyLibrary
             ? html`<button class="${HYPE_BUTTON}" ${buttonLink(context, myLibrary, true)}>
@@ -188,8 +191,8 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
 </div>
 <style>${raw(colorsCss(user, findUser(user)?.customColors))}</style>`;
   } else {
-    content = html`<div id="accountManagement">
-    <div class="loginRack">
+    content = html`<div id="accountManagement" class="${ACCOUNT_MANAGEMENT}">
+    <div class="loginRack ${LOGIN_RACK}">
         ${loginForm(context, loginResult)}
         <hr/>
         <button class="${HYPE_BUTTON}" ${buttonLink(context, '/account/create')}>
@@ -214,10 +217,10 @@ export const accountRules: Record<'username' | 'password', LengthRule> = {
 export function createAccountPage(context: PageContext, result: FormResult | null): Html {
   const { tr } = context;
   const action = context.url.pathname + context.url.search;
-  const content = html`<div id="accountCreation">
+  const content = html`<div class="${ACCOUNT_CREATION}">
     <h1>${tr('e_log_createAccount')}</h1>
     ${popup(result)}
-    <form class="loginRack" method="POST" autocomplete="off" action="${action}">
+    <form class="${LOGIN_RACK}" method="POST" autocomplete="off" action="${action}">
         ${magnifikInput(context, { name: 'username', placeholder: 'e_log_username', required: true, autocomplete: 'username' }, accountRules)}
         ${magnifikInput(context, { type: 'password', placeholder: 'userPwd', required: true, autocomplete: 'current-password' }, accountRules)}
         ${magnifikInput(context, { type: 'email', placeholder: 'e_log_email', required: true })}

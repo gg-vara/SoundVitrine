@@ -1,9 +1,9 @@
 /*
- * Tailwind's utilities, outside of its layers and without its reset (Preflight), while client/legacy/ shares the page :
- * its styles have no layer, so they would win over any layer, whatever their weight ("* { position: relative }"),
- * and the reset would change how what is not moved yet looks.
- * Only what moved is scanned : client/public/ has large libraries, whose text would pass for class names.
+ * Tailwind's utilities, without its layers and reset (Preflight) : base.css sets what every page relies on,
+ * and Preflight would change how much of what has no class of its own looks (titles, buttons, images).
+ * Only what uses them is scanned : client/public/ has large libraries, whose text would pass for class names.
  */
+@import "./base.css";
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 
@@ -15,7 +15,7 @@
 @source "./stats";
 @source "../server/pages";
 
-/* as client/legacy/ does, including on touch screens */
+/* including on touch screens, where Tailwind's own only applies on what can hover */
 @custom-variant hover (&:hover);
 
 @custom-variant hidpi (@media (min-resolution: 192dpi));
@@ -40,7 +40,7 @@ html:has(body.lock) {
   scrollbar-gutter: auto;
 }
 
-/* also paused by client/legacy/admin/css/wAnim.css, when the page shows something else */
+/* also paused by base.css, when the page shows something else */
 .animTimeline {
   animation-name: progress;
   animation-timing-function: linear;

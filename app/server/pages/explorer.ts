@@ -4,12 +4,13 @@ import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, SHOUT_PROFILE_FILE_NAME } from '.
 import type { Html } from '../html';
 import { html, raw } from '../html';
 import { findUser, publicUserFolder } from '../users';
+import { MAIN_FRAME } from './controls';
 import type { PageContext } from './layout';
 import {
-  adminStyles,
   clientScript,
   clientStyles,
   colorsCss,
+  defaultColorsStyle,
   externalStyles,
   footer,
   metadata,
@@ -97,7 +98,7 @@ function musicLibrary(context: PageContext, user: string, profilePicture: string
         </div>
         ${wAnim(user)}
     </header>
-    <div id='mainFrame' class="justify-start!">
+    <div class="${MAIN_FRAME} justify-start">
         <div id='shoutContainer' class="${SUB_FRAME} group bg-[#e0e0e0] z-500"></div>
         <div id='statsContainer' class="${SUB_FRAME} bg-[#f9f9f9] shadow-[0px_0px_.05rem_#b7b7b7]">
             <div class="${SUB_CONTENT} ${CATEGORY} min-w-0 [align-items:initial]! [&::before]:absolute [&::before]:text-[grey]" data-cat="STATS">
@@ -142,7 +143,7 @@ export function libraryPage(context: PageContext, user: string): Html {
         </script>
         ${translationsScript(context)}
         ${clientScript()}
-        ${adminStyles()}
+        ${defaultColorsStyle()}
         <style>
             ${raw(colorsCss(user, profile?.customColors))}
         </style>

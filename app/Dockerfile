@@ -29,7 +29,6 @@ COPY --from=build /app/node_modules/@scalar/api-reference/dist/browser/standalon
 COPY --from=build /app/client/dist ./client/dist
 
 COPY server ./server
-COPY client/legacy ./client/legacy
 COPY client/public ./client/public
 COPY tsconfig.json ./
 

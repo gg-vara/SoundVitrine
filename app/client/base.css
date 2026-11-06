@@ -1,0 +1,157 @@
+/*
+ * What applies to every page, or to what the server and the browser code both render.
+ * Before Tailwind's utilities (style.css), so that they win at the same weight.
+ */
+@font-face {
+  font-family: bebasNeueFont;
+  src: url(/public/fonts/BebasNeue-Regular.otf);
+  font-display: swap;
+}
+
+:root {
+  font-size: 22px;
+  font-family: bebasNeueFont, Arial, Helvetica, sans-serif;
+  background-color: rgb(239, 238, 238);
+}
+
+* {
+  box-sizing: border-box;
+  position: relative;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  display: flex;
+  scroll-behavior: smooth;
+}
+
+body {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow-x: hidden;
+  min-width: 100%;
+}
+
+body.lock {
+  overflow-y: hidden;
+}
+
+hr {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #f0f0f0, #8c8b8b, #f0f0f0);
+}
+
+span,
+div {
+  user-select: text;
+}
+
+a,
+a:visited,
+a:hover,
+a:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input[type="submit"],
+input[type="button"] {
+  user-select: none;
+  cursor: pointer;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form > *:not(:first-child):not(:only-child) {
+  margin-top: 1rem;
+}
+
+/* a label acting as a button, around what its input shows */
+label.clickable input[type="checkbox"],
+input[type="radio"] {
+  display: none;
+}
+
+label.clickable i,
+label.clickable img,
+label.clickable i + span {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+label.clickable {
+  display: flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+label.clickable:hover > * {
+  /* biome-ignore lint/complexity/noImportantStyles: over what is unselected, whichever way its opacity comes */
+  opacity: 0.8 !important;
+}
+
+label.clickable input[type="checkbox"]:not(:checked) + i,
+label.clickable input[type="checkbox"]:not(:checked) + img,
+label.clickable input[type="radio"]:not(:checked) + i,
+label.clickable input[type="radio"]:not(:checked) + i + span,
+label.clickable.unselected {
+  color: rgba(0, 0, 0, 0.8);
+  opacity: 0.6;
+}
+
+/* the animated band, whose colors come with the page (server/pages/layout.ts) or its editor (account/bandColors.ts) */
+@keyframes Gradient {
+  0% {
+    transform: translateX(25%) translateY(25%);
+  }
+  50% {
+    transform: translateX(-25%) translateY(-25%);
+  }
+  100% {
+    transform: translateX(25%) translateY(25%);
+  }
+}
+
+.wAnim {
+  position: absolute;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: -50;
+  /* biome-ignore lint/complexity/noImportantStyles: over the margins of what it sits among, which it does not take part in */
+  margin: 0 !important;
+}
+
+/* not to use the processor for what does not show */
+main > *:not(.focused) .wAnim,
+main > *:not(.focused) .animTimeline {
+  animation-play-state: paused;
+}
+
+.wAnim::after {
+  background-repeat: repeat;
+  animation: Gradient 60s ease-in infinite;
+  animation-fill-mode: both;
+  position: absolute;
+  content: "";
+  width: 400%;
+  height: 400%;
+  z-index: -1;
+  transform: translate3d(0, 0, 0);
+  animation-play-state: running;
+}

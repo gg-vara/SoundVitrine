@@ -1,6 +1,6 @@
-// Parts shared by the pages : metadata, footer, the scripts and styles inlined into them, form helpers
+// Parts shared by the pages : metadata, footer, the browser build, form helpers
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { APP_NAME, APP_ROOT, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
 import type { Html } from '../html';
@@ -8,7 +8,7 @@ import { html, raw } from '../html';
 import type { Lang, TranslationKey, Translator } from '../i18n';
 import { dictionaries } from '../i18n';
 import type { Session } from '../session';
-import { MAGNIFIK, MAGNIFIK_INPUT, POPUP, POPUP_CONTENT } from './controls';
+import { CREDITS, FOOTER, FOOTER_MIDDLE, LANGUAGES, MAGNIFIK, MAGNIFIK_INPUT, MAIN_FRAME, POPUP, POPUP_CONTENT } from './controls';
 
 // what a page is rendered from
 export interface PageContext {
@@ -25,10 +25,9 @@ export interface PageContext {
 }
 
 //
-// Files inlined into the pages
+// The browser build
 //
 
-const cache = new Map<string, string>();
 const caching = process.env.NODE_ENV === 'production';
 
 // the files of Vite's entry, relative to client/dist/
@@ -66,26 +65,8 @@ export function clientScript(name = LIBRARY_ENTRY): Html {
   return entry ? html`<script type="module" src="/web/${entry.file}"></script>` : html``;
 }
 
-// after the styles of client/legacy/ : they share the same weight at times, where the last one wins
 export function clientStyles(): Html {
   return html`${(clientEntry()?.css ?? []).map(file => html`<link rel="stylesheet" href="/web/${file}">`)}`;
-}
-
-// the files of an application folder, concatenated in alphabetical order (not recursive)
-export function filesOf(folder: string): string {
-  const cached = cache.get(folder);
-  if (cached !== undefined) return cached;
-
-  const path = join(APP_ROOT, folder);
-  const content = `${readdirSync(path)
-    .sort()
-    .map(name => join(path, name))
-    .filter(file => statSync(file).isFile())
-    .map(file => readFileSync(file, 'utf8'))
-    .join('')}\n`;
-
-  if (caching) cache.set(folder, content);
-  return content;
 }
 
 //
@@ -187,9 +168,7 @@ export const externalStyles = html`<link rel="stylesheet" href="https://use.font
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/fontawesome.css" async>
 <link rel="stylesheet" href="/public/ext/css/animate.min.css">`;
 
-export const adminStyles = () => html`<style>
-${raw(filesOf('client/legacy/admin/css'))}${colorsCss()}
-</style>`;
+export const defaultColorsStyle = () => html`<style>${raw(colorsCss())}</style>`;
 
 // JSON in a <script>, which must not close it
 const scriptJson = (value: unknown) => raw(JSON.stringify(value).replace(/</g, '\\u003c'));
@@ -206,18 +185,18 @@ const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
 export function footer(context: PageContext): Html {
   const action = context.url.pathname + context.url.search;
 
-  return html`<footer style="text-align: center">
-    <div id='credits' style="gap: .4rem">
+  return html`<footer class="${FOOTER}" style="text-align: center">
+    <div class="${CREDITS}" style="gap: .4rem">
         <span>${APP_NAME} 2018-${new Date().getFullYear()}</span>
         <span style="color:black">${APP_VERSION} Beta</span>
         <a href='https://www.linkedin.com/in/guillaumevara/' title="${context.tr('devLinkedin')}" target="_blank" rel="noopener">
             <img src='/public/images/linkedin.png' alt="${context.tr('devLinkedin')}"/>
         </a>
     </div>
-    <div style="background-color: transparent; font-size: .6em">
+    <div class="${FOOTER_MIDDLE}" style="background-color: transparent; font-size: .6em">
         <a href="/account"><i class="fas fa-user-circle" style="margin-right: .25em;"></i>${context.tr('my_account')}</a>
     </div>
-    <div id="langs">
+    <div id="langs" class="${LANGUAGES}">
         ${flags.map(file => {
           const flagLang = basename(file, '.svg');
           const isCurrent = flagLang === context.lang;
@@ -244,11 +223,11 @@ export function adminPage(context: PageContext, title: string, content: Html): H
     <head>
         ${metadata(context, title)}
         ${externalStyles}
-        ${adminStyles()}
+        ${defaultColorsStyle()}
         ${clientStyles()}
     </head>
     <body>
-        <div id="mainFrame" style="margin: 0 1rem;">
+        <div class="${MAIN_FRAME} justify-center" style="margin: 0 1rem;">
             ${content}
         </div>
         ${footer(context)}
