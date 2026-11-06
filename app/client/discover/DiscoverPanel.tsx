@@ -3,12 +3,10 @@
 // biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard
 
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
-import { searchAlbumCover } from '../library/coverSearch';
 import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
 import { humanizedDate } from '../library/humanizedDate';
 import { youtubeSearchUrl } from '../library/youtube';
-import { COVER } from '../shell/cover';
-import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
+import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
 import { scrollToElement } from '../shell/navigation';
 import { waitTransitionEnd } from '../shell/waiting';
 import {
@@ -206,22 +204,11 @@ export function DiscoverPanel(props: {
   let wrapper!: HTMLDivElement;
   let infos!: HTMLDivElement;
   let cover!: HTMLDivElement;
-  let coverAsked = 0;
+  const findCover = createCoverFinder('albumInfos', () => cover);
 
   function updateCover() {
-    const asked = ++coverAsked;
     const current = album();
-    searchCover(cover);
-    if (!current) return;
-    // an answer can come for what is no longer shown, if only the request cancelled by this one
-    searchAlbumCover('albumInfos', current.Album, current.Artist).then(
-      imgUrl => {
-        if (asked === coverAsked) showCover(cover, imgUrl);
-      },
-      () => {
-        if (asked === coverAsked) showNoCover(cover);
-      },
-    );
+    findCover(current?.Album, current?.Artist);
   }
 
   function show(): Promise<unknown> {

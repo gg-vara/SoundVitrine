@@ -2,10 +2,8 @@
 
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
-import { searchAlbumCover } from '../library/coverSearch';
 import { youtubeSearchUrl } from '../library/youtube';
-import { COVER } from '../shell/cover';
-import { onCoverBroken, onCoverLoaded, searchCover, showCover, showNoCover } from '../shell/coverStates';
+import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
 import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
 import { waitTransitionEnd } from '../shell/waiting';
 import { followShouts } from './live';
@@ -39,7 +37,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
   let notification!: HTMLDivElement;
   let cover!: HTMLDivElement;
   let timeline!: HTMLDivElement;
-  let coverAsked = 0;
+  const findCover = createCoverFinder('shout', () => cover);
 
   const track = () => {
     const shout = shown();
@@ -50,21 +48,6 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
     const mute = !muted();
     localStorage.setItem(MUTE_STORAGE_KEY, mute ? '1' : '0');
     setMuted(mute);
-  }
-
-  function updateCover(shout: Shout) {
-    const asked = ++coverAsked;
-    searchCover(cover);
-    if (!shout.album || !shout.artist) return;
-    // a shout coming during the search cancels it : that is no missing cover
-    searchAlbumCover('shout', shout.album, shout.artist).then(
-      imgUrl => {
-        if (asked === coverAsked) showCover(cover, imgUrl);
-      },
-      () => {
-        if (asked === coverAsked) showNoCover(cover);
-      },
-    );
   }
 
   function restartTimeline(shout: Shout) {
@@ -114,7 +97,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
         fadeOutNotification: () => waitTransitionEnd(notification, () => notification.classList.remove('fade')),
         toggleShutter: open => toggleShutter(CONTAINER_ID, () => resizeShutter(CONTAINER_ID, open)),
         show: (shout, changes) => {
-          if (changes.includes('album')) updateCover(shout);
+          if (changes.includes('album')) findCover(shout.album, shout.artist);
           setShown(shout);
           if (movesTimeline(changes)) restartTimeline(shout);
         },

@@ -62,7 +62,7 @@ const LOGO_LOWER = 'absolute text-[.3em] tracking-[.7em]';
 function musicLibrary(context: PageContext, user: string, profilePicture: string | undefined): Html {
   const { tr } = context;
   return html`<div id='app-music-library' class="focused ${MAIN_PANEL} bg-[rgb(239,238,238)] opacity-0 [transition:opacity_.5s_ease-in]">
-    <header class="top-0 z-10 flex w-full shrink-0 flex-col shadow-[0px_0px_.5rem_#e0e0e0] [transition:all_.2s_ease_0s] [&.sticky]:sticky [&.toHide]:[transform:translateY(-100%)]">
+    <header class="sticky top-0 z-10 flex w-full shrink-0 flex-col shadow-[0px_0px_.5rem_#e0e0e0]">
         <div class="flex w-full flex-row items-center">
             <span class="flex h-full items-center justify-center gap-[.2rem] bg-[#f7f7f7] pr-[.25em] pl-[.5em] text-center text-[2.5rem] portrait:hidden">
                 <div class="${LOGO_CONTENT}">

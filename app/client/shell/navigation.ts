@@ -1,9 +1,6 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
 import { type AccountPanel, createAccountPanel } from './accountPanel';
-import { nextPanel } from './panels';
-import { createResizeHandler, debounced, type OnResize } from './resizing';
-import { setHeaderClasses } from './scrolling';
 import { waitTransitionEnd } from './waiting';
 
 // what changes the height of something, null if it fits already
@@ -26,37 +23,11 @@ export async function toggleShutter(targetId: string, getHeight: () => ApplyHeig
   return waitTransitionEnd(document.getElementById(targetId) as HTMLElement, getHeight());
 }
 
-const SCROLL_CHECK_MS = 100;
-const SCROLL_LIMIT_MS = 2000;
-
-export async function scrollToElement(element: Element | null, correction = 0): Promise<void> {
+// under the header, which stays
+export function scrollToElement(element: Element | null, correction = 0) {
   if (!element) return;
-
-  const destination = element.getBoundingClientRect().top + window.scrollY + correction;
-  const arrived = () => destination === window.scrollY || document.body.scrollHeight === window.innerHeight;
-
-  if (arrived()) {
-    setHeaderClasses('sticky');
-    return;
-  }
-
   const header = document.getElementsByTagName('header')[0] as HTMLElement;
-  const headerGone = waitTransitionEnd(header, () => setHeaderClasses('sticky toHide')).then(() => setHeaderClasses(''));
-
-  const scrolled = new Promise<void>(resolve => {
-    window.scroll(0, destination);
-
-    let waited = 0;
-    const checking = setInterval(() => {
-      waited += SCROLL_CHECK_MS;
-      if (arrived() || waited > SCROLL_LIMIT_MS) {
-        clearInterval(checking);
-        resolve();
-      }
-    }, SCROLL_CHECK_MS);
-  });
-
-  await Promise.all([headerGone, scrolled]);
+  window.scroll(0, element.getBoundingClientRect().top + window.scrollY + correction - header.offsetHeight);
 }
 
 // the button of the account panel, at the height of the library's. Measured from the header, as the page may be scrolled,
@@ -75,6 +46,21 @@ let accountPanel: AccountPanel | undefined;
 
 export function startAccountPanel() {
   accountPanel = createAccountPanel('xmlRLoader', '/account');
+}
+
+// as Hammer tells them : what is swiped left shows the panel on the right
+const SWIPED_LEFT = 2;
+const SWIPED_RIGHT = 4;
+
+// null when it stays. With no direction, it goes from one to the other
+export function nextPanel(current: number, direction: number | undefined, count: number): number | null {
+  let target: number;
+  if (direction === undefined) target = current ? 0 : 1;
+  else if (direction === SWIPED_LEFT) target = current + 1;
+  else if (direction === SWIPED_RIGHT) target = current - 1;
+  else return null;
+
+  return target === current || target < 0 || target >= count ? null : target;
 }
 
 const LIBRARY_PANEL = 0;
@@ -112,8 +98,27 @@ export function switchPanel(direction?: number) {
 
 const RESIZE_QUIET_MS = 250;
 
-export function followResizing(onResize: OnResize) {
-  const handle = createResizeHandler(onResize, () => window.innerWidth);
+// a change of height alone is often the browser's bars coming and going
+export function createResizeHandler(onWidthChange: (() => void)[], widthNow: () => number) {
+  let width = widthNow();
+  return () => {
+    if (widthNow() === width) return;
+    width = widthNow();
+    for (const run of onWidthChange) run();
+  };
+}
+
+// runs once things have been quiet for that long
+export function debounced(run: () => void, ms: number) {
+  let timer: ReturnType<typeof setTimeout>;
+  return () => {
+    clearTimeout(timer);
+    timer = setTimeout(run, ms);
+  };
+}
+
+export function followResizing(onWidthChange: (() => void)[]) {
+  const handle = createResizeHandler(onWidthChange, () => window.innerWidth);
   window.addEventListener('resize', debounced(handle, RESIZE_QUIET_MS));
   window.addEventListener('orientationchange', () => window.scrollTo({ left: 0 }));
 }

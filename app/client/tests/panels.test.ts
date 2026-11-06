@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { nextPanel } from '../shell/panels';
+import { nextPanel } from '../shell/navigation';
 
 const LEFT = 2;
 const RIGHT = 4;

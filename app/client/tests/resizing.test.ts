@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test';
-import { createResizeHandler, debounced } from '../shell/resizing';
+import { createResizeHandler, debounced } from '../shell/navigation';
 
 describe('on resizing', () => {
   function handler() {
-    const calls: string[] = [];
+    let calls = 0;
     let width = 1000;
-    const handle = createResizeHandler({ any: [() => calls.push('any')], width: [() => calls.push('width')] }, () => width);
+    const handle = createResizeHandler([() => calls++], () => width);
     return {
-      calls,
+      calls: () => calls,
       handle,
       setWidth: (value: number) => {
         width = value;
@@ -15,17 +15,10 @@ describe('on resizing', () => {
     };
   }
 
-  test('a change of height alone leaves what depends on the width', () => {
+  test('a change of height alone changes nothing', () => {
     const { calls, handle } = handler();
     handle();
-    expect(calls).toEqual(['any']);
-  });
-
-  test('a change of width runs everything, what applies to any change first', () => {
-    const { calls, handle, setWidth } = handler();
-    setWidth(800);
-    handle();
-    expect(calls).toEqual(['any', 'width']);
+    expect(calls()).toBe(0);
   });
 
   test('once for a width', () => {
@@ -33,7 +26,7 @@ describe('on resizing', () => {
     setWidth(800);
     handle();
     handle();
-    expect(calls.filter(call => call === 'width')).toHaveLength(1);
+    expect(calls()).toBe(1);
   });
 
   test('coming back is a change too', () => {
@@ -42,11 +35,11 @@ describe('on resizing', () => {
     handle();
     setWidth(1000);
     handle();
-    expect(calls.filter(call => call === 'width')).toHaveLength(2);
+    expect(calls()).toBe(2);
   });
 });
 
-describe('waiting for things to be quiet', () => {
+describe('debounced', () => {
   test('runs once, after the last call', async () => {
     let runs = 0;
     const run = debounced(() => runs++, 5);
@@ -54,7 +47,7 @@ describe('waiting for things to be quiet', () => {
     run();
     run();
     expect(runs).toBe(0);
-    await Bun.sleep(20);
+    await new Promise(resolve => setTimeout(resolve, 20));
     expect(runs).toBe(1);
   });
 });

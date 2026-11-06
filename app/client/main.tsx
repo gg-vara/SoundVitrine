@@ -2,14 +2,12 @@
 
 import { render } from '@solidjs/web';
 import { createSignal, flush } from 'solid-js';
-import { createActor } from 'xstate';
 import { DiscoverPanel, type DiscoverPanelControls } from './discover/DiscoverPanel';
 import { FeedPanel } from './feed/FeedPanel';
 import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
 import { humanizedDate } from './library/humanizedDate';
 import { SearchBand } from './search/SearchBand';
 import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
-import { startupMachine } from './shell/machine';
 import {
   type ApplyHeight,
   alignConnectSideElements,
@@ -21,7 +19,6 @@ import {
   switchPanel,
   toggleShutter,
 } from './shell/navigation';
-import { followScrolling, revealHeaderInReach, withoutFollowingScrolling } from './shell/scrolling';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
 import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
 import './style.css';
@@ -96,11 +93,11 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
   );
 
   // called by the page, for what opens and closes under the header
-  window.toggleFeed = () => void withoutFollowingScrolling(toggleShutter(FEED_ID, resizeFeed).then(opened => scrollToElement(opened)));
-  window.toggleProfile = () => void withoutFollowingScrolling(toggleShutter(PROFILE_ID, resizeProfile));
+  window.toggleFeed = () => void toggleShutter(FEED_ID, resizeFeed).then(scrollToElement);
+  window.toggleProfile = () => void toggleShutter(PROFILE_ID, resizeProfile);
   window.toggleStats = () => {
     if (isChecked('showStats')) void stats.open();
-    void withoutFollowingScrolling(toggleShutter(STATS_ID, resizeStats).then(opened => scrollToElement(opened)));
+    void toggleShutter(STATS_ID, resizeStats).then(scrollToElement);
   };
 
   // called by the page, from the buttons going to the other panel
@@ -117,35 +114,35 @@ if (shoutContainer && searchContainer && feedContainer && statsContainer && disc
     flush();
   }
 
-  window.addEventListener('load', () => {
+  // the loader stays when it fails, telling so
+  async function loadLibraryThenShowPage() {
+    hideLibraryFailure();
+    try {
+      useLibrary(JSON.parse(await downloadText(clientURLUnified)));
+    } catch (error) {
+      console.error('The library could not be loaded', error);
+      showLibraryFailure(() => void loadLibraryThenShowPage());
+      return;
+    }
+    await showPage();
+    removeLoader();
+    panel.start();
+  }
+
+  window.addEventListener('load', async () => {
     history.scrollRestoration = 'manual';
     alignConnectSideElements();
-    followResizing({
-      any: [revealHeaderInReach],
-      width: [fitted(resizeFeed), fitted(resizeStats), fitted(resizeProfile), fitted(() => panel.resize()), alignConnectSideElements],
-    });
+    followResizing([
+      fitted(resizeFeed),
+      fitted(resizeStats),
+      fitted(resizeProfile),
+      fitted(() => panel.resize()),
+      alignConnectSideElements,
+    ]);
     followSwipes();
-    followScrolling();
     startAccountPanel();
 
-    const startup = createActor(startupMachine, {
-      input: {
-        effects: {
-          showLoader,
-          loadLibrary: async () => {
-            hideLibraryFailure();
-            useLibrary(JSON.parse(await downloadText(clientURLUnified)));
-          },
-          showPage,
-          removeLoader,
-          startLiveUpdates: () => panel.start(),
-          reportFailure: error => {
-            console.error('The library could not be loaded', error);
-            showLibraryFailure(() => startup.send({ type: 'RETRY' }));
-          },
-        },
-      },
-    });
-    startup.start();
+    await showLoader();
+    await loadLibraryThenShowPage();
   });
 }

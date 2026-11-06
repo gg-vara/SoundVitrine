@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { longestTransitionMs } from '../shell/transitions';
+import { longestTransitionMs } from '../shell/waiting';
 
 describe('how long transitions last', () => {
   test('in seconds or milliseconds', () => {

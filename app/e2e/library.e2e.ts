@@ -67,6 +67,29 @@ test('opens the feed, the profile and the statistics', async ({ page }) => {
   await expect(page.locator('#statsContainer canvas')).toHaveCount(2);
 });
 
+test('the header stays while the page scrolls', async ({ page }) => {
+  await page.getByTitle('Feed', { exact: true }).click();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(2000);
+
+  await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(1000);
+  await expect.poll(() => page.evaluate(() => document.querySelector('header')?.getBoundingClientRect().top)).toBe(0);
+});
+
+test('tells when the library fails to load, and retries', async ({ page }) => {
+  let failing = true;
+  await page.route('**/unified.json', route => (failing ? route.fulfill({ status: 500 }) : route.fallback()));
+  await page.goto(`/u/${USER}`);
+
+  const retry = page.locator('#libraryFailure button');
+  await expect(retry).toBeVisible();
+
+  failing = false;
+  await retry.click();
+  await expect(discover(page).getByText('Rock', { exact: true })).toBeVisible();
+  await expect(page.locator('#loader-container')).toHaveCount(0);
+});
+
 test('the account panel : refusal, account creation form, login, logout', async ({ page }) => {
   await openAccountPanel(page);
   const panel = page.locator('#xmlRLoader');
