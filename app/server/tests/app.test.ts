@@ -419,11 +419,8 @@ describe('pages', () => {
     const response = await handle(new Request(`${base}/u/${USER.toUpperCase()}`));
     const page = await response.text();
     expect(response.headers.get('content-type')).toStartWith('text/html');
-    expect(page).toContain('app-music-library');
-    expect(page).toContain(`const shoutStreamUrl = "/u/${USER}/shouts"`);
-    // what fills it comes from Vite's build
-    expect(page).toMatch(/<div id='shoutContainer' class="[^"]*"><\/div>/);
-    expect(page).not.toContain('function setupLiveUpdatesForShouts');
+    expect(page).toContain('id="library"');
+    expect(page).toContain(`"shoutStreamUrl":"/u/${USER}/shouts"`);
   });
 
   test('a user without library gets the upload form', async () => {

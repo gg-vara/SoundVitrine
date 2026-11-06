@@ -7,14 +7,14 @@ export function followShouts(onShout: (shout: Shout) => void, onLost: () => void
   };
 
   const latest = new AbortController();
-  fetch(clientURLShout, { signal: latest.signal })
+  fetch(pageData.shoutUrl, { signal: latest.signal })
     .then(async response => {
       if (response.status === 200) receive(await response.json());
     })
     // the stream tells when the server is away
     .catch(() => {});
 
-  const stream = new EventSource(shoutStreamUrl);
+  const stream = new EventSource(pageData.shoutStreamUrl);
   stream.onmessage = event => receive(JSON.parse(event.data));
   stream.onerror = () => onLost();
 

@@ -71,9 +71,6 @@ export function clientStyles(): Html {
 // Shards
 //
 
-// animated band of the colors of "owner" (see colorsCss())
-export const wAnim = (owner: string) => html`<div class="wAnim" data-owner="${owner}"></div>`;
-
 // the animated band colors : of "owner", else the default ones
 export function colorsCss(owner?: string, colors?: string[]): string {
   const target = owner && colors ? `[data-owner="${owner}"]` : '';

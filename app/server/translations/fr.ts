@@ -10,7 +10,7 @@ export const fr = {
   libraryOf: 'Bibliothèque | %s',
   whatsnew: 'QUOI DE NEUF',
   discover: 'DECOUVRIR',
-  libraryOfHead: "<span class='library'>Bibliothèque | </span><span class='username'>%s</span>",
+  libraryOfHead: 'Bibliothèque | %s',
   phSearch: 'Rechercher un nom de groupe...',
   artists: 'Artistes',
   artist: 'Artiste',

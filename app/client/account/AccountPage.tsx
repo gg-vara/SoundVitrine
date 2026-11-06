@@ -1,6 +1,7 @@
 // Logging in, creating an account, and managing it : on a page of its own, or in the panel of the library page
 import { createSignal, Show } from 'solid-js';
 import { HYPE_BUTTON, HYPE_SUBMIT, TEXT_INPUT } from '../../server/pages/controls';
+import { filled } from '../library/texts';
 import { Editors } from './Editors';
 import { ACCOUNT_CREATION, ACCOUNT_MANAGEMENT, DOWNLOAD_EXPLAIN, DOWNLOAD_NAME, FIELD, LOGIN_RACK, POPUP, POPUP_CONTENT } from './styles';
 
@@ -17,11 +18,6 @@ export interface Me {
   rules: { username: LengthRule; password: LengthRule };
   companionApp: { name: string; url: string };
 }
-
-const filled = (text: string | undefined, ...values: (string | number)[]) => {
-  let next = 0;
-  return (text ?? '').replace(/%[sd]/g, () => String(values[next++]));
-};
 
 export async function fetchMe(): Promise<Me | null> {
   try {

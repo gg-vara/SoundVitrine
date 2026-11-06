@@ -10,7 +10,7 @@ export const en = {
   libraryOf: "%s's Library",
   whatsnew: "WHAT'S NEW",
   discover: 'DISCOVER',
-  libraryOfHead: "<span class='username'>%s</span><span class='library'>'s library</span>",
+  libraryOfHead: "%s's library",
   phSearch: 'Search a band name...',
   artists: 'Artists',
   artist: 'artist',

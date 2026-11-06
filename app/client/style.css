@@ -11,7 +11,7 @@
 @source "./discover";
 @source "./feed";
 @source "./search";
-@source "./shell/cover.ts";
+@source "./shell";
 @source "./shout";
 @source "./stats";
 @source "../server/pages";
