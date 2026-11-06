@@ -13,15 +13,16 @@
 @source "./shell/cover.ts";
 @source "./shout";
 @source "./stats";
-@source "../server/pages/explorer.ts";
+@source "../server/pages";
 
 /* as client/legacy/ does, including on touch screens */
 @custom-variant hover (&:hover);
 
 @custom-variant hidpi (@media (min-resolution: 192dpi));
 
+/* of the library page, which has a <main> : the other pages also load these styles */
 @media (min-resolution: 192dpi) {
-  :root {
+  :root:has(main) {
     font-size: 18px;
   }
 }
@@ -31,7 +32,7 @@
  * stays in whichever state it reached, its layout depending on what happened before.
  * The account panel never scrolls.
  */
-html {
+html:has(main) {
   scrollbar-gutter: stable;
 }
 
@@ -53,6 +54,12 @@ html:has(body.lock) {
 /* its text comes from the page, which Tailwind cannot write with the line breaks it has */
 .noCoverMessage.noImgFound::before {
   content: ":'( \A\A " attr(data-no-cover-found);
+}
+
+@keyframes autofill {
+  to {
+    background: rgba(255, 255, 255, 0.75);
+  }
 }
 
 @keyframes flickerAnimation {

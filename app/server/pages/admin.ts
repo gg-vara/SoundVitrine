@@ -5,6 +5,7 @@ import type { Html } from '../html';
 import { html, raw } from '../html';
 import type { User } from '../users';
 import { findUser, publicUserFolder } from '../users';
+import { DOWNLOAD_EXPLAIN, DOWNLOAD_NAME, DOWNLOADS, HYPE_BUTTON, HYPE_SUBMIT, TEXT_INPUT } from './controls';
 import type { FormResult, LengthRule, PageContext } from './layout';
 import { ACCOUNT_ENTRY, adminPage, clientScript, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
 
@@ -86,22 +87,22 @@ ${popup(result)}
 <form method="POST" action="${action}">
     ${magnifikInput(context, { name: 'username', placeholder: 'e_log_username', autocomplete: 'username', required: true })}
     ${magnifikInput(context, { type: 'password', placeholder: 'userPwd', autocomplete: 'current-password', required: true })}
-    <input class="hype" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_connect')}" />
+    <input class="${HYPE_SUBMIT}" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_connect')}" />
 </form>`;
 }
 
 function downloadButtons(context: PageContext): Html {
   return html`<div>
     <a target="_blank" href="${COMPANION_APP_GITHUB_LATEST_RELEASE_URL}">
-        <div class='companionAppDownloadExplain'>
+        <div class="${DOWNLOAD_EXPLAIN}">
             <span>
                 <span>${context.tr('obtainCompanionApp_1')}</span>
-                <span class='obtain'>${COMPANION_APP_NAME}</span>
+                <span class="${DOWNLOAD_NAME}">${COMPANION_APP_NAME}</span>
             </span>
             <span>${context.tr('obtainCompanionApp_2')}</span>
         </div>
     </a>
-    <div id="dlContainer"></div>
+    <div class="${DOWNLOADS}"></div>
 </div>`;
 }
 
@@ -157,13 +158,13 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
     <div class="loginRack">
         ${
           isNotMyLibrary
-            ? html`<button class="hype" ${buttonLink(context, myLibrary, true)}>
+            ? html`<button class="${HYPE_BUTTON}" ${buttonLink(context, myLibrary, true)}>
                 <i class="fas fa-book"></i>
                 <span>${tr('log_accessMyLib')}</span>
             </button>`
             : ''
         }
-        <button class="hype" ${buttonLink(context, '/account/disconnect', false, true)}>
+        <button class="${HYPE_BUTTON}" ${buttonLink(context, '/account/disconnect', false, true)}>
             <i class="fas fa-power-off"></i>
             <span>${tr('log_disconnect')}</span>
         </button>
@@ -176,7 +177,7 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
     <div class="loginRack">
         ${loginForm(context, loginResult)}
         <hr/>
-        <button class="hype" ${buttonLink(context, '/account/create')}>
+        <button class="${HYPE_BUTTON}" ${buttonLink(context, '/account/create')}>
             <i class="fas fa-user-circle"></i>
             <span>${tr('log_createAccount')}</span>
         </button>
@@ -205,7 +206,7 @@ export function createAccountPage(context: PageContext, result: FormResult | nul
         ${magnifikInput(context, { name: 'username', placeholder: 'e_log_username', required: true, autocomplete: 'username' }, accountRules)}
         ${magnifikInput(context, { type: 'password', placeholder: 'userPwd', required: true, autocomplete: 'current-password' }, accountRules)}
         ${magnifikInput(context, { type: 'email', placeholder: 'e_log_email', required: true })}
-        <input class="hype" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_createAccount')}" />
+        <input class="${HYPE_SUBMIT}" type="submit" value="✓ ${tr('validate')}" title="${tr('e_log_createAccount')}" />
     </form>
 </div>`;
 
@@ -219,13 +220,13 @@ export function uploadPage(context: PageContext): Html {
   <h1>${tr('title_uploadMusicLibrary')}</h1>
   <form method="POST" autocomplete="off" enctype="multipart/form-data" action="${action}">
     <input name="${MUSIC_LIB_UPLOAD_FILE_NAME}" type="file" value="" accept=".json,.zmlib" required autocomplete="off" />
-    <input autocomplete="current-password" name="password" type="password" placeholder="${tr('userPwd')}" required autocomplete="off" />
-    <input class="hype" type="submit" value="${tr('sendFile')}" autocomplete="off" />
+    <input class="${TEXT_INPUT}" autocomplete="current-password" name="password" type="password" placeholder="${tr('userPwd')}" required autocomplete="off" />
+    <input class="${HYPE_SUBMIT}" type="submit" value="${tr('sendFile')}" autocomplete="off" />
   </form>
   <span style="color: grey; font-size: .8em">${tr('or')}</span>
   <br/>
   <a target="_blank" href="${COMPANION_APP_GITHUB_LATEST_RELEASE_URL}">
-    <button style="padding: .25em .5em" class="hype" value="${tr('sendFile')}">
+    <button style="padding: .25em .5em" class="${HYPE_BUTTON}" value="${tr('sendFile')}">
       <i class="fa-brands fa-github"></i>
       <span>${tr('uploadWithCompanionApp')}</span>
     </button>

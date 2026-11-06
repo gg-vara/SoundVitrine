@@ -8,6 +8,7 @@ import { html, raw } from '../html';
 import type { Lang, TranslationKey, Translator } from '../i18n';
 import { dictionaries } from '../i18n';
 import type { Session } from '../session';
+import { MAGNIFIK, MAGNIFIK_INPUT, POPUP, POPUP_CONTENT } from './controls';
 
 // what a page is rendered from
 export interface PageContext {
@@ -108,7 +109,7 @@ export interface FormResult {
 
 export function popup(result: FormResult | null): Html {
   if (!result?.description) return html``;
-  return html`<div onclick="this.classList.toggle('hide')" class="popup ${result.isError ? 'error' : 'info'}"><div class="content">${result.description}</div></div>`;
+  return html`<div onclick="this.classList.toggle('hide')" class="popup ${result.isError ? 'error' : 'info'} ${POPUP}"><div class="${POPUP_CONTENT}">${result.description}</div></div>`;
 }
 
 export interface LengthRule {
@@ -131,8 +132,8 @@ export function magnifikInput(context: PageContext, params: InputParams, rules?:
   const rule = rules?.[name];
   const value = context.form[name];
 
-  return html`<div class='magnifik' ${params.placeholder ? html`placeholder="${context.tr(params.placeholder)}"` : ''}>
-                <input ${params.required ? 'required' : ''} ${value ? html`value="${value}"` : ''} ${
+  return html`<div class="${MAGNIFIK}" ${params.placeholder ? html`placeholder="${context.tr(params.placeholder)}"` : ''}>
+                <input class="${MAGNIFIK_INPUT}" ${params.required ? 'required' : ''} ${value ? html`value="${value}"` : ''} ${
                   rule ? html`pattern=".{${rule.min},${rule.max}}" placeholder="${context.tr('e_log_rule', rule.min, rule.max)}"` : ''
                 } type="${type}" name="${name}" ${params.autocomplete ? html`autocomplete="${params.autocomplete}"` : ''} />
             </div>`;
@@ -244,6 +245,7 @@ export function adminPage(context: PageContext, title: string, content: Html): H
         ${metadata(context, title)}
         ${externalStyles}
         ${adminStyles()}
+        ${clientStyles()}
     </head>
     <body>
         <div id="mainFrame" style="margin: 0 1rem;">

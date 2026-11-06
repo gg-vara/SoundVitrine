@@ -78,13 +78,6 @@ body.lock {
     text-align: center;
 }
 
-.obtain {
-    color:#d20068;   
-    text-shadow: white 0 0 2px;
-}
-
-
-
 #accountManagement > *:not(:first-child):not(:only-child),
 #accountManagement button:not(:first-child):not(:only-child),
 form > *:not(:first-child):not(:only-child) {
