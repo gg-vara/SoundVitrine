@@ -4,7 +4,7 @@
 import { rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const STATE = resolve(import.meta.dir, '../../_state-dev');
+const STATE = resolve(import.meta.dir, '../..', process.env.SEED_STATE ?? '_state-dev');
 const USERNAME = 'testcurator';
 const PASSWORD = 'testpassword';
 

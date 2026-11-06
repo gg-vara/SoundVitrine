@@ -13,6 +13,7 @@ bun run dev:seed
 A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
 
 - `bun test`, `bun run typecheck`, `bun x biome check --write .`, `bun run build` : what CI checks (`biome ci`)
+- `bun run test:e2e` : the real pages in a real browser (Playwright, `e2e/`), on a seeded server of their own. It uses the installed Chrome, CI a downloaded Chromium
 - never point these at a real state folder : tests and seed keep to temporary ones
 - in a browser : the library page starts once a CSS transition ends, which a hidden tab or pane delays for as long as it stays hidden. Not a slow library : check that the tab is visible before measuring anything
 

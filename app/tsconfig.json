@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["bun"],
     "strict": true,
     "noUnusedLocals": true,
@@ -14,5 +14,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["server", "client/tests", "vite.config.ts"]
+  "include": ["server", "client/tests", "e2e", "vite.config.ts", "playwright.config.ts"]
 }

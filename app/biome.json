@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["server/**", "client/**", "!client/legacy", "!client/public", "*.json", "*.ts", "!**/node_modules"]
+    "includes": ["server/**", "client/**", "e2e/**", "!client/public", "*.json", "*.ts", "!**/node_modules"]
   },
   "css": {
     "parser": {

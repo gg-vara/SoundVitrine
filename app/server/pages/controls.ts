@@ -34,7 +34,8 @@ export const BAND_EDITOR =
 
 export const BAND_COLOR_PICKER = 'flex h-full w-full items-center justify-center opacity-0 [transition:all_.5s_ease] [.open>&]:opacity-100';
 
-export const BAND_CONTROLS = 'absolute right-0 bottom-[-1.25rem] flex w-full flex-row justify-between';
+// over the colors, which are wider than the band in the narrower pages
+export const BAND_CONTROLS = 'absolute right-0 z-10 bottom-[-1.25rem] flex w-full flex-row justify-between';
 
 export const BAND_COLORS = 'absolute bottom-[-1.3rem] [&>*]:[background:none] [&>*]:[border:none]';
 
