@@ -5,7 +5,22 @@ import type { Html } from '../html';
 import { html, raw } from '../html';
 import type { User } from '../users';
 import { findUser, publicUserFolder } from '../users';
-import { DOWNLOAD_EXPLAIN, DOWNLOAD_NAME, DOWNLOADS, HYPE_BUTTON, HYPE_SUBMIT, TEXT_INPUT } from './controls';
+import {
+  BAND_COLOR_PICKER,
+  BAND_COLORS,
+  BAND_CONTROLS,
+  BAND_EDITOR,
+  DOWNLOAD_EXPLAIN,
+  DOWNLOAD_NAME,
+  DOWNLOADS,
+  EDITORS,
+  HYPE_BUTTON,
+  HYPE_SUBMIT,
+  PICTURE_EDITOR,
+  PICTURE_HOLDER,
+  PICTURE_IMAGE,
+  TEXT_INPUT,
+} from './controls';
 import type { FormResult, LengthRule, PageContext } from './layout';
 import { ACCOUNT_ENTRY, adminPage, clientScript, colorsCss, magnifikInput, pageTitle, popup, wAnim } from './layout';
 
@@ -109,15 +124,15 @@ function downloadButtons(context: PageContext): Html {
 function editors(context: PageContext, user: string): Html {
   const { tr } = context;
   const profilePic = findUser(user)?.profilePic;
-  return html`<div id='EditorWrapper'>
-    <div id="bBandEditor" title="${tr('updateBBand')}">
+  return html`<div id='EditorWrapper' class="${EDITORS}">
+    <div id="bBandEditor" class="${BAND_EDITOR}" title="${tr('updateBBand')}">
         ${wAnim(user)}
-        <div class="colorPicker">
-            <div class="controls">
+        <div class="colorPicker ${BAND_COLOR_PICKER}">
+            <div class="${BAND_CONTROLS}">
                 <input class="cancel" type="button" value="✕" title="${tr('cancel')}"/>
                 <input class="validate" type="button" value="✓" title="${tr('validate')}"/>
             </div>
-            <div class="colors">
+            <div class="colors ${BAND_COLORS}">
                 <input id="color1" type="color" title="" />
                 <input id="color2" type="color" title="" />
                 <input id="color3" type="color" title="" />
@@ -125,11 +140,11 @@ function editors(context: PageContext, user: string): Html {
             </div>
         </div>
     </div>
-    <span id="ProfilePicEditor" title="${tr('updateProfilePic')}">
-        <input class="PPPicker" type="file" name="profile_pic" accept="image/*">
-        <div class="imgHolder">
+    <span id="ProfilePicEditor" class="${PICTURE_EDITOR}" title="${tr('updateProfilePic')}">
+        <input class="PPPicker hidden" type="file" name="profile_pic" accept="image/*">
+        <div class="imgHolder ${PICTURE_HOLDER}">
             <i class="fas fa-user ph"></i>
-            <img class="pp" ${profilePic ? html`src='${publicUserFolder(user) + profilePic}'` : ''} />
+            <img class="${PICTURE_IMAGE}" ${profilePic ? html`src='${publicUserFolder(user) + profilePic}'` : ''} />
         </div>
     </span>
 </div>`;
