@@ -78,11 +78,17 @@ export function welcomePage(context: PageContext, users: User[]): Html {
             </a>`,
         )}
     </div>
-    <div style="margin-top: .5em; display: flex; justify-content: center;">
+    <div style="margin-top: .5em; display: flex; justify-content: center; flex-wrap: wrap; gap: .5em;">
         <a href="/account">
             <div class="manage_button" style="background-color: #23df0d54; box-shadow: 0px 0px 20px 0px white; color: #245724; border: 1px solid #76cd8c;">
                 <i class="fa-solid fa-plus"></i>
                 <span>${tr('log_createAccount')}</span>
+            </div>
+        </a>
+        <a href="/api/docs">
+            <div class="manage_button">
+                <i class="fa-solid fa-code"></i>
+                <span>${tr('api_docs')}</span>
             </div>
         </a>
     </div>

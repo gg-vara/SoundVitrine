@@ -193,8 +193,9 @@ export function footer(context: PageContext): Html {
             <img src='/public/images/linkedin.png' alt="${context.tr('devLinkedin')}"/>
         </a>
     </div>
-    <div class="${FOOTER_MIDDLE}" style="background-color: transparent; font-size: .6em">
+    <div class="${FOOTER_MIDDLE}" style="background-color: transparent; font-size: .6em; gap: .75em">
         <a href="/account"><i class="fas fa-user-circle" style="margin-right: .25em;"></i>${context.tr('my_account')}</a>
+        <a href="/api/docs" title="${context.tr('api_docs')}"><i class="fas fa-code" style="margin-right: .25em;"></i>API</a>
     </div>
     <div id="langs" class="${LANGUAGES}">
         ${flags.map(file => {

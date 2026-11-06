@@ -408,6 +408,13 @@ describe('pages', () => {
     expect(page).not.toContain(`${USER}@example.com`);
   });
 
+  test('the API documentation is one click away : from the welcome page, and the footer of any page', async () => {
+    const links = (page: string) => page.split('href="/api/docs"').length - 1;
+    expect(links(await (await handle(new Request(`${base}/`))).text())).toBe(2);
+    expect(links(await (await handle(new Request(`${base}/account`))).text())).toBe(1);
+    expect(links(await (await handle(new Request(`${base}/u/${USER}`))).text())).toBe(1);
+  });
+
   test('the library page', async () => {
     const response = await handle(new Request(`${base}/u/${USER.toUpperCase()}`));
     const page = await response.text();

@@ -89,6 +89,7 @@ export const fr = {
   validate: 'Valider',
   back: 'Retour',
   my_account: 'Mon compte',
+  api_docs: "Documentation de l'API",
   lang_en: 'Anglais',
   lang_fr: 'Français',
   title_uploadMusicLibrary: 'Téléverser votre librairie',
