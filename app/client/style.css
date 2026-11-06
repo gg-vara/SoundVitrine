@@ -28,16 +28,13 @@
 }
 
 /*
- * The space of the scrollbar is kept : without it, a page which fits only without a scrollbar, and wraps to overflow with one,
+ * The scrollbar always shows : without it, a page which fits only without a scrollbar, and wraps to overflow with one,
  * stays in whichever state it reached, its layout depending on what happened before.
+ * On the body, whose overflow goes to the viewport : on the html, the body would become what scrolls, and the header stop sticking.
  * The account panel never scrolls.
  */
-html:has(main) {
-  scrollbar-gutter: stable;
-}
-
-html:has(body.lock) {
-  scrollbar-gutter: auto;
+body:has(main):not(.lock) {
+  overflow-y: scroll;
 }
 
 /* also paused by base.css, when the page shows something else */
