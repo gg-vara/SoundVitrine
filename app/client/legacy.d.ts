@@ -4,11 +4,13 @@ declare const i18n: Record<string, string>;
 declare const clientURLShout: string;
 declare const shoutStreamUrl: string;
 declare const clientURLUnified: string;
-declare const initialRLoaderUrl: string;
 
-declare class RLoader {
-  constructor(targetId: string, url: string);
-  initialAnimation(): Promise<unknown>;
+declare class PPEditor {
+  constructor(targetId: string);
+}
+
+declare class BBEditor {
+  constructor(targetId: string);
 }
 
 // with nothing to do, it gives null at once
@@ -23,6 +25,7 @@ declare function brokenImgFr(elem: Element): void;
 declare function queryMusicBrainzForAlbumCover(idProcess: string, album: string, artist: string): Promise<string>;
 declare function compareDateFromNomHumanized(date: string, now: Date): string;
 declare function alignConnectSideElements(): void;
+declare function removeNotification(selector: string): void;
 
 declare class Hammer {
   static TouchInput: unknown;

@@ -141,8 +141,6 @@ export function libraryPage(context: PageContext, user: string): Html {
 
             // server-sent events of the user's shouts (see server/api.ts)
             const shoutStreamUrl = ${scriptJson(`/u/${user}/shouts`)};
-
-            var initialRLoaderUrl = "/account";
         </script>
         ${adminScripts(context)}
         <script>

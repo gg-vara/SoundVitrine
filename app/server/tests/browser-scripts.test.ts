@@ -11,7 +11,10 @@ const RAW_HTML = /\.(innerHTML|outerHTML)\s*\+?=|insertAdjacentHTML|document\.wr
 // never given what users upload
 const ALLOWED: Record<string, string> = {
   'admin/js/bbEditor.js': 'a style, of a username and colors the server checks',
-  'explorer/js/misc/rLoader.js': "this server's own pages, which escape what they show",
+};
+
+const ALLOWED_IN_VITE: Record<string, string> = {
+  'shell/accountPanel.ts': "this server's own pages, which escape what they show",
 };
 
 describe('browser scripts', () => {
@@ -30,9 +33,10 @@ describe('browser scripts', () => {
 
   test('nor in what moved to Vite', () => {
     const client = join(ASSETS, '..');
-    const offenders = [...new Glob('**/*.{ts,tsx}').scanSync(client)].filter(file =>
-      /innerHTML|outerHTML/.test(readFileSync(join(client, file), 'utf8')),
-    );
+    const offenders = [...new Glob('**/*.{ts,tsx}').scanSync(client)]
+      .map(file => file.replaceAll('\\', '/'))
+      .filter(file => !(file in ALLOWED_IN_VITE))
+      .filter(file => /innerHTML|outerHTML/.test(readFileSync(join(client, file), 'utf8')));
     expect(offenders).toEqual([]);
   });
 });

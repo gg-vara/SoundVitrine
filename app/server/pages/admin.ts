@@ -184,11 +184,14 @@ export function accountPage(context: PageContext, loginResult: FormResult | null
 </div>`;
   }
 
-  content = html`${content}
+  // within the library page, its account panel starts them
+  if (!context.isXhr) {
+    content = html`${content}
 <script>
     let ppe = new PPEditor("ProfilePicEditor");
     let bbe = new BBEditor("bBandEditor");
 </script>`;
+  }
 
   return adminPage(context, pageTitle(tr(user ? 'e_log_manage' : 'e_log_home')), content);
 }

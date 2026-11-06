@@ -446,6 +446,7 @@ describe('pages', () => {
     const page = await (await handle(new Request(`${base}/account`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }))).text();
     expect(page).not.toContain('<!DOCTYPE');
     expect(page).toContain('accountManagement');
+    expect(page).not.toContain('<script');
   });
 
   test('passwords are stored hashed', () => {

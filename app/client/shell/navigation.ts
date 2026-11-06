@@ -1,4 +1,5 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
+import { type AccountPanel, createAccountPanel } from './accountPanel';
 import { nextPanel } from './panels';
 import { createResizeHandler, debounced, type OnResize } from './resizing';
 import { setHeaderClasses } from './scrolling';
@@ -56,10 +57,10 @@ export async function scrollToElement(element: Element | null, correction = 0): 
   await Promise.all([headerGone, scrolled]);
 }
 
-let accountPanel: RLoader | undefined;
+let accountPanel: AccountPanel | undefined;
 
 export function startAccountPanel() {
-  accountPanel = new RLoader('xmlRLoader', initialRLoaderUrl);
+  accountPanel = createAccountPanel('xmlRLoader', '/account');
 }
 
 const LIBRARY_PANEL = 0;
@@ -90,7 +91,7 @@ export function switchPanel(direction?: number) {
     .then(alignConnectSideElements)
     .then(() => {
       if (target === LIBRARY_PANEL) video.pause();
-      if (target === ACCOUNT_PANEL) void accountPanel?.initialAnimation();
+      if (target === ACCOUNT_PANEL) void accountPanel?.reveal();
       else document.body.classList.remove('lock');
     });
 }
