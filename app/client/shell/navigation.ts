@@ -56,17 +56,23 @@ export function followAccountPanel(shown: () => void) {
   onAccountPanelShown = shown;
 }
 
-// as Hammer tells them : what is swiped left shows the panel on the right
-const SWIPED_LEFT = 2;
-const SWIPED_RIGHT = 4;
+export type Swipe = 'left' | 'right';
 
-// null when it stays. With no direction, it goes from one to the other
-export function nextPanel(current: number, direction: number | undefined, count: number): number | null {
+// a finger moved fast enough along the page, far enough : what scrolls moves mostly across
+const SWIPE_MIN_PX = 10;
+const SWIPE_MIN_PX_PER_MS = 0.3;
+
+export function swipeOf(movedX: number, movedY: number, ms: number): Swipe | null {
+  const distance = Math.abs(movedX);
+  if (distance < SWIPE_MIN_PX || distance <= Math.abs(movedY) || distance / ms < SWIPE_MIN_PX_PER_MS) return null;
+  return movedX < 0 ? 'left' : 'right';
+}
+
+// null when it stays : what is swiped left shows the panel on the right. With no swipe, it goes from one to the other
+export function nextPanel(current: number, swipe: Swipe | undefined, count: number): number | null {
   let target: number;
-  if (direction === undefined) target = current ? 0 : 1;
-  else if (direction === SWIPED_LEFT) target = current + 1;
-  else if (direction === SWIPED_RIGHT) target = current - 1;
-  else return null;
+  if (swipe === undefined) target = current ? 0 : 1;
+  else target = swipe === 'left' ? current + 1 : current - 1;
 
   return target === current || target < 0 || target >= count ? null : target;
 }
@@ -75,9 +81,9 @@ const PANEL_SECONDS = 0.5;
 const LIBRARY_PANEL = 0;
 const ACCOUNT_PANEL = 1;
 
-export function switchPanel(direction?: number) {
+export function switchPanel(swipe?: Swipe) {
   const main = document.getElementsByTagName('main')[0] as HTMLElement;
-  const target = nextPanel(Number(main.getAttribute('data-index')), direction, main.childElementCount);
+  const target = nextPanel(Number(main.getAttribute('data-index')), swipe, main.childElementCount);
   if (target === null) return;
 
   // the account panel never scrolls
@@ -134,6 +140,25 @@ export function followResizing(onWidthChange: (() => void)[]) {
 }
 
 export function followSwipes() {
-  const swipes = new Hammer(document.body, { inputClass: Hammer.TouchInput });
-  swipes.on('swipeleft swiperight', event => switchPanel(event.direction));
+  let start: { x: number; y: number; time: number } | null = null;
+
+  document.body.addEventListener(
+    'touchstart',
+    event => {
+      const touch = event.touches.length === 1 ? event.touches[0] : undefined;
+      start = touch ? { x: touch.clientX, y: touch.clientY, time: event.timeStamp } : null;
+    },
+    { passive: true },
+  );
+  document.body.addEventListener(
+    'touchend',
+    event => {
+      const touch = event.changedTouches[0];
+      if (!start || !touch) return;
+      const swipe = swipeOf(touch.clientX - start.x, touch.clientY - start.y, event.timeStamp - start.time);
+      start = null;
+      if (swipe) switchPanel(swipe);
+    },
+    { passive: true },
+  );
 }

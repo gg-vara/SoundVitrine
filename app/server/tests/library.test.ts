@@ -24,28 +24,27 @@ const unified = () => JSON.parse(toJson(unifiedLibrary(tracks)));
 
 describe('unifiedLibrary', () => {
   test('lists and counts by genre, the largest first', () => {
-    const { albgl, albgc, arbgc } = unified();
-    expect(albgl['Heavy Metal']).toEqual(['First_Long Artist_1997']);
-    expect(Object.entries(albgc)).toEqual([
+    const { albumCounts, artistCounts } = unified();
+    expect(Object.entries(albumCounts)).toEqual([
       ['Rock', 2],
       ['Heavy Metal', 1],
     ]);
-    expect(arbgc.Rock).toBe(2);
+    expect(artistCounts.Rock).toBe(2);
   });
 
   test('albums by artist, tracks by "disc.track"', () => {
-    const artist = unified().abal['Long Artist'];
+    const artist = unified().artists['Long Artist'];
     expect(artist.Albums.First.Tracks).toEqual({ '1.1': 'One', '1.2': 'Two' });
     expect(artist.Albums.First.Genre).toBe('Heavy Metal');
     expect(artist.Genres).toEqual(['Heavy Metal']);
   });
 
   test('an album is dated by its latest track', () => {
-    expect(unified().glul['First_Long Artist_1997'].DateAdded).toBe('2021-01-01T00:00:00Z');
+    expect(unified().albums['First_Long Artist_1997'].DateAdded).toBe('2021-01-01T00:00:00Z');
   });
 
   test('artists : the shortest first, then alphabetically', () => {
-    expect(unified().artists).toEqual(['Abc', 'Bcd', 'Long Artist']);
+    expect(unified().artistNames).toEqual(['Abc', 'Bcd', 'Long Artist']);
   });
 });
 

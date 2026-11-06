@@ -17,17 +17,16 @@ export interface FeedAlbum {
 }
 
 export interface UnifiedLibrary {
-  // artists by genre, and their count
-  arbgl: Record<string, string[]>;
-  arbgc: Record<string, number>;
-  // albums by genre, and their count
-  albgl: Record<string, string[]>;
-  albgc: Record<string, number>;
-  abal: Record<string, { Genres: string[]; Albums: Record<string, Album> }>;
+  // artists by genre, and how many
+  artistsByGenre: Record<string, string[]>;
+  artistCounts: Record<string, number>;
+  // albums by genre
+  albumCounts: Record<string, number>;
+  artists: Record<string, { Genres: string[]; Albums: Record<string, Album> }>;
   // the shortest names first : the server sorts them so
-  artists: string[];
+  artistNames: string[];
   // albums by id
-  glul: Record<string, FeedAlbum>;
+  albums: Record<string, FeedAlbum>;
 }
 
 // what the page decides
@@ -68,26 +67,26 @@ export function sortItems(items: FilterItem[], sorter: string): FilterItem[] {
 }
 
 export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsContext) {
-  const searchNames = createNameSearch(library.artists);
+  const searchNames = createNameSearch(library.artistNames);
 
   return {
-    genreUI: () => itemsOf(library.albgc),
+    genreUI: () => itemsOf(library.albumCounts),
 
     artistUI: (genre: string | null) => {
       if (!genre) return undefined;
-      const artists = library.arbgl[genre] ?? [];
-      return itemsOf(Object.fromEntries(artists.map(artist => [artist, Object.keys(library.abal[artist]?.Albums ?? {}).length])));
+      const artists = library.artistsByGenre[genre] ?? [];
+      return itemsOf(Object.fromEntries(artists.map(artist => [artist, Object.keys(library.artists[artist]?.Albums ?? {}).length])));
     },
 
     albumUI: (artist: string | null) => {
       if (!artist) return undefined;
-      const albums = library.abal[artist]?.Albums ?? {};
+      const albums = library.artists[artist]?.Albums ?? {};
       return itemsOf(Object.fromEntries(Object.entries(albums).map(([name, album]) => [name, album.Year])));
     },
 
     albumInfos: (artist: string | null, name: string | null) => {
       if (!artist || !name) return undefined;
-      const album = library.abal[artist]?.Albums[name];
+      const album = library.artists[artist]?.Albums[name];
       return album && { ...album, Album: name, Artist: artist };
     },
 
@@ -95,18 +94,18 @@ export function createDataFeeds(library: UnifiedLibrary, context: DataFeedsConte
       if (!criteria) return undefined;
       const results = searchNames(criteria, MAX_SEARCH_RESULTS).map(([artist, range]): [string, SearchResult] => [
         artist,
-        { Genres: library.abal[artist]?.Genres ?? [], sIndexRange: range },
+        { Genres: library.artists[artist]?.Genres ?? [], sIndexRange: range },
       ]);
       return results.length ? Object.fromEntries(results) : null;
     },
 
-    statsAlbums: () => library.albgc,
-    statsArtists: () => library.arbgc,
+    statsAlbums: () => library.albumCounts,
+    statsArtists: () => library.artistCounts,
 
     // the latest albums, by how long ago they were added
     feedUploads: () => {
       const now = context.now();
-      const latest = Object.values(library.glul)
+      const latest = Object.values(library.albums)
         .sort((a, b) => (b.DateAdded < a.DateAdded ? -1 : b.DateAdded > a.DateAdded ? 1 : 0))
         .slice(0, MAX_FEED_ALBUMS);
 

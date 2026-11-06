@@ -10,9 +10,3 @@ declare const pageData: {
   shoutUrl: string;
   shoutStreamUrl: string;
 };
-
-declare class Hammer {
-  static TouchInput: unknown;
-  constructor(element: HTMLElement, options: { inputClass: unknown });
-  on(events: string, handler: (event: { direction: number }) => void): void;
-}

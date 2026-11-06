@@ -120,13 +120,12 @@ export function unifiedLibrary(tracks: Track[]): Record<string, unknown> {
   const artists = albumsByArtist(tracks);
 
   return {
-    albgl: albumsByGenre,
-    albgc: counts(albumsByGenre),
-    arbgl: artistsByGenre,
-    arbgc: counts(artistsByGenre),
-    glul: albumsById(tracks),
-    abal: artists,
-    artists: artistNames(artists.keys()),
+    albumCounts: counts(albumsByGenre),
+    artistsByGenre: artistsByGenre,
+    artistCounts: counts(artistsByGenre),
+    albums: albumsById(tracks),
+    artists: artists,
+    artistNames: artistNames(artists.keys()),
   };
 }
 

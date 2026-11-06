@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import {
   discover,
   expect,
@@ -170,4 +171,31 @@ test('closes what it opened, and fits it when the window changes', async ({ page
   await expectClosed(page, '#feedContainer');
   await page.getByTitle('Feed', { exact: true }).click();
   await expectOpen(page, '#feedContainer');
+});
+
+test.describe('on a touch screen', () => {
+  test.use({ hasTouch: true, viewport: { width: 500, height: 800 } });
+
+  const swipe = (page: Page, fromX: number, toX: number) =>
+    page.evaluate(
+      async ([from, to]) => {
+        const touch = (x: number) => new Touch({ identifier: 1, target: document.body, clientX: x, clientY: 300 });
+        const send = (type: string, x: number, touches: Touch[]) =>
+          document.body.dispatchEvent(new TouchEvent(type, { touches, changedTouches: [touch(x)], bubbles: true }));
+        send('touchstart', from as number, [touch(from as number)]);
+        await new Promise(resolve => setTimeout(resolve, 50));
+        send('touchend', to as number, []);
+      },
+      [fromX, toX],
+    );
+
+  test('swiping goes from a panel to the other', async ({ page }) => {
+    const main = page.locator('main');
+    await swipe(page, 400, 100);
+    await expect(main).toHaveCSS('transform', /matrix\(1, 0, 0, 1, -\d+/);
+
+    await expect(page.locator('#accountContent').getByRole('heading', { name: 'Connect' })).toBeVisible();
+    await swipe(page, 100, 400);
+    await expect(main).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+  });
 });

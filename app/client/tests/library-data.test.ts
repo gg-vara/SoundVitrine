@@ -9,16 +9,15 @@ const album = (year: number, date: string, tracks: Record<string, string> = { '1
 });
 
 const library: UnifiedLibrary = {
-  arbgl: { Rock: ['Björk', 'Røyksopp'], Jazz: ['Björk'] },
-  arbgc: { Rock: 2, Jazz: 1 },
-  albgl: { Rock: ['x', 'y', 'z'], Jazz: ['w'] },
-  albgc: { Rock: 3, Jazz: 1 },
-  abal: {
+  artistsByGenre: { Rock: ['Björk', 'Røyksopp'], Jazz: ['Björk'] },
+  artistCounts: { Rock: 2, Jazz: 1 },
+  albumCounts: { Rock: 3, Jazz: 1 },
+  artists: {
     Björk: { Genres: ['Rock', 'Jazz'], Albums: { Vespertine: album(2001, '2020-01-01'), Homogenic: album(1997, '2020-01-02') } },
     Røyksopp: { Genres: ['Rock'], Albums: { Melody: album(2001, '2024-01-03') } },
   },
-  artists: ['Björk', 'Røyksopp'],
-  glul: {
+  artistNames: ['Björk', 'Røyksopp'],
+  albums: {
     a: { Album: 'Vespertine', Artist: 'Björk', Year: 2001, DateAdded: '2020-01-01', Genre: 'Rock' },
     b: { Album: 'Homogenic', Artist: 'Björk', Year: 1997, DateAdded: '2020-01-02', Genre: 'Rock' },
     c: { Album: 'Melody', Artist: 'Røyksopp', Year: 2001, DateAdded: '2024-01-03', Genre: 'Rock' },
@@ -90,7 +89,7 @@ describe('album infos', () => {
   test('adds their names, without changing the library', () => {
     const infos = feeds().albumInfos('Björk', 'Vespertine');
     expect(infos).toMatchObject({ Album: 'Vespertine', Artist: 'Björk', Year: 2001 });
-    expect(library.abal.Björk?.Albums.Vespertine).not.toHaveProperty('Album');
+    expect(library.artists.Björk?.Albums.Vespertine).not.toHaveProperty('Album');
   });
 });
 
@@ -116,8 +115,8 @@ describe('search', () => {
     const many = Array.from({ length: 150 }, (_, index) => `band ${index}`);
     const large: UnifiedLibrary = {
       ...library,
-      artists: many,
-      abal: Object.fromEntries(many.map(name => [name, { Genres: [], Albums: {} }])),
+      artistNames: many,
+      artists: Object.fromEntries(many.map(name => [name, { Genres: [], Albums: {} }])),
     };
     const found = createDataFeeds(large, {
       humanizedSince: () => '',
@@ -136,14 +135,14 @@ describe('feed', () => {
   });
 
   test('the latest 100 only', () => {
-    const glul = Object.fromEntries(
+    const albums = Object.fromEntries(
       Array.from({ length: 120 }, (_, index) => [
         `id${index}`,
         { Album: `a${index}`, Artist: 'x', Year: 2000, DateAdded: `2020-01-${String(index).padStart(3, '0')}`, Genre: 'g' },
       ]),
     );
     const uploads = createDataFeeds(
-      { ...library, glul },
+      { ...library, albums },
       {
         humanizedSince: () => 'one',
         now: () => new Date(),
@@ -164,7 +163,14 @@ describe('feed', () => {
 
 describe('an empty library', () => {
   // empty lists come as [] from the server
-  const empty = { arbgl: [], arbgc: [], albgl: [], albgc: [], abal: [], artists: [], glul: [] } as unknown as UnifiedLibrary;
+  const empty = {
+    artistsByGenre: [],
+    artistCounts: [],
+    albumCounts: [],
+    artists: [],
+    artistNames: [],
+    albums: [],
+  } as unknown as UnifiedLibrary;
   const it = createDataFeeds(empty, {
     humanizedSince: () => '',
     now: () => new Date(),

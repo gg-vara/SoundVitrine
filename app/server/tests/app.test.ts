@@ -133,7 +133,7 @@ describe('library upload', () => {
 
     expect(readFileSync(join(userFolder(USER), 'current.json'), 'utf8')).toBe(library);
     const served = await handle(new Request(`${base}/data/users/${USER}/unified.json`));
-    expect(((await served.json()) as { abal: Record<string, unknown> }).abal.Artist).toBeDefined();
+    expect(((await served.json()) as { artists: Record<string, unknown> }).artists.Artist).toBeDefined();
   });
 
   test('the same library again changes nothing', async () => {
@@ -229,8 +229,8 @@ describe('compression', () => {
   });
 
   test('a file keeps its content, and tells its size for the loading bar', async () => {
-    const original = await Bun.file(join(APP_ROOT, 'client/public/ext/js/hammer.min.js')).bytes();
-    const response = await asBrowser('/public/ext/js/hammer.min.js');
+    const original = await Bun.file(join(APP_ROOT, 'client/public/images/chrome.svg')).bytes();
+    const response = await asBrowser('/public/images/chrome.svg');
     expect(response.headers.get('content-encoding')).toBe('gzip');
     expect(response.headers.has('content-length')).toBe(false);
     expect(response.headers.get('x-original-content-length')).toBe(String(original.length));
@@ -240,7 +240,7 @@ describe('compression', () => {
 
   test('a compiled library', async () => {
     await createUser('gzippeduser');
-    const library = JSON.stringify({ abal: Object.fromEntries(Array.from({ length: 500 }, (_, index) => [`Artist ${index}`, {}])) });
+    const library = JSON.stringify({ artists: Object.fromEntries(Array.from({ length: 500 }, (_, index) => [`Artist ${index}`, {}])) });
     mkdirSync(userFolder('gzippeduser'), { recursive: true });
     writeFileSync(join(userFolder('gzippeduser'), 'unified.json'), library);
 
@@ -276,7 +276,7 @@ describe('compression', () => {
   });
 
   test('not a part of a file', async () => {
-    const response = await asBrowser('/public/ext/js/hammer.min.js', { headers: { range: 'bytes=0-99', 'accept-encoding': 'gzip' } });
+    const response = await asBrowser('/public/images/chrome.svg', { headers: { range: 'bytes=0-99', 'accept-encoding': 'gzip' } });
     expect(response.headers.has('content-encoding')).toBe(false);
   });
 

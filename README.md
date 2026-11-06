@@ -47,7 +47,6 @@ As I always wanted to tell about my discoveries to my friends when I was outside
 - [Scalar](https://scalar.com/), to browse the API
 - Vanilla Javascript, alongside 
     - [Chart.js](https://www.chartjs.org/) for graphs
-    - [Hammer.js](https://hammerjs.github.io/) for gesture handling
 - MusicBrainz API (https://musicbrainz.org/doc/MusicBrainz_API)
 
 ## Using SoundVitrine

@@ -30,7 +30,6 @@ export function libraryPage(context: PageContext, user: string): Html {
     <head>
         ${metadata(context, pageTitle(tr('libraryOf', user)))}
         ${externalStyles}
-        <script type="text/javascript" src="/public/ext/js/hammer.min.js"></script>
         ${translationsScript(context)}
         <script>
             const pageData = ${scriptJson({
