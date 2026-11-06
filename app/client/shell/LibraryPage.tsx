@@ -11,7 +11,7 @@ const IN_MENU = 'mr-[.75rem] text-white [&_i]:text-[1.2rem] portrait:hidden! lan
 const IN_BANNER = 'text-white landscape:hidden! portrait:[display:inherit]!';
 
 // what opens under the header : it closes without a height, which shell/navigation.ts gives
-const SUB_FRAME = 'flex shrink-0 flex-wrap overflow-hidden [transition:max-height_.3s_ease_0s] not-last:max-h-0';
+const SUB_FRAME = 'flex shrink-0 flex-wrap overflow-hidden not-last:max-h-0';
 const SUB_CONTENT = 'flex grow flex-wrap items-start px-4 py-[1.5rem] portrait:flex-col portrait:px-[.75rem] portrait:py-4';
 // each one has its own color and position
 const CATEGORY =
@@ -54,8 +54,8 @@ export function LibraryPage(props: {
 
   return (
     <>
-      <main id="main-app" class="flex w-full [transform:translateX(0px)] [transition:all_.5s_ease-in] hidpi:[transition:all_.25s_ease-in]">
-        <div id="app-music-library" class={`focused ${MAIN_PANEL} bg-[rgb(239,238,238)] opacity-0 [transition:opacity_.5s_ease-in]`}>
+      <main id="main-app" class="flex w-full [transform:translateX(0px)]">
+        <div id="app-music-library" class={`focused ${MAIN_PANEL} bg-[rgb(239,238,238)] opacity-0`}>
           <header class="sticky top-0 z-10 flex w-full shrink-0 flex-col shadow-[0px_0px_.5rem_#e0e0e0]">
             <div class="flex w-full flex-row items-center">
               <span class="flex h-full items-center justify-center gap-[.2rem] bg-[#f7f7f7] pr-[.25em] pl-[.5em] text-center text-[2.5rem] portrait:hidden">

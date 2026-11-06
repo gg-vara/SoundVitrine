@@ -1,8 +1,9 @@
 // What shows until the library is there. The loader's markup comes with the page : it must show before any script runs
-import { waitTransitionEnd } from './waiting';
+import { play } from './motion';
 
 const LOADER_ID = 'loader-container';
 const PAGE_ID = 'app-music-library';
+const FADE_SECONDS = 0.5;
 
 function moveLoaderBar(percent: number) {
   const bar = document.getElementById('loader-bar');
@@ -12,9 +13,8 @@ function moveLoaderBar(percent: number) {
 export function showLoader(): Promise<unknown> {
   const loader = document.getElementById(LOADER_ID);
   if (!loader) return Promise.resolve();
-  return waitTransitionEnd(loader, () => {
-    loader.style.opacity = '1';
-  });
+  loader.style.opacity = '1';
+  return play(loader, { opacity: [0, 1] }, FADE_SECONDS);
 }
 
 export function downloadText(url: string): Promise<string> {
@@ -61,13 +61,15 @@ export function hideLibraryFailure() {
 export function showPage(): Promise<unknown> {
   moveLoaderBar(100);
   const loader = document.getElementById(LOADER_ID);
-  if (loader) loader.style.opacity = '0';
+  if (loader) {
+    loader.style.opacity = '0';
+    void play(loader, { opacity: [1, 0] }, FADE_SECONDS);
+  }
 
   const page = document.getElementById(PAGE_ID);
   if (!page) return Promise.resolve();
-  return waitTransitionEnd(page, () => {
-    page.style.opacity = '1';
-  });
+  page.style.opacity = '1';
+  return play(page, { opacity: [0, 1] }, FADE_SECONDS);
 }
 
 export function removeLoader() {

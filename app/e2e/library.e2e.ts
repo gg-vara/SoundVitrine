@@ -9,6 +9,7 @@ import {
   openBand,
   openLibrary,
   PASSWORD,
+  pictureFile,
   submitLogin,
   test,
   USER,
@@ -138,4 +139,35 @@ test('going to the account panel and back keeps the page', async ({ page }) => {
 
   await page.locator('#app-connect').getByTitle('Login / Create an account').click();
   await expect(discover(page).getByText('Rock', { exact: true })).toBeInViewport();
+});
+
+test('shows the cover found for an album, or tells there is none', async ({ page }) => {
+  const panel = discover(page);
+  const cover = panel.locator('.imgLoader');
+  await panel.getByText('Rock', { exact: true }).click();
+  await panel.getByText('Sigur Rós', { exact: true }).click();
+  await panel.getByText('Album 0 of Sigur Rós', { exact: true }).click();
+  await expect(cover).toHaveClass(/(^|s)noImgFound(s|$)/);
+
+  await page.route('https://musicbrainz.org/**', route => route.fulfill({ json: { 'release-groups': [{ id: 'found' }] } }));
+  await page.route('https://coverartarchive.org/**', route => route.fulfill({ ...pictureFile(), body: pictureFile().buffer }));
+  await openLibrary(page);
+  await panel.getByText('Rock', { exact: true }).click();
+  await panel.getByText('Sigur Rós', { exact: true }).click();
+  await panel.getByText('Album 1 of Sigur Rós', { exact: true }).click();
+  await expect(cover).not.toHaveClass(/(^|s)(noImgFound|searchingCover)(s|$)/);
+  await expect(cover.locator('img')).toHaveAttribute('src', /coverartarchive/);
+});
+
+test('closes what it opened, and fits it when the window changes', async ({ page }) => {
+  await page.getByTitle('Feed', { exact: true }).click();
+  await expectOpen(page, '#feedContainer');
+  await page.setViewportSize({ width: 600, height: 700 });
+  await expect
+    .poll(() => page.locator('#feedContainer').evaluate(element => element.scrollHeight - element.clientHeight))
+    .toBeLessThanOrEqual(1);
+  await page.getByTitle('Feed', { exact: true }).click();
+  await expectClosed(page, '#feedContainer');
+  await page.getByTitle('Feed', { exact: true }).click();
+  await expectOpen(page, '#feedContainer');
 });

@@ -51,7 +51,7 @@ export function libraryPage(context: PageContext, user: string): Html {
         ${clientStyles()}
     </head>
     <body>
-        <div id='loader-container' class="pointer-events-none fixed top-0 z-1000 flex h-[100vh] w-[100vw] flex-col items-center justify-center opacity-0 [transition:opacity_.5s_ease]">
+        <div id='loader-container' class="pointer-events-none fixed top-0 z-1000 flex h-[100vh] w-[100vw] flex-col items-center justify-center opacity-0">
             <div class="overflow-hidden">
                     <div id='useChrome' class="mb-[.4rem] flex flex-col items-center gap-[.5em] text-[2em]">
                         <img class="h-[5rem] w-[5rem]" src='/public/images/chrome.svg' alt="Chrome Logo"/>

@@ -4,18 +4,19 @@ import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
 import { youtubeSearchUrl } from '../library/youtube';
 import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
-import { type ApplyHeight, resizeShutter, toggleShutter } from '../shell/navigation';
-import { waitTransitionEnd } from '../shell/waiting';
+import { play } from '../shell/motion';
+import { fitShutter, setShutter } from '../shell/navigation';
 import { followShouts } from './live';
 import { elapsedSince, metaText, movesTimeline, type Shout } from './logic';
 import { shoutMachine } from './machine';
 
 const CONTAINER_ID = 'shoutContainer';
 const MUTE_STORAGE_KEY = 'muteShoutNotification';
+const NOTIFICATION_SECONDS = 0.5;
 
 export interface ShoutPanelControls {
   start: () => void;
-  resize: () => ApplyHeight;
+  resize: () => void;
 }
 
 // the height of the closed panel is measured with these : they never show, as a shout comes before it opens
@@ -94,8 +95,11 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
       effects: {
         follow: followShouts,
         // the notification covers the panel while the next track comes in
-        fadeOutNotification: () => waitTransitionEnd(notification, () => notification.classList.remove('fade')),
-        toggleShutter: open => toggleShutter(CONTAINER_ID, () => resizeShutter(CONTAINER_ID, open)),
+        fadeOutNotification: () => {
+          notification.classList.remove('fade');
+          return play(notification, { height: ['0%', '100%'] }, NOTIFICATION_SECONDS);
+        },
+        toggleShutter: open => setShutter(CONTAINER_ID, open),
         show: (shout, changes) => {
           if (changes.includes('album')) findCover(shout.album, shout.artist);
           setShown(shout);
@@ -109,6 +113,7 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
           requestAnimationFrame(() => {
             playSound();
             notification.classList.add('fade');
+            void play(notification, { height: ['100%', '0%'] }, NOTIFICATION_SECONDS);
           });
         },
         millisecondsSince,
@@ -119,14 +124,14 @@ export function ShoutPanel(props: { controls: (controls: ShoutPanelControls) => 
 
   props.controls({
     start: () => actor.send({ type: 'start' }),
-    resize: () => resizeShutter(CONTAINER_ID, actor.getSnapshot().context.worthDisplaying),
+    resize: () => fitShutter(CONTAINER_ID, actor.getSnapshot().context.worthDisplaying),
   });
 
   return (
     <>
       <div
         id="shoutNotification"
-        class="absolute z-20 flex h-full w-full items-center justify-center overflow-hidden bg-white [transition:all_.5s_ease] [&.fade]:h-0"
+        class="absolute z-20 flex h-full w-full items-center justify-center overflow-hidden bg-white [&.fade]:h-0"
         ref={notification}
       >
         {i18n.nowPlaying}

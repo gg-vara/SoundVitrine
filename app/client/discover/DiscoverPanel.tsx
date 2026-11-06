@@ -7,8 +7,8 @@ import { type createDataFeeds, type FilterItem, sortItems } from '../library/dat
 import { humanizedDate } from '../library/humanizedDate';
 import { youtubeSearchUrl } from '../library/youtube';
 import { COVER, createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
+import { play } from '../shell/motion';
 import { scrollToElement } from '../shell/navigation';
-import { waitTransitionEnd } from '../shell/waiting';
 import {
   appliedFilters,
   type DiscoverFilter,
@@ -34,7 +34,7 @@ const SORTER_STORAGE_KEY = '_discoverSorter';
 const SORT_ANIMATION_MS = 300;
 
 // a transition's end never comes in a hidden tab
-const SHOW_LIMIT_MS = 1000;
+const SHOW_SECONDS = 0.4;
 
 const sizeOf = (element: HTMLElement) => ({ width: element.scrollWidth, height: element.scrollHeight });
 
@@ -212,13 +212,9 @@ export function DiscoverPanel(props: {
   }
 
   function show(): Promise<unknown> {
-    return Promise.race([
-      waitTransitionEnd(infos, () => {
-        setShown(true);
-        flush();
-      }),
-      new Promise(resolve => setTimeout(resolve, SHOW_LIMIT_MS)),
-    ]);
+    setShown(true);
+    flush();
+    return play(infos, { opacity: [0.5, 1] }, SHOW_SECONDS);
   }
 
   function select(wanted: Partial<DiscoverFilter>) {

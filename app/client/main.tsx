@@ -11,15 +11,14 @@ import type { AccountPanelControls } from './shell/accountPanel';
 import { LibraryPage } from './shell/LibraryPage';
 import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
 import {
-  type ApplyHeight,
   alignConnectSideElements,
+  fitShutter,
   followAccountPanel,
   followResizing,
   followSwipes,
-  resizeShutter,
   scrollToElement,
+  setShutter,
   switchPanel,
-  toggleShutter,
 } from './shell/navigation';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
 import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
@@ -30,12 +29,7 @@ const PROFILE_ID = 'profileContainer';
 const STATS_ID = 'statsContainer';
 
 const isChecked = (id: string) => (document.getElementById(id) as HTMLInputElement).checked;
-const resizeFeed = () => resizeShutter(FEED_ID, isChecked('showFeed'));
-const resizeProfile = () => resizeShutter(PROFILE_ID, isChecked('showProfile'));
-const resizeStats = () => resizeShutter(STATS_ID, isChecked('showStats'));
-
-// on resizing, what it takes to fit
-const fitted = (getHeight: () => ApplyHeight) => () => getHeight()?.();
+const fitting = (id: string, checkbox: string) => () => fitShutter(id, isChecked(checkbox));
 
 let shout!: ShoutPanelControls;
 let stats!: StatsPanelControls;
@@ -81,11 +75,11 @@ render(
           }}
         />
       }
-      toggleProfile={() => void toggleShutter(PROFILE_ID, resizeProfile)}
-      toggleFeed={() => void toggleShutter(FEED_ID, resizeFeed).then(scrollToElement)}
+      toggleProfile={() => void setShutter(PROFILE_ID, isChecked('showProfile'))}
+      toggleFeed={() => void setShutter(FEED_ID, isChecked('showFeed')).then(scrollToElement)}
       toggleStats={() => {
         if (isChecked('showStats')) void stats.open();
-        void toggleShutter(STATS_ID, resizeStats).then(scrollToElement);
+        void setShutter(STATS_ID, isChecked('showStats')).then(scrollToElement);
       }}
       switchPanel={() => switchPanel()}
       accountControls={controls => {
@@ -125,7 +119,13 @@ async function loadLibraryThenShowPage() {
 window.addEventListener('load', async () => {
   history.scrollRestoration = 'manual';
   alignConnectSideElements();
-  followResizing([fitted(resizeFeed), fitted(resizeStats), fitted(resizeProfile), fitted(() => shout.resize()), alignConnectSideElements]);
+  followResizing([
+    fitting(FEED_ID, 'showFeed'),
+    fitting(STATS_ID, 'showStats'),
+    fitting(PROFILE_ID, 'showProfile'),
+    () => shout.resize(),
+    alignConnectSideElements,
+  ]);
   followSwipes();
   followAccountPanel(() => void account.reveal());
 

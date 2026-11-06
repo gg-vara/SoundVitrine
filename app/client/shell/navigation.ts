@@ -1,25 +1,34 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
-import { waitTransitionEnd } from './waiting';
+import { play } from './motion';
 
-// what changes the height of something, null if it fits already
-export type ApplyHeight = (() => void) | null;
+const SHUTTER_SECONDS = 0.3;
 
-export function resizeShutter(targetId: string, open: boolean): ApplyHeight {
+const shutterHeight = (target: HTMLElement, open: boolean) => (open ? `${target.scrollHeight}px` : '');
+
+// what each one was last asked to be : it can be asked again while it moves
+const shutters = new Map<Element, string>();
+
+// opens or closes what is under the header, giving it once done, null if nothing had to change
+export async function setShutter(targetId: string, open: boolean): Promise<Element | null> {
   const target = document.getElementById(targetId) as HTMLElement;
-  const height = open ? `${target.scrollHeight}px` : '';
-  if (target.style.maxHeight === height) return null;
+  const height = shutterHeight(target, open);
+  if ((shutters.get(target) ?? '') === height) return null;
 
-  return () => {
-    window.requestAnimationFrame(() => {
-      target.style.maxHeight = height;
-    });
-  };
+  const from = `${target.clientHeight}px`;
+  shutters.set(target, height);
+  target.style.maxHeight = height;
+  await play(target, { maxHeight: [from, height || '0px'] }, SHUTTER_SECONDS);
+  if (shutters.get(target) === height) target.style.maxHeight = height;
+  return target;
 }
 
-// gives what opened or closed, null if nothing had to change
-export async function toggleShutter(targetId: string, getHeight: () => ApplyHeight): Promise<Element | null> {
-  return waitTransitionEnd(document.getElementById(targetId) as HTMLElement, getHeight());
+// to what it now holds, at once
+export function fitShutter(targetId: string, open: boolean) {
+  const target = document.getElementById(targetId) as HTMLElement;
+  const height = shutterHeight(target, open);
+  shutters.set(target, height);
+  target.style.maxHeight = height;
 }
 
 // under the header, which stays
@@ -62,6 +71,7 @@ export function nextPanel(current: number, direction: number | undefined, count:
   return target === current || target < 0 || target >= count ? null : target;
 }
 
+const PANEL_SECONDS = 0.5;
 const LIBRARY_PANEL = 0;
 const ACCOUNT_PANEL = 1;
 
@@ -84,9 +94,10 @@ export function switchPanel(direction?: number) {
   const video = document.getElementById('bg') as HTMLVideoElement;
   if (target !== LIBRARY_PANEL) void video.play();
 
-  void waitTransitionEnd(main, () => {
-    main.style.transform = `translateX(-${target * 100}%)`;
-  })
+  const from = main.style.transform || 'translateX(0%)';
+  const to = `translateX(-${target * 100}%)`;
+  main.style.transform = to;
+  void play(main, { transform: [from, to] }, PANEL_SECONDS)
     .then(alignConnectSideElements)
     .then(() => {
       if (target === LIBRARY_PANEL) video.pause();

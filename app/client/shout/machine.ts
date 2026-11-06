@@ -50,7 +50,7 @@ export const shoutMachine = setup({
   delays: {
     // without flooding a server that is restarting
     retry: 5000,
-    // these wait for CSS transitions of .5s at most, whose end never comes when nothing moves, or in a hidden tab
+    // these wait for animations of .5s at most
     settle: 1000,
   },
   guards: {
