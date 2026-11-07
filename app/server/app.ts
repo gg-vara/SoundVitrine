@@ -83,6 +83,7 @@ async function respond(request: Request, peerAddress?: string): Promise<Response
   const path = url.pathname;
 
   if (path === '/healthz') return text('OK');
+
   const file = await staticRoute(request, path);
   if (file) return file;
 

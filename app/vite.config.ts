@@ -9,7 +9,7 @@ const client = join(import.meta.dirname, 'client');
 export default defineConfig({
   root: client,
   plugins: [tailwindcss(), solid()],
-  // where the server serves client/dist/ (server/app.ts)
+  // where the server serves client/dist/ (server/static.ts)
   base: '/web/',
   // client/public/ is served as it is, at /public/ : not to be copied into each build
   publicDir: false,
