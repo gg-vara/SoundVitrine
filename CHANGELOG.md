@@ -2,6 +2,15 @@
 
 Each section becomes the notes of its GitHub release. Versions are shared with [SoundBuddy](https://github.com/gg-vara/SoundBuddy) from 0.13.0 on. Before that, see the tags.
 
+## 0.14.0
+
+Nothing changes for visitors, nor for SoundBuddy : the API's description is the same.
+
+### Changed
+
+- The code is organized by page in the browser and by area on the server
+- Each source file carries its license, which the README also states
+
 ## 0.13.0
 
 > **A new install, not an upgrade** : accounts and libraries of the PHP versions are not carried over. Accounts are created again, and libraries uploaded again from SoundBuddy.
