@@ -1,8 +1,8 @@
 // Music libraries : from the tracks SoundBuddy uploads (current.json), the data the library page shows (unified.json)
 
 import { join } from 'node:path';
-import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, MUSIC_LIB_PROFILE_FILE_NAME } from './config';
-import { userFolder } from './users';
+import { userFolder } from '../auth/users';
+import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, MUSIC_LIB_PROFILE_FILE_NAME } from '../config';
 
 // a track, as exported by SoundBuddy (ItunesLibraryParser)
 export interface Track {

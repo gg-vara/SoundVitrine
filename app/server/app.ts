@@ -7,7 +7,10 @@ import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { APIError } from 'better-auth/api';
 import { API_TITLE, hasLibrary, router, securitySchemes } from './api';
-import { auth, prepareAuth } from './auth';
+import { auth, prepareAuth } from './auth/auth';
+import { clearFailures, isBlocked, recordFailure } from './auth/rate-limit';
+import { chosenLang, langCookie, readSession } from './auth/session';
+import { allUsers, ensureUserFolders, findUser, publicUserFolder, updateProfile, userExists, userFolder } from './auth/users';
 import { compressedResponse } from './compressed-response';
 import {
   ALLOW_SSE_TESTING,
@@ -20,16 +23,13 @@ import {
   TRUST_PROXY,
 } from './config';
 import { latestShout } from './db';
-import type { Html } from './html';
-import type { Lang } from './i18n';
-import { defaultLang, isLang, langFromHeader, translator } from './i18n';
+import type { Lang } from './i18n/i18n';
+import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
+import { publishShout } from './library/shouts';
 import { accountPage, uploadPage, welcomePage } from './pages/admin';
 import { libraryPage, mockPage } from './pages/explorer';
+import type { Html } from './pages/html';
 import type { PageContext } from './pages/layout';
-import { clearFailures, isBlocked, recordFailure } from './rate-limit';
-import { chosenLang, langCookie, readSession } from './session';
-import { publishShout } from './shouts';
-import { allUsers, ensureUserFolders, findUser, publicUserFolder, updateProfile, userExists, userFolder } from './users';
 
 //
 // API

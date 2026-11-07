@@ -1,9 +1,9 @@
 // The library page of a user, and the page to test live shouts
 
+import { findUser, publicUserFolder } from '../auth/users';
 import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, SHOUT_PROFILE_FILE_NAME } from '../config';
-import type { Html } from '../html';
-import { html, raw } from '../html';
-import { findUser, publicUserFolder } from '../users';
+import type { Html } from './html';
+import { html, raw } from './html';
 import type { PageContext } from './layout';
 import {
   clientScript,

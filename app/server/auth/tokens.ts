@@ -2,7 +2,7 @@
 // Each login of an application is a "grant", with its current tokens. Only their hashes are kept : they are random, so a plain hash is enough
 
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { database } from './db';
+import { database } from '../db';
 
 export const SCOPES = {
   'library:write': "replace the user's library",

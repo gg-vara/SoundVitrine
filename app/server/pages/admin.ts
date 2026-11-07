@@ -1,10 +1,10 @@
 // Pages of the admin layout : welcome, account, library upload
 
+import type { User } from '../auth/users';
+import { publicUserFolder } from '../auth/users';
 import { COMPANION_APP_GITHUB_LATEST_RELEASE_URL, MUSIC_LIB_UPLOAD_FILE_NAME } from '../config';
-import type { Html } from '../html';
-import { html, raw } from '../html';
-import type { User } from '../users';
-import { publicUserFolder } from '../users';
+import type { Html } from './html';
+import { html, raw } from './html';
 import type { PageContext } from './layout';
 import { ACCOUNT_ENTRY, adminPage, clientScript, pageTitle, translationsScript } from './layout';
 

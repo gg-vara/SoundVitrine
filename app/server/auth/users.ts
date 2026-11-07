@@ -2,10 +2,10 @@
 
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_BACKGROUND_COLORS, STATE_FOLDER_PATH } from '../config';
+import { database } from '../db';
+import type { Translator } from '../i18n/i18n';
 import { auth } from './auth';
-import { DEFAULT_BACKGROUND_COLORS, STATE_FOLDER_PATH } from './config';
-import { database } from './db';
-import type { Translator } from './i18n';
 import { clearFailures, isBlocked, recordFailure } from './rate-limit';
 
 // what may be shown of a user

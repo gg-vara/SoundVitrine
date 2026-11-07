@@ -1,7 +1,7 @@
 // Translations : the language comes from the session, else the browser (Accept-Language), else English
 
-import { en } from './translations/en';
-import { fr } from './translations/fr';
+import { en } from './en';
+import { fr } from './fr';
 
 export type Lang = 'en' | 'fr';
 export type TranslationKey = keyof typeof en;

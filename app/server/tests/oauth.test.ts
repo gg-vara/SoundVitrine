@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { handle, prepareState } from '../app';
-import { auth } from '../auth';
+import { auth } from '../auth/auth';
+import { ACCESS_TOKEN_SECONDS, authenticate, issueTokens, parseScope, refreshTokens } from '../auth/tokens';
 import { database, latestShout } from '../db';
-import { ACCESS_TOKEN_SECONDS, authenticate, issueTokens, parseScope, refreshTokens } from '../tokens';
 
 const USER = 'oauthcurator';
 const PASSWORD = 'password1';

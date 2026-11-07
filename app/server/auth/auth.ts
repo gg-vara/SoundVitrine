@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import { betterAuth } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
 import { username } from 'better-auth/plugins/username';
-import { APP_NAME, ENFORCE_CANONICAL_HTTP_SCHEME, PORT, STATE_FOLDER_PATH } from './config';
-import { database } from './db';
+import { APP_NAME, ENFORCE_CANONICAL_HTTP_SCHEME, PORT, STATE_FOLDER_PATH } from '../config';
+import { database } from '../db';
 
 // the signing key : SOUNDVITRINE_SESSION_SECRET, else one generated once, kept in the state folder
 function loadSecret(): string {

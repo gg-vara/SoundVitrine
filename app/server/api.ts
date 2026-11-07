@@ -6,7 +6,9 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { eventIterator, ORPCError, os } from '@orpc/server';
 import { z } from 'zod';
-import { decompressUpload } from './compression';
+import type { Scope } from './auth/tokens';
+import { ACCESS_TOKEN_SECONDS, authenticate, issueTokens, parseScope, refreshTokens, revokeToken, SCOPES } from './auth/tokens';
+import { checkCredentials, userExists } from './auth/users';
 import {
   APP_NAME,
   COMPANION_APP_NAME,
@@ -16,12 +18,10 @@ import {
   SHOUT_UPLOAD_FILE_NAME,
 } from './config';
 import { librarySha1, saveLatestShout, saveLibraryRecord } from './db';
-import type { Translator } from './i18n';
-import { compileLibrary, libraryPath } from './library';
-import { publishShout, ShoutSchema, shoutsOf } from './shouts';
-import type { Scope } from './tokens';
-import { ACCESS_TOKEN_SECONDS, authenticate, issueTokens, parseScope, refreshTokens, revokeToken, SCOPES } from './tokens';
-import { checkCredentials, userExists } from './users';
+import type { Translator } from './i18n/i18n';
+import { decompressUpload } from './library/compression';
+import { compileLibrary, libraryPath } from './library/library';
+import { publishShout, ShoutSchema, shoutsOf } from './library/shouts';
 
 export interface ApiContext {
   tr: Translator;

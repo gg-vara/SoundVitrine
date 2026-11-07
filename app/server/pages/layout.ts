@@ -2,12 +2,12 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import type { Session } from '../auth/session';
 import { APP_NAME, APP_ROOT, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
-import type { Html } from '../html';
-import { html, raw } from '../html';
-import type { Lang, TranslationKey, Translator } from '../i18n';
-import { dictionaries } from '../i18n';
-import type { Session } from '../session';
+import type { Lang, TranslationKey, Translator } from '../i18n/i18n';
+import { dictionaries } from '../i18n/i18n';
+import type { Html } from './html';
+import { html, raw } from './html';
 
 // what a page is rendered from
 export interface PageContext {

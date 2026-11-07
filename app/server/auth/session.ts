@@ -1,8 +1,8 @@
 // What a page knows of its visitor : the logged user, from Better Auth's session, and the chosen language, in its own cookie
 
+import type { Lang } from '../i18n/i18n';
+import { isLang } from '../i18n/i18n';
 import { auth } from './auth';
-import type { Lang } from './i18n';
-import { isLang } from './i18n';
 
 export interface Session {
   loggedAs?: string;

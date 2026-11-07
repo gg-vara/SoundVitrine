@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { Track } from '../library';
-import { toJson, unifiedLibrary } from '../library';
+import type { Track } from '../library/library';
+import { toJson, unifiedLibrary } from '../library/library';
 
 const track = (name: string, album: string, artist: string, genre: string, added: string, number = 1): Track => ({
   Name: name,

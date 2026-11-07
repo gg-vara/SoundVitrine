@@ -5,12 +5,12 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { handle, prepareState } from '../app';
-import { auth } from '../auth';
+import { auth } from '../auth/auth';
+import { userFolder } from '../auth/users';
 import { compressedResponse } from '../compressed-response';
 import { APP_ROOT, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
 import { clientEntryIn } from '../pages/layout';
-import { userFolder } from '../users';
 
 const USER = 'curator';
 const PASSWORD = 'password1';

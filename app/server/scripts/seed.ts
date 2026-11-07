@@ -17,11 +17,11 @@ process.env.ENFORCE_CANONICAL_HTTP_SCHEME = '1';
 rmSync(STATE, { recursive: true, force: true });
 
 const { handle, prepareState } = await import('../app');
-const { auth } = await import('../auth');
+const { auth } = await import('../auth/auth');
 const { PORT } = await import('../config');
 const { saveLatestShout, saveLibraryRecord } = await import('../db');
-const { compileLibrary, libraryPath } = await import('../library');
-const { updateProfile } = await import('../users');
+const { compileLibrary, libraryPath } = await import('../library/library');
+const { updateProfile } = await import('../auth/users');
 
 // what real libraries hold, and tends to break things
 const ARTISTS = ['Sigur Rós', 'AC/DC', 'Simon & Garfunkel', 'Björk', '!!!', '2Pac', 'Mötley Crüe', '坂本龍一', 'A', 'The "Quoted" Band'];
