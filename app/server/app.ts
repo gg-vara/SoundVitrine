@@ -26,10 +26,13 @@ import { latestShout } from './db';
 import type { Lang } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
 import { publishShout } from './library/shouts';
-import { accountPage, uploadPage, welcomePage } from './pages/admin';
-import { libraryPage, mockPage } from './pages/explorer';
+import { accountPage } from './pages/account';
 import type { Html } from './pages/html';
 import type { PageContext } from './pages/layout';
+import { libraryPage } from './pages/library';
+import { mockPage } from './pages/mock';
+import { uploadPage } from './pages/upload';
+import { welcomePage } from './pages/welcome';
 
 //
 // API

@@ -1,5 +1,3 @@
-// The library page of a user, and the page to test live shouts
-
 import { findUser, publicUserFolder } from '../auth/users';
 import { COMPILED_MUSIC_LIB_PROFILE_FILE_NAME, SHOUT_PROFILE_FILE_NAME } from '../config';
 import type { Html } from './html';
@@ -68,41 +66,6 @@ export function libraryPage(context: PageContext, user: string): Html {
         </div>
         <div id="library" class="contents"></div>
         <template id="footer">${footer(context)}</template>
-    </body>
-</html>`;
-}
-
-// sends a test shout to a user, and subscribes to the user's shouts
-export function mockPage(context: PageContext): Html {
-  const base = context.url.pathname.replace(/\/$/, '');
-  return html`<!DOCTYPE html>
-<html lang="${context.lang}">
-    <head>
-        <script>
-            const sendEvent = async userToSendEventTo => {
-                await fetch(${scriptJson(`${base}/send`)}, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({ toUser: userToSendEventTo }),
-                });
-            };
-
-            const subscribeSSE = userToSubscribeTo => {
-                const source = new EventSource("/u/" + userToSubscribeTo + "/shouts");
-                source.onmessage = event => console.log("shout", JSON.parse(event.data));
-                return source;
-            };
-
-            document.onreadystatechange = () => {
-                const username = "test";
-                document.getElementById("send-event").onclick = () => sendEvent(username);
-                document.getElementById("subscribe").onclick = () => subscribeSSE(username);
-            };
-        </script>
-    </head>
-    <body>
-        <button id="send-event">Send Event</button>
-        <button id="subscribe">Subscribe</button>
     </body>
 </html>`;
 }
