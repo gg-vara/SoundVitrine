@@ -1,12 +1,9 @@
-// Requests : static files, the API (server/api.ts) with its reference, then the pages
+// Requests : static files, the API (server/api/router.ts) with its reference, then the pages
 
 import { mkdirSync, rmSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
-import { OpenAPIHandler } from '@orpc/openapi/fetch';
-import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
-import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { APIError } from 'better-auth/api';
-import { API_TITLE, hasLibrary, router, securitySchemes } from './api';
+import { apiResponse, SCALAR_SCRIPT } from './api/router';
 import { auth, prepareAuth } from './auth/auth';
 import { clearFailures, isBlocked, recordFailure } from './auth/rate-limit';
 import { chosenLang, langCookie, readSession } from './auth/session';
@@ -15,7 +12,6 @@ import { compressedResponse } from './compressed-response';
 import {
   ALLOW_SSE_TESTING,
   APP_ROOT,
-  APP_VERSION,
   COMPANION_APP_GITHUB_LATEST_RELEASE_URL,
   COMPANION_APP_NAME,
   DEFAULT_BACKGROUND_COLORS,
@@ -25,6 +21,7 @@ import {
 import { latestShout } from './db';
 import type { Lang } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
+import { hasLibrary } from './library/library';
 import { publishShout } from './library/shouts';
 import { accountPage } from './pages/account';
 import type { Html } from './pages/html';
@@ -33,60 +30,6 @@ import { libraryPage } from './pages/library';
 import { mockPage } from './pages/mock';
 import { uploadPage } from './pages/upload';
 import { welcomePage } from './pages/welcome';
-
-//
-// API
-//
-
-const SCALAR_SCRIPT = join(APP_ROOT, 'node_modules/@scalar/api-reference/dist/browser/standalone.js');
-
-const apiHandler = new OpenAPIHandler(router, {
-  plugins: [
-    new OpenAPIReferencePlugin({
-      schemaConverters: [new ZodToJsonSchemaConverter()],
-      docsPath: '/api/docs',
-      specPath: '/api/openapi.json',
-      docsTitle: API_TITLE,
-      // Scalar, served from here rather than from a CDN
-      docsScriptUrl: '/api/scalar.js',
-      specGenerateOptions: {
-        info: {
-          title: API_TITLE,
-          version: APP_VERSION,
-          description: `What ${COMPANION_APP_NAME} calls to publish a music library and what is playing, and the live shouts of a user. New clients get tokens from /oauth/token and use /api/v1. The routes taking a password each time are for released ${COMPANION_APP_NAME} versions.`,
-        },
-        servers: [{ url: '/' }],
-        components: { securitySchemes },
-      },
-    }),
-  ],
-});
-
-// the API answers in plain text, as SoundBuddy shows these texts to its users : errors too
-async function plainTextErrors(response: Response): Promise<Response> {
-  if (response.status < 400 || !response.headers.get('content-type')?.startsWith('application/json')) return response;
-
-  const error = (await response.json()) as { message?: string };
-  return new Response(error.message ?? '', { status: response.status, headers: { 'content-type': 'text/plain;charset=utf-8' } });
-}
-
-// JSON errors, as standards tell them : RFC 6749 on /oauth, RFC 9457 on /api/v1
-async function standardErrors(response: Response): Promise<Response> {
-  if (response.status < 400 || !response.headers.get('content-type')?.startsWith('application/json')) return response;
-
-  const error = (await response.json()) as { code?: string; message?: string; data?: { error?: string } };
-  if (error.code === 'OAUTH') {
-    return Response.json(
-      { error: error.data?.error, error_description: error.message },
-      { status: response.status, headers: { 'cache-control': 'no-store' } },
-    );
-  }
-
-  const headers = new Headers({ 'content-type': 'application/problem+json' });
-  if (response.status === 401) headers.set('www-authenticate', 'Bearer');
-  const body = { type: 'about:blank', title: error.code, status: response.status, detail: error.message };
-  return new Response(JSON.stringify(body), { status: response.status, headers });
-}
 
 //
 // Static files
@@ -316,8 +259,7 @@ async function libraryRoute(
   // the upload form of a user without library posts its file here
   if (!action && request.method === 'POST' && request.headers.get('content-type')?.startsWith('multipart/form-data')) {
     const upload = new Request(new URL(`/u/${user}/uploadMusicLibrary`, request.url).href, request);
-    const { response } = await apiHandler.handle(upload, { prefix: '/', context: { tr: context.tr, clientIp: context.clientIp } });
-    return response ? plainTextErrors(response) : text('', 500);
+    return (await apiResponse(upload, { tr: context.tr, clientIp: context.clientIp })) ?? text('', 500);
   }
 
   if (action && action !== 'uploadMusicLibrary') return accountRoute(context, undefined);
@@ -383,9 +325,8 @@ async function respond(request: Request, peerAddress?: string): Promise<Response
   const lang: Lang = chosenLang(request) ?? langFromHeader(request.headers.get('accept-language')) ?? defaultLang;
   const tr = translator(lang);
 
-  const { matched, response } = await apiHandler.handle(request, { prefix: '/', context: { tr, clientIp } });
-  if (matched && response)
-    return path.startsWith('/api/v1/') || path.startsWith('/oauth/') ? standardErrors(response) : plainTextErrors(response);
+  const answer = await apiResponse(request, { tr, clientIp });
+  if (answer) return answer;
 
   const context: PageContext = {
     request,

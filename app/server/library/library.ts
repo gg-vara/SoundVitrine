@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 // Music libraries : from the tracks SoundBuddy uploads (current.json), the data the library page shows (unified.json)
 
 import { join } from 'node:path';
@@ -154,3 +155,6 @@ export async function compileLibrary(username: string) {
   const list = Array.isArray(tracks) ? tracks : Object.values(tracks ?? {});
   await Bun.write(join(userFolder(username), COMPILED_MUSIC_LIB_PROFILE_FILE_NAME), toJson(unifiedLibrary(list as Track[])));
 }
+
+// whether a user has uploaded a library yet
+export const hasLibrary = (user: string) => existsSync(libraryPath(user));

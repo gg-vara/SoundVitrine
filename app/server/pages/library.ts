@@ -36,7 +36,7 @@ export function libraryPage(context: PageContext, user: string): Html {
               loggedIn: Boolean(context.session.loggedAs),
               libraryUrl: publicUserFolder(user) + COMPILED_MUSIC_LIB_PROFILE_FILE_NAME,
               shoutUrl: publicUserFolder(user) + SHOUT_PROFILE_FILE_NAME,
-              // server-sent events of the user's shouts (see server/api.ts)
+              // server-sent events of the user's shouts (see server/api/shouts.ts)
               shoutStreamUrl: `/u/${user}/shouts`,
             })};
         </script>
