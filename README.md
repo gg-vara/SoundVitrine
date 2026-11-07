@@ -99,3 +99,22 @@ Since the app is self-contained, hosting is quite simple. Check https://github.c
   <img width="1884" height="748" alt="chrome_In0HcYoPEs" src="https://github.com/user-attachments/assets/d356666f-37ac-4a92-9320-bf1119aa72a6" />
 </div>
 
+## License
+    SoundVitrine
+    Web app that hosts your local music library metadata, fed by SoundBuddy
+    Copyright (C) 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    Any graphical or audio resources available within the source code may
+    use a different license and copyright : please refer to their metadata
+    for further details. Resources without explicit references to a
+    different license and copyright still refer to this GPL.
