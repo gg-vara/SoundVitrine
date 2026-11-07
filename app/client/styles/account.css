@@ -1,0 +1,301 @@
+/* The account panel of the library page */
+.accountColumn {
+  transition: background-color 0.5s ease;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    background-color: transparent;
+  }
+
+  &.anima {
+    max-width: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-inline: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  & > :first-child {
+    margin-top: auto;
+  }
+
+  & > :last-child {
+    margin-bottom: auto;
+  }
+}
+
+.accountContent {
+  pointer-events: none;
+  display: flex;
+  max-height: 0;
+  width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+
+  &.shown {
+    margin-block: 1rem;
+    max-height: 100%;
+    width: 100%;
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  & button.back {
+    margin-top: 1rem;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    border-block: 1px solid;
+    border-inline: none;
+  }
+
+  & h1 {
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  & hr {
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+/* The account forms, also the upload form's */
+.actionButton,
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  border: 0;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.33);
+  font-family: inherit;
+  font-size: inherit;
+
+  & i {
+    margin-right: 0.5em;
+    font-size: 0.8em;
+  }
+
+  & span {
+    margin-bottom: -0.1em;
+  }
+}
+
+.actionButton {
+  background-color: #333;
+  padding: 0.25rem;
+  color: #ddd;
+  transition:
+    color 0.33s ease,
+    background-color 0.33s ease;
+
+  &:hover {
+    background-color: #eee;
+    color: #333;
+  }
+}
+
+.submitButton {
+  margin-bottom: 1rem;
+  color: #162f0ed6;
+  transition:
+    color 0.5s ease,
+    box-shadow 0.5s ease;
+
+  &:hover {
+    color: green;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+  }
+}
+
+.textInput {
+  width: 100%;
+  border-radius: 5px;
+  border: 1px dashed rgba(0, 0, 0, 0.33);
+  padding: 1.1rem 0.5rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* holding what its "placeholder" attribute says */
+.field {
+  & input {
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  & input:-webkit-autofill {
+    animation: autofill both;
+  }
+
+  &::after {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    font-size: 0.55rem;
+    color: grey;
+    content: attr(placeholder);
+    transition: all 0.5s ease;
+  }
+}
+
+.popup {
+  display: flex;
+  max-height: 1000px;
+  cursor: pointer;
+  justify-content: center;
+  overflow: hidden;
+  padding-block: 1rem;
+  transition: all 0.5s ease;
+
+  &.hide {
+    max-height: 0;
+    padding: 0;
+  }
+}
+
+.popupMessage {
+  max-width: 75%;
+  overflow: hidden;
+  border: 5px dashed rgba(255, 255, 255, 0.25);
+  background-color: #f10000;
+  padding: 1rem;
+  white-space: normal;
+  color: #ebebeb;
+  user-select: none;
+  transition: all 0.5s ease;
+
+  .hide > & {
+    border-color: transparent;
+    background-color: transparent;
+    color: transparent;
+  }
+
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0.25rem;
+    content: "🗙";
+  }
+}
+
+/* The colors of a user's band */
+.bandEditor {
+  position: absolute;
+  top: 30%;
+  display: flex;
+  height: 3rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+
+  & input {
+    cursor: pointer;
+  }
+
+  &:not(.open) input {
+    pointer-events: none;
+  }
+
+  &:not(.open):hover {
+    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  &.open .band::after {
+    animation-duration: 2s;
+  }
+}
+
+.bandColorPicker {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.5s ease;
+
+  .open > & {
+    opacity: 1;
+  }
+}
+
+.bandColors {
+  position: absolute;
+  bottom: -1.3rem;
+
+  & > * {
+    background: none;
+    border: none;
+  }
+}
+
+/* A user's picture */
+.pictureEditor {
+  margin: 1rem;
+  display: flex;
+  height: 5rem;
+  width: 5rem;
+  align-self: center;
+  border-radius: 40%;
+  background-color: #f3f3f3;
+  font-size: 3.5rem;
+  box-shadow: 0 1px 3px 0;
+  transition: opacity 0.25s ease;
+
+  &:hover {
+    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  &.uploading {
+    cursor: wait;
+  }
+
+  &.uploading::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    background: url(/public/images/loader.svg) center / 75% no-repeat;
+    content: "";
+  }
+}
+
+.pictureHolder {
+  top: 0;
+  left: 0;
+  display: flex;
+  height: 5rem;
+  width: 5rem;
+  font-size: 3.5rem;
+  transition: all 0.5s ease;
+
+  .uploading > & {
+    opacity: 0;
+  }
+
+  & > * {
+    display: flex;
+    height: 5rem;
+    width: 5rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+  }
+
+  & img {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  & img:not([src]) {
+    opacity: 0;
+  }
+
+  & img[src] {
+    border-radius: 40%;
+    background-color: #f3f3f3;
+  }
+}

@@ -1,0 +1,35 @@
+/* The languages of the footer */
+.languages {
+  & img {
+    height: 1.3rem;
+  }
+
+  & > * {
+    display: flex;
+  }
+
+  & > :not(:first-child) {
+    margin-left: 0.5rem;
+  }
+
+  & > :not(.unselected) img {
+    border: 1px dashed #6a67bd57;
+    padding-inline: 0.2rem;
+  }
+}
+
+/* The welcome page's links */
+.welcomeLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  border-radius: 5px;
+  background-color: white;
+  padding: 0.5em;
+  box-shadow: 0 0 20px 0 #00000036;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}

@@ -4,7 +4,13 @@
  * Only what uses them is scanned : client/public/ has large libraries, whose text would pass for class names.
  */
 @import "./base.css";
-@import "./components.css";
+/* what has states and pseudo-elements, which reads better as CSS. Before the utilities, so that an element's own win at the same weight */
+@import "./cover.css";
+@import "./header.css";
+@import "./search.css";
+@import "./discover.css";
+@import "./account.css";
+@import "./pages.css";
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 

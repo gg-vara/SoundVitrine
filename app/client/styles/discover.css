@@ -1,0 +1,25 @@
+/* What the discover panel lists */
+.slidesOnHover {
+  transition: transform 0.3s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translate(0.35rem, 0);
+  }
+}
+
+.discoverItem[data-count]::after {
+  margin-left: 0.25rem;
+  vertical-align: middle;
+  color: grey;
+}
+
+.discoverFilter::before {
+  position: absolute;
+  top: -0.9rem;
+  left: -0.3rem;
+  z-index: 30;
+  font-size: 0.65em;
+  color: grey;
+  content: attr(data-sl);
+}
