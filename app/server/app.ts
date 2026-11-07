@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Requests : static files, the API (server/api/router.ts) with its reference, then the pages
 
 import { mkdirSync } from 'node:fs';

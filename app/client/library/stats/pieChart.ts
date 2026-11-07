@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Chart.js, only what a pie needs : imported by StatsPanel when the panel first opens, for a file of its own
 import { ArcElement, Chart, PieController, Tooltip } from 'chart.js';
 import { nextSelected, offsetsOf, type Slices, tooltipText } from './slices';

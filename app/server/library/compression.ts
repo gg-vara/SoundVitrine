@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Libraries uploaded compressed : MSZIP buffers, as compressed natively on Windows (which has no zlib API), or zlib, gzip and raw deflate data
 
 import { gunzipSync, inflateRawSync, inflateSync } from 'node:zlib';

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // An album's cover, or what tells it is searched for or missing (components.css)
 
 import { play } from '../../shared/motion';

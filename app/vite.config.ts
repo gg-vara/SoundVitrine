@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Scripts and styles of the browser, from client/ to client/dist/. The pages stay rendered by the server (server/pages) : no index.html
 import { join } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';

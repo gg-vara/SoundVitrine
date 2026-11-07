@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
 import { play } from '../shared/motion';

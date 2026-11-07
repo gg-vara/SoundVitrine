@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Animations to wait for, in sequence. The element takes its final state by itself : its style is set by who asks
 import { animate } from 'motion/mini';
 

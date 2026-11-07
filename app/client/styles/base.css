@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
 /*
  * What applies to every page, or to what the server and the browser code both render.
  * Before Tailwind's utilities (index.css), so that they win at the same weight.

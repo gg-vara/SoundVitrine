@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Browsing a library by genre, artist and album, down to what is known of an album
 
 // biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What a shout means, apart from any page : see tests/shout.test.ts
 
 // any field may miss, or be of another type : a shout comes from what an account uploads

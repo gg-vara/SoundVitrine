@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
 /*
  * Tailwind's utilities, without its layers and reset (Preflight) : base.css sets what every page relies on,
  * and Preflight would change how much of what has no class of its own looks (titles, buttons, images).

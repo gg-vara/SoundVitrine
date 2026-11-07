@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The live shouts of a user, for the library page
 
 import { eventIterator, ORPCError } from '@orpc/server';

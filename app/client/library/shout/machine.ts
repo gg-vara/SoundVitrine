@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // How the shout panel goes : following the shouts on one side, showing them one at a time on the other. What it does to
 // the page and the network comes from "effects", so this runs anywhere : see tests/shout-machine.test.ts
 import { assign, enqueueActions, fromCallback, fromPromise, setup } from 'xstate';

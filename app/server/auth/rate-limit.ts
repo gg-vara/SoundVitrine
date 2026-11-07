@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Limits password guessing : too many failures of a client on an account block that client from trying it for a while.
 // By client and account, as blocking the account itself would let anyone cut a user off.
 // In memory : a restart forgets them, which is fine for a single server

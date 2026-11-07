@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Accounts and sessions, by Better Auth : hashed passwords, sessions kept in the database.
 // Its HTTP routes are not exposed : the forms of the pages call it directly, so its rules cannot be gone around
 

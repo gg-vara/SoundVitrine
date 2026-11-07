@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The video behind the account panel : nothing is downloaded before it opens, its poster shows first, then a small copy,
 // then the full one once it can play through. The small one stays where the browser cannot play the other, or the other way
 import { play } from '../shared/motion';

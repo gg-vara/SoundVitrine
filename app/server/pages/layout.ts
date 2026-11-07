@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Parts shared by the pages : metadata, footer, the browser build, form helpers
 
 import { readdirSync, readFileSync } from 'node:fs';

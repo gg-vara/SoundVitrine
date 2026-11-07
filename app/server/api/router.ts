@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The API of SoundVitrine, described by an OpenAPI document (served at /api/openapi.json, browsable at /api/docs) :
 // what released SoundBuddy versions call (soundbuddy.ts), the live shouts of a user (shouts.ts), and OAuth with what it opens (oauth.ts, v1.ts)
 

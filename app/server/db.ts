@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The database of the state folder (soundvitrine.db) : users and sessions (see auth.ts), the latest shouts, and what is known of the
 // uploaded libraries. Libraries and profile pictures stay files, in the folder of each user
 

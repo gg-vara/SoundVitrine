@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // A server to try things on, from a known state rebuilt at each start : a test account, a generated library and a recent shout.
 // It keeps to its own state folder (_state-dev), and never touches a real one
 

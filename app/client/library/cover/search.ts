@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Finding an album's cover, on MusicBrainz and the Cover Art Archive
 const SEARCH_URL = 'https://musicbrainz.org/ws/2/release-group/?limit=1&fmt=json&query=';
 

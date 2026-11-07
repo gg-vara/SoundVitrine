@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What the panels show of a library, from unified.json (server/library.ts). No page here : see tests/library-data.test.ts
 import { createNameSearch, type Range } from './search';
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { existsSync } from 'node:fs';
 // Music libraries : from the tracks SoundBuddy uploads (current.json), the data the library page shows (unified.json)
 

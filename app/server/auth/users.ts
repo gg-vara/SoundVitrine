@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Users : their accounts in the database (see auth.ts), and a folder per user, whose files are served under /data/users/<user>/
 
 import { existsSync, mkdirSync } from 'node:fs';

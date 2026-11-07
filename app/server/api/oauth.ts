@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // OAuth (RFC 6749), for the application itself : it asks for the password once, which it then forgets
 
 import { ORPCError } from '@orpc/server';

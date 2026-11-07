@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The library page : its header, what opens under it, and the account panel on its side
 import type { JSX } from '@solidjs/web';
 import { createSignal } from 'solid-js';

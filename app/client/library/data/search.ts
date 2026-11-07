@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Finding artists by what is typed, in any script, and where it shows in their names. A name is reduced to what can be
 // compared, each character remembering where it comes from : what is found can't be highlighted elsewhere
 

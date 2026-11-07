@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What the routes taking a library or a shout do with it, whichever way it comes
 
 import { createHash } from 'node:crypto';

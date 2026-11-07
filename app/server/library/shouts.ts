@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Live shouts : what a user listens to, published as SoundBuddy uploads it, to the visitors of the user's library page
 
 import { z } from 'zod';

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What released SoundBuddy versions call : multipart forms in, plain text out, the password each time
 
 import { ORPCError } from '@orpc/server';

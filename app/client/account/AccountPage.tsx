@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Logging in, creating an account, and managing it : on a page of its own, or in the panel of the library page
 import { createSignal, Show } from 'solid-js';
 import { filled } from '../shared/texts';

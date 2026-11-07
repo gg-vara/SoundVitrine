@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The latest albums of a library, in a table by how long ago they were added
 import { createSignal, For, Show } from 'solid-js';
 import type { FeedAlbum } from '../data/data';

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What shows until the library is there. The loader's markup comes with the page : it must show before any script runs
 import { play } from '../shared/motion';
 

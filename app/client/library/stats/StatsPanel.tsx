@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Pies of a library, by albums or by artists. Chart.js comes when the panel first opens : most visits never need it
 import { createSignal } from 'solid-js';
 import { slicesOf } from './slices';

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What a page knows of its visitor : the logged user, from Better Auth's session, and the chosen language, in its own cookie
 
 import type { Lang } from '../i18n/i18n';

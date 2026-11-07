@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Vite's build, and the API's reference
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';

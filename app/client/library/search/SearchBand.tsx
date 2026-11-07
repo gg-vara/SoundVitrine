@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The search bar of the library page
 import { createSignal, For, Show } from 'solid-js';
 import type { SearchResult } from '../data/data';

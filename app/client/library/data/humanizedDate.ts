@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // "3 years ago", at the same thresholds as moment.js had here : the feed groups albums by this text, so a coarse one is wanted
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;

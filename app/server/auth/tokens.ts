@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // OAuth tokens : what an application gets in exchange for a user's password, then uses instead of it.
 // Each login of an application is a "grant", with its current tokens. Only their hashes are kept : they are random, so a plain hash is enough
 
