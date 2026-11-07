@@ -8,7 +8,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY client ./client
-# Tailwind also reads the classes of the pages (client/style.css)
+# Tailwind also reads the classes of the pages (client/styles/index.css)
 COPY server/pages ./server/pages
 COPY vite.config.ts tsconfig.json ./
 RUN bun run build

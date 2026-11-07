@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
 import {
   appliedFilters,
@@ -9,7 +12,7 @@ import {
   pickedFilter,
   sorterText,
   sortIcon,
-} from '../discover/filters';
+} from '../library/discover/filters';
 
 describe('filters', () => {
   const selected = { genreUI: 'Rock', artistUI: 'Björk', albumUI: 'Vespertine' };

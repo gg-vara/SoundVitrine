@@ -1,127 +1,28 @@
-// Requests : static files, the API (server/api.ts) with its reference, then the pages
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-import { mkdirSync, rmSync } from 'node:fs';
-import { extname, join, resolve, sep } from 'node:path';
-import { OpenAPIHandler } from '@orpc/openapi/fetch';
-import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
-import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
-import { APIError } from 'better-auth/api';
-import { API_TITLE, hasLibrary, router, securitySchemes } from './api';
-import { auth, prepareAuth } from './auth';
+// Requests : static files, the API (server/api/router.ts) with its reference, then the pages
+
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { accountRoute } from './account';
+import { apiResponse } from './api/router';
+import { prepareAuth } from './auth/auth';
+import { chosenLang, langCookie, readSession } from './auth/session';
+import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
-import {
-  ALLOW_SSE_TESTING,
-  APP_ROOT,
-  APP_VERSION,
-  COMPANION_APP_GITHUB_LATEST_RELEASE_URL,
-  COMPANION_APP_NAME,
-  DEFAULT_BACKGROUND_COLORS,
-  STATE_FOLDER_PATH,
-  TRUST_PROXY,
-} from './config';
-import { latestShout } from './db';
-import type { Html } from './html';
-import type { Lang } from './i18n';
-import { defaultLang, isLang, langFromHeader, translator } from './i18n';
-import { accountPage, uploadPage, welcomePage } from './pages/admin';
-import { libraryPage, mockPage } from './pages/explorer';
+import { ALLOW_SSE_TESTING, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import type { Lang } from './i18n/i18n';
+import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
+import { hasLibrary } from './library/library';
+import { publishShout } from './library/shouts';
 import type { PageContext } from './pages/layout';
-import { clearFailures, isBlocked, recordFailure } from './rate-limit';
-import { chosenLang, langCookie, readSession } from './session';
-import { publishShout } from './shouts';
-import { allUsers, ensureUserFolders, findUser, publicUserFolder, updateProfile, userExists, userFolder } from './users';
-
-//
-// API
-//
-
-const SCALAR_SCRIPT = join(APP_ROOT, 'node_modules/@scalar/api-reference/dist/browser/standalone.js');
-
-const apiHandler = new OpenAPIHandler(router, {
-  plugins: [
-    new OpenAPIReferencePlugin({
-      schemaConverters: [new ZodToJsonSchemaConverter()],
-      docsPath: '/api/docs',
-      specPath: '/api/openapi.json',
-      docsTitle: API_TITLE,
-      // Scalar, served from here rather than from a CDN
-      docsScriptUrl: '/api/scalar.js',
-      specGenerateOptions: {
-        info: {
-          title: API_TITLE,
-          version: APP_VERSION,
-          description: `What ${COMPANION_APP_NAME} calls to publish a music library and what is playing, and the live shouts of a user. New clients get tokens from /oauth/token and use /api/v1. The routes taking a password each time are for released ${COMPANION_APP_NAME} versions.`,
-        },
-        servers: [{ url: '/' }],
-        components: { securitySchemes },
-      },
-    }),
-  ],
-});
-
-// the API answers in plain text, as SoundBuddy shows these texts to its users : errors too
-async function plainTextErrors(response: Response): Promise<Response> {
-  if (response.status < 400 || !response.headers.get('content-type')?.startsWith('application/json')) return response;
-
-  const error = (await response.json()) as { message?: string };
-  return new Response(error.message ?? '', { status: response.status, headers: { 'content-type': 'text/plain;charset=utf-8' } });
-}
-
-// JSON errors, as standards tell them : RFC 6749 on /oauth, RFC 9457 on /api/v1
-async function standardErrors(response: Response): Promise<Response> {
-  if (response.status < 400 || !response.headers.get('content-type')?.startsWith('application/json')) return response;
-
-  const error = (await response.json()) as { code?: string; message?: string; data?: { error?: string } };
-  if (error.code === 'OAUTH') {
-    return Response.json(
-      { error: error.data?.error, error_description: error.message },
-      { status: response.status, headers: { 'cache-control': 'no-store' } },
-    );
-  }
-
-  const headers = new Headers({ 'content-type': 'application/problem+json' });
-  if (response.status === 401) headers.set('www-authenticate', 'Bearer');
-  const body = { type: 'about:blank', title: error.code, status: response.status, detail: error.message };
-  return new Response(JSON.stringify(body), { status: response.status, headers });
-}
-
-//
-// Static files
-//
-
-// "path" within "root", if it is a file there
-async function staticFile(root: string, path: string, cacheControl = 'public, max-age=3600'): Promise<Response | undefined> {
-  let decoded: string;
-  try {
-    decoded = decodeURIComponent(path);
-  } catch {
-    return undefined;
-  }
-
-  const file = resolve(root, `.${sep}${decoded}`);
-  if (!file.startsWith(resolve(root) + sep)) return undefined;
-
-  const content = Bun.file(file);
-  if (!(await content.exists())) return undefined;
-  const length = { 'content-length': String(content.size) };
-  return new Response(content, { headers: extname(file) === '.json' ? length : { ...length, 'cache-control': cacheControl } });
-}
-
-//
-// Pages
-//
-
-const text = (body: string, status = 200) => new Response(body, { status, headers: { 'content-type': 'text/plain;charset=utf-8' } });
-
-const redirect = (location: string, status = 302) => new Response(null, { status, headers: { location } });
-
-// a page, setting "cookies"
-function page(content: Html | Response, cookies: string[] = []): Response {
-  const response =
-    content instanceof Response ? content : new Response(content.value, { headers: { 'content-type': 'text/html;charset=utf-8' } });
-  for (const cookie of cookies) response.headers.append('set-cookie', cookie);
-  return response;
-}
+import { libraryPage } from './pages/library';
+import { mockPage } from './pages/mock';
+import { uploadPage } from './pages/upload';
+import { welcomePage } from './pages/welcome';
+import { page, redirect, text } from './responses';
+import { staticRoute } from './static';
 
 // the posted fields of a form, as texts
 async function formFields(request: Request): Promise<Record<string, string>> {
@@ -133,170 +34,6 @@ async function formFields(request: Request): Promise<Record<string, string>> {
   const fields: Record<string, string> = {};
   for (const [name, value] of await request.clone().formData()) if (typeof value === 'string') fields[name] = value;
   return fields;
-}
-
-const json = (body: unknown, status = 200, cookies: string[] = []) => {
-  const response = Response.json(body, { status });
-  for (const cookie of cookies) response.headers.append('set-cookie', cookie);
-  return response;
-};
-
-const refused = (error: string, status = 400) => json({ error }, status);
-
-const fieldsOf = async (request: Request) => (await request.json().catch(() => ({}))) as Record<string, unknown>;
-
-const textOf = (value: unknown) => (typeof value === 'string' ? value : '');
-
-const accountRules = {
-  username: { min: 6, max: 20 },
-  password: { min: 8, max: 128 },
-};
-
-// what the account page needs to know
-function me(context: PageContext) {
-  const username = context.session.loggedAs ?? null;
-  const user = username ? findUser(username) : undefined;
-  return {
-    username,
-    profilePicture: username && user?.profilePic ? publicUserFolder(username) + user.profilePic : null,
-    colors: user?.customColors ?? DEFAULT_BACKGROUND_COLORS,
-    rules: accountRules,
-    companionApp: { name: COMPANION_APP_NAME, url: COMPANION_APP_GITHUB_LATEST_RELEASE_URL },
-  };
-}
-
-async function login(context: PageContext): Promise<Response> {
-  const { tr, clientIp, request } = context;
-  const fields = await fieldsOf(request);
-  const username = textOf(fields.username).trim().toLowerCase();
-  const password = textOf(fields.password);
-
-  if (!username) return refused(tr('e_log_nouser'));
-  if (!password) return refused(tr('e_log_nopass'));
-  if (!findUser(username)) return refused(tr('e_unsu', username), 401);
-  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'), 429);
-
-  try {
-    const { headers } = await auth.api.signInUsername({ body: { username, password }, headers: request.headers, returnHeaders: true });
-    clearFailures(clientIp, username);
-    return json({ username }, 200, headers.getSetCookie());
-  } catch (error) {
-    if (!(error instanceof APIError)) throw error;
-    recordFailure(clientIp, username);
-    return refused(tr('e_log_wrongpass'), 401);
-  }
-}
-
-function randomColor(): string {
-  return `#${Array.from({ length: 3 }, () =>
-    Math.floor(Math.random() * 256)
-      .toString(16)
-      .toUpperCase()
-      .padStart(2, '0'),
-  ).join('')}`;
-}
-
-// why the account cannot be created, if so
-function accountCreationRefusal(context: PageContext, username: string, password: string): string | null {
-  const { tr } = context;
-
-  if (!username) return tr('crea_miss_p_u', tr('username'));
-  if (!password) return tr('crea_miss_p_u', tr('password'));
-  if (context.session.loggedAs) return tr('err_nocreate_onlog');
-  if (userExists(username)) return tr('user_already_exist', username);
-  if (!/^[a-zA-Z0-9]+([_-]?[a-zA-Z0-9])*$/.test(username)) return tr('username_invalid', username);
-
-  for (const [field, value] of [
-    ['username', username],
-    ['password', password],
-  ] as const) {
-    const { min, max } = accountRules[field];
-    if (value.length < min || value.length > max) return tr('field_nc_pattern', tr(field), min, max);
-  }
-
-  return null;
-}
-
-async function createAccount(context: PageContext): Promise<Response> {
-  const { request, tr } = context;
-  const fields = await fieldsOf(request);
-  const username = textOf(fields.username).trim().toLowerCase();
-  const password = textOf(fields.password);
-
-  const refusal = accountCreationRefusal(context, username, password);
-  if (refusal !== null) return refused(refusal);
-
-  try {
-    const { headers } = await auth.api.signUpEmail({
-      body: { name: username, username, displayUsername: username, email: textOf(fields.email), password },
-      headers: request.headers,
-      returnHeaders: true,
-    });
-    updateProfile(username, { customColors: [randomColor(), randomColor(), randomColor(), randomColor()] });
-    mkdirSync(userFolder(username), { recursive: true });
-    return json({ username }, 200, headers.getSetCookie());
-  } catch (error) {
-    if (!(error instanceof APIError)) throw error;
-    return refused(tr('e_email_unusable'));
-  }
-}
-
-async function accountRoute(context: PageContext, action: string | undefined): Promise<Response> {
-  const { request, session } = context;
-  const posted = request.method === 'POST';
-
-  switch (action) {
-    case 'me':
-      return json(me(context));
-
-    case 'login':
-      return posted ? login(context) : text('', 405);
-
-    case 'create':
-      return posted ? createAccount(context) : page(accountPage(context));
-
-    case 'disconnect': {
-      if (!posted) return text('', 405);
-      const { headers } = await auth.api.signOut({ headers: request.headers, returnHeaders: true });
-      return json({}, 200, headers.getSetCookie());
-    }
-
-    case 'picture': {
-      const user = session.loggedAs;
-      if (request.method !== 'POST' || !user) return text('');
-
-      const file = (await request.formData()).get('file');
-      if (!(file instanceof File)) return text('');
-
-      // images only : these files are served from this origin, where an HTML or SVG one could run scripts
-      const extension = extname(file.name).slice(1).toLowerCase();
-      if (!['png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'bmp'].includes(extension)) return text('');
-
-      const pictureName = `pp.${extension}`;
-      await Bun.write(join(userFolder(user), pictureName), file);
-
-      const previous = findUser(user)?.profilePic;
-      if (previous && previous !== pictureName) rmSync(join(userFolder(user), previous), { force: true });
-
-      updateProfile(user, { profilePic: pictureName });
-      return text(publicUserFolder(user) + pictureName);
-    }
-
-    // of the user's band
-    case 'colors': {
-      const user = session.loggedAs;
-      const colors: unknown = await request.json().catch(() => undefined);
-      // checked : they end up in the styles of the pages
-      const isColor = (color: unknown) => typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color);
-      if (!user || !Array.isArray(colors) || colors.length !== 4 || !colors.every(isColor)) return text('');
-
-      updateProfile(user, { customColors: colors as string[] });
-      return text('OK');
-    }
-
-    default:
-      return page(accountPage(context));
-  }
 }
 
 async function libraryRoute(
@@ -313,8 +50,7 @@ async function libraryRoute(
   // the upload form of a user without library posts its file here
   if (!action && request.method === 'POST' && request.headers.get('content-type')?.startsWith('multipart/form-data')) {
     const upload = new Request(new URL(`/u/${user}/uploadMusicLibrary`, request.url).href, request);
-    const { response } = await apiHandler.handle(upload, { prefix: '/', context: { tr: context.tr, clientIp: context.clientIp } });
-    return response ? plainTextErrors(response) : text('', 500);
+    return (await apiResponse(upload, { tr: context.tr, clientIp: context.clientIp })) ?? text('', 500);
   }
 
   if (action && action !== 'uploadMusicLibrary') return accountRoute(context, undefined);
@@ -335,10 +71,6 @@ function mockRoute(context: PageContext, action: string | undefined): Response {
   return text('OK');
 }
 
-//
-// Requests
-//
-
 // who calls : "peerAddress" is the direct connection, which is the proxy when there is one
 function clientIpOf(request: Request, peerAddress: string | undefined): string {
   const forwarded = TRUST_PROXY ? request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() : undefined;
@@ -354,35 +86,16 @@ async function respond(request: Request, peerAddress?: string): Promise<Response
   const path = url.pathname;
 
   if (path === '/healthz') return text('OK');
-  if (path === '/api/scalar.js') return new Response(Bun.file(SCALAR_SCRIPT), { headers: { 'content-type': 'text/javascript' } });
 
-  if (request.method === 'GET' && path.startsWith('/public/')) {
-    return (await staticFile(join(APP_ROOT, 'client/public'), path.slice('/public/'.length))) ?? text('', 404);
-  }
-  // Vite's build : a file's name changes with its content, it can be kept forever
-  if (request.method === 'GET' && path.startsWith('/web/')) {
-    return (
-      (await staticFile(join(APP_ROOT, 'client/dist'), path.slice('/web/'.length), 'public, max-age=31536000, immutable')) ?? text('', 404)
-    );
-  }
-  if (request.method === 'GET' && path.startsWith('/data/users/')) {
-    // the latest shout comes from the database
-    const shoutOf = /^\/data\/users\/([^/]+)\/shout\.json$/.exec(path)?.[1];
-    if (shoutOf) {
-      const shout = latestShout(shoutOf.toLowerCase());
-      return shout ? new Response(shout, { headers: { 'content-type': 'application/json' } }) : text('', 404);
-    }
-
-    return (await staticFile(join(STATE_FOLDER_PATH, 'users'), path.slice('/data/users/'.length))) ?? text('', 404);
-  }
+  const file = await staticRoute(request, path);
+  if (file) return file;
 
   const clientIp = clientIpOf(request, peerAddress);
   const lang: Lang = chosenLang(request) ?? langFromHeader(request.headers.get('accept-language')) ?? defaultLang;
   const tr = translator(lang);
 
-  const { matched, response } = await apiHandler.handle(request, { prefix: '/', context: { tr, clientIp } });
-  if (matched && response)
-    return path.startsWith('/api/v1/') || path.startsWith('/oauth/') ? standardErrors(response) : plainTextErrors(response);
+  const answer = await apiResponse(request, { tr, clientIp });
+  if (answer) return answer;
 
   const context: PageContext = {
     request,

@@ -1,6 +1,9 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
 import { deflateRawSync, deflateSync, gzipSync } from 'node:zlib';
-import { decompressUpload } from '../compression';
+import { decompressUpload } from '../library/compression';
 
 // a buffer of Windows' Compression API, its second block compressed against the first one
 function mszip(first: string, second: string): Buffer {

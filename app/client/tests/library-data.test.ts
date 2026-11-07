@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
-import { createDataFeeds, type FilterItem, sortItems, type UnifiedLibrary } from '../library/data';
+import { createDataFeeds, type FilterItem, sortItems, type UnifiedLibrary } from '../library/data/data';
 
 const album = (year: number, date: string, tracks: Record<string, string> = { '1.1': 'a track' }) => ({
   Year: year,

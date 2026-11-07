@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
 import {
   changedFields,
@@ -9,7 +12,7 @@ import {
   metaText,
   movesTimeline,
   type Shout,
-} from '../shout/logic';
+} from '../library/shout/logic';
 
 const playing: Shout = { date: '2026-01-01T00:00:00Z', duration: 200, playerPositionMS: 100_000, playerState: true };
 const elapsed = (milliseconds: number) => () => milliseconds;

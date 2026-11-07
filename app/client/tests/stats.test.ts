@@ -1,7 +1,11 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { nextSelected, offsetsOf, slicesOf, tooltipText } from '../stats/slices';
+import { Glob } from 'bun';
+import { nextSelected, offsetsOf, slicesOf, tooltipText } from '../library/stats/slices';
 
 describe('slices', () => {
   test('the largest first, even with names reading as numbers', () => {
@@ -59,25 +63,19 @@ describe('selecting', () => {
 // most visits never open the stats, and must not download Chart.js
 describe('loading', () => {
   const client = join(import.meta.dir, '..');
-  const sources = (folder: string) =>
-    readdirSync(join(client, folder))
-      .filter(file => /\.tsx?$/.test(file))
-      .map(file => [join(folder, file).replaceAll('\\', '/'), readFileSync(join(client, folder, file), 'utf8')] as const);
+  const sources = [...new Glob('**/*.{ts,tsx}').scanSync(client)]
+    .map(file => file.replaceAll('\\', '/'))
+    .filter(file => !/^(dist|public|tests)\//.test(file))
+    .map(file => [file, readFileSync(join(client, file), 'utf8')] as const);
 
   test('only the module loaded on demand imports it', () => {
-    const importers = ['.', 'stats', 'feed', 'search', 'shout', 'library']
-      .flatMap(sources)
-      .filter(([, text]) => /from ['"]chart\.js/.test(text))
-      .map(([file]) => file);
-    expect(importers).toEqual(['stats/pieChart.ts']);
+    const importers = sources.filter(([, text]) => /from ['"]chart\.js/.test(text)).map(([file]) => file);
+    expect(importers).toEqual(['library/stats/pieChart.ts']);
   });
 
   test('which is only ever imported dynamically', () => {
-    const statics = ['.', 'stats', 'feed', 'search', 'shout', 'library']
-      .flatMap(sources)
-      .filter(([, text]) => /from ['"].*pieChart/.test(text))
-      .map(([file]) => file);
+    const statics = sources.filter(([, text]) => /from ['"].*pieChart/.test(text)).map(([file]) => file);
     expect(statics).toEqual([]);
-    expect(readFileSync(join(client, 'stats/StatsPanel.tsx'), 'utf8')).toContain("await import('./pieChart')");
+    expect(readFileSync(join(client, 'library/stats/StatsPanel.tsx'), 'utf8')).toContain("await import('./pieChart')");
   });
 });

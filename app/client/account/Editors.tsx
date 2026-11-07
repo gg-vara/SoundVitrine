@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // What the account page offers to change : the colors of the user's animated band, and their picture
 import { createSignal, For } from 'solid-js';
 import { bandRule } from './bandColors';

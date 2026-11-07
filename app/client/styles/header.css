@@ -1,0 +1,93 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
+/* The button going to the other panel of the library page, notifying when not logged in */
+.connectButton {
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem;
+  transition: top 0.5s;
+
+  &:hover {
+    animation: pulse 1s infinite forwards;
+  }
+
+  &.notif::after {
+    pointer-events: none;
+    position: absolute;
+    top: 5%;
+    right: 10%;
+    display: flex;
+    min-height: 1em;
+    min-width: 1em;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: red;
+    padding: 0.1em;
+    text-align: center;
+    font-size: 0.6rem;
+    line-height: 0;
+    box-shadow: 0 1px 5px 1px rgba(56, 56, 56, 0.2);
+    content: attr(data-notif);
+    animation: bounceIn 1s infinite;
+  }
+
+  &.notif.notifOut::after {
+    animation: bounceOut 1s forwards;
+  }
+
+  &.notif:hover::after {
+    animation: none;
+  }
+}
+
+/* What opens under the header, its title beside what it holds */
+.category::before {
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  width: 7.5rem;
+  text-align: right;
+  font-size: 1.5em;
+  white-space: nowrap;
+  content: attr(data-cat) " ||";
+}
+
+@media (orientation: portrait) {
+  .category::before {
+    text-align: left;
+  }
+}
+
+/* The icons of the header */
+.headerIcons {
+  display: flex;
+  flex-grow: 10000;
+  justify-content: space-between;
+  font-size: 0.5rem;
+  color: white;
+  font-family: sans-serif;
+
+  & i {
+    font-size: 1rem;
+  }
+
+  & > * {
+    display: flex;
+    align-items: center;
+    margin-inline: 0.25rem;
+  }
+
+  & > :first-child {
+    margin-left: 0;
+  }
+
+  & > :last-child {
+    margin-right: 0;
+  }
+}
+
+@media (min-resolution: 192dpi) {
+  .headerIcons i {
+    font-size: 1.3rem;
+  }
+}

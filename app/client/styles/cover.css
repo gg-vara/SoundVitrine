@@ -1,0 +1,47 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
+/* An album's cover, or what tells it is searched for or missing */
+.cover {
+  border-radius: 0.5em;
+  background-color: white;
+  transition: all 0.3s ease;
+
+  & img {
+    height: 100%;
+    width: 100%;
+    border-radius: 0.5em;
+    background-color: white;
+    transition: all 0.3s ease;
+  }
+
+  &::before {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5em;
+    background-color: white;
+    white-space: pre;
+    color: grey;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+
+  &.searchingCover::before {
+    flex-direction: column;
+    background: white url(/public/images/loader.svg) center / 50% no-repeat;
+    content: "";
+  }
+
+  &.noCover::before {
+    content: ":'(";
+  }
+
+  /* its text comes from the page */
+  &.coverWithMessage.noCover::before {
+    content: ":'( \A\A " attr(data-no-cover-found);
+  }
+}

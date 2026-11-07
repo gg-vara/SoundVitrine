@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { expect, OPEN, openBand, PASSWORD, pictureFile, submitLogin, test, USER } from './helpers';
 
 test('the welcome page lists the users, and leads to the API documentation', async ({ page }) => {

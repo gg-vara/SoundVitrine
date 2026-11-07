@@ -1,0 +1,148 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
+/*
+ * Tailwind's utilities, without its layers and reset (Preflight) : base.css sets what every page relies on,
+ * and Preflight would change how much of what has no class of its own looks (titles, buttons, images).
+ * Only what uses them is scanned : client/public/ has large libraries, whose text would pass for class names.
+ */
+@import "./base.css";
+/* what has states and pseudo-elements, which reads better as CSS. Before the utilities, so that an element's own win at the same weight */
+@import "./cover.css";
+@import "./header.css";
+@import "./search.css";
+@import "./discover.css";
+@import "./account.css";
+@import "./pages.css";
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css" source(none);
+
+@source "../account";
+@source "../library";
+@source "../shared";
+@source "../../server/pages";
+
+/* including on touch screens, where Tailwind's own only applies on what can hover */
+@custom-variant hover (&:hover);
+
+@custom-variant hidpi (@media (min-resolution: 192dpi));
+
+/* of the library page, which has a <main> : the other pages also load these styles */
+@media (min-resolution: 192dpi) {
+  :root:has(main) {
+    font-size: 18px;
+  }
+}
+
+/*
+ * The scrollbar always shows : without it, a page which fits only without a scrollbar, and wraps to overflow with one,
+ * stays in whichever state it reached, its layout depending on what happened before.
+ * On the body, whose overflow goes to the viewport : on the html, the body would become what scrolls, and the header stop sticking.
+ * The account panel never scrolls.
+ */
+body:has(main):not(.lock) {
+  overflow-y: scroll;
+}
+
+/* also paused by base.css, when the page shows something else */
+.animTimeline {
+  animation-name: progress;
+  animation-timing-function: linear;
+}
+
+@keyframes autofill {
+  to {
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  20% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes bounceOut {
+  20% {
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  50%,
+  55% {
+    opacity: 1;
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  to {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes flickerAnimation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes progNotOut {
+  0% {
+    right: -2rem;
+  }
+  30%,
+  70% {
+    right: 0;
+  }
+  100% {
+    right: -2rem;
+  }
+}

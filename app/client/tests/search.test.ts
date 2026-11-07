@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
-import { createNameSearch } from '../library/search';
+import { createNameSearch } from '../library/data/search';
 
 const search = (typed: string, ...names: string[]) => createNameSearch(names)(typed, 100);
 

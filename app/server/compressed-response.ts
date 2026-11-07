@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Compressing what is sent to browsers : a proxy may do it too, but no installation should need one
 
 // not what is compressed already, nor text/event-stream, whose shouts must not wait in a buffer, nor text/plain : the replies
@@ -27,7 +30,7 @@ export function compressedResponse(request: Request, response: Response): Respon
 
   response.headers.set('content-encoding', 'gzip');
   response.headers.delete('content-length');
-  // the size browsers can no longer tell, for the loading bar of the library page (client/shell/loader.ts)
+  // the size browsers can no longer tell, for the loading bar of the library page (client/library/loader.ts)
   if (length !== null) response.headers.set('x-original-content-length', length);
 
   return new Response(response.body.pipeThrough(new CompressionStream('gzip')), { status: response.status, headers: response.headers });

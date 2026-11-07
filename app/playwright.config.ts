@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // The real pages in a real browser, against a seeded server of their own (server/scripts/seed.ts)
 import { defineConfig } from '@playwright/test';
 

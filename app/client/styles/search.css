@@ -1,0 +1,74 @@
+/* SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later */
+
+/* The search bar */
+.searchInput {
+  width: 100%;
+  flex: 1;
+  border: none;
+  padding: 0.5rem;
+  font-size: 0.55rem;
+  opacity: 0.8;
+  box-shadow:
+    0 2px 2px 0 rgba(0, 0, 0, 0.16),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  &:hover,
+  &:focus {
+    outline: none;
+    box-shadow:
+      0 3px 8px 0 rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  &:focus {
+    opacity: 1;
+  }
+}
+
+.searchResults {
+  position: absolute;
+  top: 1.65rem;
+  z-index: 50;
+  display: none;
+  max-height: 10rem;
+  width: 100%;
+  overflow: hidden auto;
+  background-color: white;
+  padding: 0.5rem;
+  font-family: Arial, sans-serif;
+  outline: none;
+  box-shadow:
+    0 3px 8px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  &.show {
+    display: block;
+  }
+}
+
+/* A button looking like the text around it */
+.plainButton {
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  text-align: start;
+  unicode-bidi: isolate;
+  font: inherit;
+}
+
+.searchResult {
+  display: block;
+  width: 100%;
+  padding-inline: 0.5rem;
+  color: inherit;
+  transition: all 0.2s;
+
+  &:hover,
+  &:focus {
+    background-color: rgba(128, 128, 128, 0.05);
+    transform: translate(0.15rem, 0);
+  }
+}

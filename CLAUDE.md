@@ -31,16 +31,25 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 
 ## Structure
 
-- `server/api.ts` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`)
-- `server/app.ts` : routing, the account pages' logic, static files
-- `server/pages/` : HTML templates of what is not rendered by the browser. `server/html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
-- `client/public/` : static files, served at `/public/`
-- `client/` : the browser code, on Vite 8, Solid and Tailwind (`client/style.css` says why it has no layers nor reset, and what it scans : a new folder must be added there ; `client/base.css` holds what every page relies on), built to `client/dist/` by `bun run build`, served at `/web/`. `client/main.tsx` is the library page's entry, `client/shell/background.ts` loads the background video in stages (poster, `bg-480.webm`, `bg.mp4`), `client/shell/LibraryPage.tsx` its layout (the server only sends the loader, the data as JSON and the footer in a template), `client/account/` the account page and panel, in Solid, from the JSON of `/account/*`, with its own entry (`main.tsx`) when it stands alone, `client/shout/` the shout panel, `client/search/` the search bar, `client/feed/` the latest albums, `client/stats/` the pies, with Chart.js only downloaded when the panel first opens, and `client/library/data.ts` what the panels show of a library. `client/shell/waiting.ts` waits for CSS transitions. `client/page-globals.d.ts` lists what the page defines before its scripts. `client/library/search.ts` finds artists in any script, without the server's slugs : only their order is used `client/shout/machine.ts` is its XState machine, given what touches the page as "effects" so that `bun test` runs it. What waits for a CSS transition needs a time limit : its end never comes in a hidden tab
-- `server/tokens.ts` : OAuth tokens, kept as hashes. `server/api.ts` has `/oauth/token` (password and refresh grants, RFC 6749) and `/api/v1` (Bearer, scopes, errors as RFC 9457) : the password stops travelling once SoundBuddy moves to them
-- `server/auth.ts` : Better Auth. Its HTTP routes are closed on purpose, the forms call it directly
+Server :
+
+- `server/app.ts` : routing. `server/static.ts` the files served as they are, `server/account.ts` what the account page calls, `server/responses.ts` their answers
+- `server/api/` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`). `router.ts` gathers it and picks the format of its errors, `soundbuddy.ts` is what released versions call, `oauth.ts` has `/oauth/token` (password and refresh grants, RFC 6749), `v1.ts` has `/api/v1` (Bearer, scopes, errors as RFC 9457) : the password stops travelling once SoundBuddy moves to them
+- `server/auth/` : `auth.ts` is Better Auth, whose HTTP routes are closed on purpose, the forms call it directly. `tokens.ts` the OAuth tokens, kept as hashes. `rate-limit.ts` the failed passwords, by client and account
+- `server/library/` : what becomes of an uploaded library, and the live shouts
+- `server/pages/` : a file by page rendered by the server, on `layout.ts`. `html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
+- `server/i18n/` : the two languages
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
-- `server/rate-limit.ts` : failed passwords, by client and account
 - `server/compressed-response.ts` : gzip for browsers. Never live shouts, nor the plain text SoundBuddy reads
+
+Browser, on Vite 8, Solid and Tailwind, built to `client/dist/` by `bun run build`, served at `/web/` :
+
+- `client/library/` : the library page. `main.tsx` is its entry, `LibraryPage.tsx` its layout (the server only sends the loader, the data as JSON and the footer in a template), `background.ts` loads the background video in stages (poster, `bg-480.webm`, `bg.mp4`). A folder by panel : `shout/` (`machine.ts` is its XState machine, given what touches the page as "effects" so that `bun test` runs it), `search/`, `feed/`, `discover/`, `stats/` (Chart.js only downloaded when the panel first opens). `data/` is what the panels show of a library (`search.ts` finds artists in any script, without the server's slugs : only their order is used), `cover/` the album covers
+- `client/account/` : the account page and panel, from the JSON of `/account/*`, with its own entry (`main.tsx`) when it stands alone
+- `client/shared/` : what both use. In `motion.ts`, what waits for an animation needs a time limit : its end never comes in a hidden tab
+- `client/styles/` : `index.css` says why there are no layers nor reset, and what Tailwind scans : a new folder must be added there. `base.css` holds what every page relies on, the others are by feature
+- `client/page-globals.d.ts` : what the page defines before its scripts
+- `client/public/` : static files, served at `/public/`
 
 ## What must not break
 
@@ -54,5 +63,6 @@ Library and shout values come from what any account uploads, and run in its visi
 
 - Push or publish only when asked. Several small commits rather than one large one, messages in lowercase, saying what changed
 - Comments say why, in the style of the surrounding code
+- Each source file starts with the license reminder (SPDX), as the others do
 - The version in `app/package.json` triggers the image's publication on `main`, with the notes of its section of `CHANGELOG.md`. Versions are shared with SoundBuddy
-- Each text the pages show goes in `server/translations/`, in both languages
+- Each text the pages show goes in `server/i18n/`, in both languages

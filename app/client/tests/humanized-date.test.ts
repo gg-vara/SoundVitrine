@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
-import { humanizedDate } from '../library/humanizedDate';
+import { humanizedDate } from '../library/data/humanizedDate';
 
 const NOW = new Date('2026-11-06T12:00:00Z');
 const SECOND = 1000;

@@ -1,6 +1,9 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { describe, expect, test } from 'bun:test';
-import { cellFilter, cellText, nextSort, sortedAlbums } from '../feed/table';
-import type { FeedAlbum } from '../library/data';
+import type { FeedAlbum } from '../library/data/data';
+import { cellFilter, cellText, nextSort, sortedAlbums } from '../library/feed/table';
 
 const album = (Album: string, Artist: string, Genre: string, Year: unknown): FeedAlbum => ({
   Album,

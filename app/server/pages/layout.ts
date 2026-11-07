@@ -1,13 +1,16 @@
+// SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Parts shared by the pages : metadata, footer, the browser build, form helpers
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import type { Session } from '../auth/session';
 import { APP_NAME, APP_ROOT, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
-import type { Html } from '../html';
-import { html, raw } from '../html';
-import type { Lang, TranslationKey, Translator } from '../i18n';
-import { dictionaries } from '../i18n';
-import type { Session } from '../session';
+import type { Lang, TranslationKey, Translator } from '../i18n/i18n';
+import { dictionaries } from '../i18n/i18n';
+import type { Html } from './html';
+import { html, raw } from './html';
 
 // what a page is rendered from
 export interface PageContext {
@@ -34,7 +37,7 @@ export interface ClientEntry {
 }
 
 // the entries of Vite's build (vite.config.ts) : the library page's, and the account page's when it stands alone
-export const LIBRARY_ENTRY = 'main.tsx';
+export const LIBRARY_ENTRY = 'library/main.tsx';
 export const ACCOUNT_ENTRY = 'account/main.tsx';
 
 export function clientEntryIn(manifest: string, name = LIBRARY_ENTRY): ClientEntry | undefined {
