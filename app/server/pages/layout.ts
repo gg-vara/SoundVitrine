@@ -34,7 +34,7 @@ export interface ClientEntry {
 }
 
 // the entries of Vite's build (vite.config.ts) : the library page's, and the account page's when it stands alone
-export const LIBRARY_ENTRY = 'main.tsx';
+export const LIBRARY_ENTRY = 'library/main.tsx';
 export const ACCOUNT_ENTRY = 'account/main.tsx';
 
 export function clientEntryIn(manifest: string, name = LIBRARY_ENTRY): ClientEntry | undefined {

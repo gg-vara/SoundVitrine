@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { coverInAnswer, coverSearchUrl } from '../library/coverSearch';
+import { coverInAnswer, coverSearchUrl } from '../library/cover/search';
 import { youtubeSearchUrl } from '../library/youtube';
 
 describe('searching a cover', () => {

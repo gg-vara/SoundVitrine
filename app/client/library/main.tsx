@@ -2,14 +2,13 @@
 
 import { render } from '@solidjs/web';
 import { createSignal, flush } from 'solid-js';
+import type { AccountPanelControls } from '../account/AccountPanel';
+import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './data/data';
+import { humanizedDate } from './data/humanizedDate';
 import { DiscoverPanel, type DiscoverPanelControls } from './discover/DiscoverPanel';
 import { FeedPanel } from './feed/FeedPanel';
-import { createDataFeeds, type FeedAlbum, type UnifiedLibrary } from './library/data';
-import { humanizedDate } from './library/humanizedDate';
-import { SearchBand } from './search/SearchBand';
-import type { AccountPanelControls } from './shell/accountPanel';
-import { LibraryPage } from './shell/LibraryPage';
-import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './shell/loader';
+import { LibraryPage } from './LibraryPage';
+import { downloadText, hideLibraryFailure, removeLoader, showLibraryFailure, showLoader, showPage } from './loader';
 import {
   alignConnectSideElements,
   fitShutter,
@@ -19,10 +18,11 @@ import {
   scrollToElement,
   setShutter,
   switchPanel,
-} from './shell/navigation';
+} from './navigation';
+import { SearchBand } from './search/SearchBand';
 import { ShoutPanel, type ShoutPanelControls } from './shout/ShoutPanel';
 import { StatsPanel, type StatsPanelControls } from './stats/StatsPanel';
-import './style.css';
+import '../styles/index.css';
 
 const FEED_ID = 'feedContainer';
 const PROFILE_ID = 'profileContainer';

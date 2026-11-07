@@ -18,7 +18,7 @@ import {
   translationsScript,
 } from './layout';
 
-// what the browser renders (client/shell/LibraryPage.tsx) : only the loader comes with the page, as it must show before any script runs,
+// what the browser renders (client/library/LibraryPage.tsx) : only the loader comes with the page, as it must show before any script runs,
 // and the footer, as the other pages have it
 export function libraryPage(context: PageContext, user: string): Html {
   const { tr } = context;

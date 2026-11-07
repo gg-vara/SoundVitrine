@@ -327,7 +327,7 @@ describe('compression', () => {
 describe("Vite's build", () => {
   test('pages find its entry in the manifest', () => {
     const entry = { file: 'assets/main-abc.js', css: ['assets/main-def.css'], isEntry: true };
-    expect(clientEntryIn(JSON.stringify({ 'main.tsx': entry }))).toEqual(entry);
+    expect(clientEntryIn(JSON.stringify({ 'library/main.tsx': entry }))).toEqual(entry);
     expect(clientEntryIn(JSON.stringify({ 'account/main.ts': entry }), 'account/main.ts')).toEqual(entry);
     expect(clientEntryIn('{}')).toBeUndefined();
   });

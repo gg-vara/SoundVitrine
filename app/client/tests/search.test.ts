@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createNameSearch } from '../library/search';
+import { createNameSearch } from '../library/data/search';
 
 const search = (typed: string, ...names: string[]) => createNameSearch(names)(typed, 100);
 

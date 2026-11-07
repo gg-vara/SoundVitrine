@@ -1,6 +1,6 @@
 // The latest albums of a library, in a table by how long ago they were added
 import { createSignal, For, Show } from 'solid-js';
-import type { FeedAlbum } from '../library/data';
+import type { FeedAlbum } from '../data/data';
 import { cellFilter, cellText, FEED_COLUMNS, type FeedColumn, type FeedSort, nextSort, sortedAlbums } from './table';
 
 const TD =

@@ -3,12 +3,12 @@
 // biome-ignore-all lint/a11y/noStaticElementInteractions: a list opens by a click anywhere on it, its button does it for the keyboard
 
 import { createEffect, createMemo, createSignal, For, flush, onCleanup } from 'solid-js';
-import { type createDataFeeds, type FilterItem, sortItems } from '../library/data';
-import { humanizedDate } from '../library/humanizedDate';
-import { youtubeSearchUrl } from '../library/youtube';
-import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
-import { play } from '../shell/motion';
-import { scrollToElement } from '../shell/navigation';
+import { play } from '../../shared/motion';
+import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../cover/cover';
+import { type createDataFeeds, type FilterItem, sortItems } from '../data/data';
+import { humanizedDate } from '../data/humanizedDate';
+import { scrollToElement } from '../navigation';
+import { youtubeSearchUrl } from '../youtube';
 import {
   appliedFilters,
   type DiscoverFilter,

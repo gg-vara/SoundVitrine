@@ -1,6 +1,6 @@
 // The video behind the account panel : nothing is downloaded before it opens, its poster shows first, then a small copy,
 // then the full one once it can play through. The small one stays where the browser cannot play the other, or the other way
-import { play } from './motion';
+import { play } from '../shared/motion';
 
 const CROSSFADE_SECONDS = 1;
 

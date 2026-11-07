@@ -1,7 +1,7 @@
 // Moving around the page : what opens under the header, going down to something, and from a panel to the other
 
+import { play } from '../shared/motion';
 import { pauseBackground, playBackground } from './background';
-import { play } from './motion';
 
 const SHUTTER_SECONDS = 0.3;
 

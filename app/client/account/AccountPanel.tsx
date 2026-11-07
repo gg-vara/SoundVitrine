@@ -1,9 +1,9 @@
 // The account page, as a panel of the library page
 import { createSignal } from 'solid-js';
-import { type AccountControls, AccountPage } from '../account/AccountPage';
-import { ConnectButton, type Notification } from './ConnectButton';
-import { LOGO_CONTENT, LOGO_LOWER, LOGO_UPPER, MAIN_PANEL } from './layout';
-import { play } from './motion';
+import { ConnectButton, type Notification } from '../shared/ConnectButton';
+import { LOGO_CONTENT, LOGO_LOWER, LOGO_UPPER, MAIN_PANEL } from '../shared/layout';
+import { play } from '../shared/motion';
+import { type AccountControls, AccountPage } from './AccountPage';
 
 const FADE_SECONDS = 0.5;
 

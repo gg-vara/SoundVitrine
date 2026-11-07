@@ -1,16 +1,16 @@
 // The library page : its header, what opens under it, and the account panel on its side
 import type { JSX } from '@solidjs/web';
 import { createSignal } from 'solid-js';
-import { filled } from '../library/texts';
-import { AccountPanel, type AccountPanelControls } from './accountPanel';
-import { ConnectButton, type Notification } from './ConnectButton';
-import { LOGO_CONTENT, LOGO_LOWER, LOGO_UPPER, MAIN_PANEL } from './layout';
+import { AccountPanel, type AccountPanelControls } from '../account/AccountPanel';
+import { ConnectButton, type Notification } from '../shared/ConnectButton';
+import { LOGO_CONTENT, LOGO_LOWER, LOGO_UPPER, MAIN_PANEL } from '../shared/layout';
+import { filled } from '../shared/texts';
 
 // which one shows depends on the orientation of the page
 const IN_MENU = 'mr-3 text-white [&_i]:text-[1.2rem] portrait:hidden! landscape:[display:inherit]!';
 const IN_BANNER = 'text-white landscape:hidden! portrait:[display:inherit]!';
 
-// what opens under the header : it closes without a height, which shell/navigation.ts gives
+// what opens under the header : it closes without a height, which navigation.ts gives
 const SUB_FRAME = 'flex shrink-0 flex-wrap overflow-hidden not-last:max-h-0';
 const SUB_CONTENT = 'flex grow flex-wrap items-start px-4 py-6 portrait:flex-col portrait:px-3 portrait:py-4';
 // each one has its own color and position, and its title in components.css
@@ -133,7 +133,7 @@ export function LibraryPage(props: {
         />
       </main>
       <div id="bg" class="fixed top-0 -z-20 h-[100vh] w-full opacity-0 [transition:opacity_.5s_ease] [&.show]:opacity-100">
-        {/* shell/background.ts : the first one, then the second over it */}
+        {/* background.ts : the first one, then the second over it */}
         <video
           data-active
           class="absolute h-full w-full object-cover"

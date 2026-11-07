@@ -1,5 +1,5 @@
 // What shows until the library is there. The loader's markup comes with the page : it must show before any script runs
-import { play } from './motion';
+import { play } from '../shared/motion';
 
 const LOADER_ID = 'loader';
 const PAGE_ID = 'libraryPanel';

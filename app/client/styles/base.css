@@ -1,6 +1,6 @@
 /*
  * What applies to every page, or to what the server and the browser code both render.
- * Before Tailwind's utilities (style.css), so that they win at the same weight.
+ * Before Tailwind's utilities (index.css), so that they win at the same weight.
  */
 @font-face {
   font-family: bebasNeueFont;

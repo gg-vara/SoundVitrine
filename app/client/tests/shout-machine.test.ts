@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { createActor, SimulatedClock } from 'xstate';
-import type { Shout } from '../shout/logic';
-import { type ShoutEffects, shoutMachine } from '../shout/machine';
+import type { Shout } from '../library/shout/logic';
+import { type ShoutEffects, shoutMachine } from '../library/shout/machine';
 
 const track = (name: string, more: Shout = {}): Shout => ({
   date: '2026-01-01T00:00:00Z',

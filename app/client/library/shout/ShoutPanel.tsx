@@ -2,10 +2,10 @@
 
 import { createSignal, Show } from 'solid-js';
 import { createActor } from 'xstate';
-import { youtubeSearchUrl } from '../library/youtube';
-import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../shell/cover';
-import { play } from '../shell/motion';
-import { fitShutter, setShutter } from '../shell/navigation';
+import { play } from '../../shared/motion';
+import { createCoverFinder, onCoverBroken, onCoverLoaded } from '../cover/cover';
+import { fitShutter, setShutter } from '../navigation';
+import { youtubeSearchUrl } from '../youtube';
 import { followShouts } from './live';
 import { elapsedSince, metaText, movesTimeline, type Shout } from './logic';
 import { shoutMachine } from './machine';

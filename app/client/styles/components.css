@@ -1,6 +1,6 @@
 /*
  * What has states and pseudo-elements, which read better here than as utilities.
- * Before Tailwind's utilities (style.css), so that an element's own utilities win at the same weight.
+ * Before Tailwind's utilities (index.css), so that an element's own utilities win at the same weight.
  */
 
 /* An album's cover, or what tells it is searched for or missing */

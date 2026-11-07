@@ -1,6 +1,6 @@
 // Logging in, creating an account, and managing it : on a page of its own, or in the panel of the library page
 import { createSignal, Show } from 'solid-js';
-import { filled } from '../library/texts';
+import { filled } from '../shared/texts';
 import { Editors } from './Editors';
 import { ACCOUNT_CREATION, ACCOUNT_MANAGEMENT, LOGIN_RACK } from './styles';
 

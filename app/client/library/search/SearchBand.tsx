@@ -1,6 +1,6 @@
 // The search bar of the library page
 import { createSignal, For, Show } from 'solid-js';
-import type { SearchResult } from '../library/data';
+import type { SearchResult } from '../data/data';
 
 const TYPING_DELAY_MS = 350;
 

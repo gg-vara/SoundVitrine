@@ -27,7 +27,7 @@ export function compressedResponse(request: Request, response: Response): Respon
 
   response.headers.set('content-encoding', 'gzip');
   response.headers.delete('content-length');
-  // the size browsers can no longer tell, for the loading bar of the library page (client/shell/loader.ts)
+  // the size browsers can no longer tell, for the loading bar of the library page (client/library/loader.ts)
   if (length !== null) response.headers.set('x-original-content-length', length);
 
   return new Response(response.body.pipeThrough(new CompressionStream('gzip')), { status: response.status, headers: response.headers });

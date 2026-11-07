@@ -8,14 +8,10 @@
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css" source(none);
 
-@source "./account";
-@source "./discover";
-@source "./feed";
-@source "./search";
-@source "./shell";
-@source "./shout";
-@source "./stats";
-@source "../server/pages";
+@source "../account";
+@source "../library";
+@source "../shared";
+@source "../../server/pages";
 
 /* including on touch screens, where Tailwind's own only applies on what can hover */
 @custom-variant hover (&:hover);

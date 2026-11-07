@@ -1,6 +1,7 @@
 // An album's cover, or what tells it is searched for or missing (components.css)
-import { searchAlbumCover } from '../library/coverSearch';
-import { play } from './motion';
+
+import { play } from '../../shared/motion';
+import { searchAlbumCover } from './search';
 
 const FADE_SECONDS = 0.3;
 

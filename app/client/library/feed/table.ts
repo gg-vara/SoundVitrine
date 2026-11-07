@@ -1,5 +1,5 @@
 // What a table of the feed shows, and in which order, apart from any page : see tests/feed.test.ts
-import type { FeedAlbum } from '../library/data';
+import type { FeedAlbum } from '../data/data';
 
 export const FEED_COLUMNS = ['Year', 'Genre', 'Artist', 'Album'] as const;
 export type FeedColumn = (typeof FEED_COLUMNS)[number];

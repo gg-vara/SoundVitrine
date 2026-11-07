@@ -19,7 +19,7 @@ export default defineConfig({
     // how the pages find the entry, whose name changes with its content (server/pages/layout.ts)
     manifest: true,
     rolldownOptions: {
-      input: [join(client, 'main.tsx'), join(client, 'account/main.tsx')],
+      input: [join(client, 'library/main.tsx'), join(client, 'account/main.tsx')],
     },
   },
 });

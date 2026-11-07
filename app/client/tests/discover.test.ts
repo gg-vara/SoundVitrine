@@ -9,7 +9,7 @@ import {
   pickedFilter,
   sorterText,
   sortIcon,
-} from '../discover/filters';
+} from '../library/discover/filters';
 
 describe('filters', () => {
   const selected = { genreUI: 'Rock', artistUI: 'Björk', albumUI: 'Vespertine' };
