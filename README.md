@@ -3,7 +3,7 @@
 </div>
 
 # SoundVitrine
-[![CodeFactor](https://www.codefactor.io/repository/github/amphaal/soundvitrine/badge)](https://www.codefactor.io/repository/github/amphaal/soundvitrine)
+[![CodeFactor](https://www.codefactor.io/repository/github/gg-vara/soundvitrine/badge)](https://www.codefactor.io/repository/github/gg-vara/soundvitrine)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8960843e3cd94a3c903b5ec54829ec41)](https://app.codacy.com/gh/Amphaal/SoundVitrine/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Amphaal/SoundVitrine/build-image.yml)
 ![GitHub Release](https://img.shields.io/github/v/release/amphaal/SoundVitrine)
