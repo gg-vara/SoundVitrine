@@ -2,6 +2,23 @@
 
 Each section becomes the notes of its GitHub release. Versions are shared with [SoundBuddy](https://github.com/gg-vara/SoundBuddy) from 0.13.0 on. Before that, see the tags.
 
+## 0.14.2
+
+Nothing changes for SoundBuddy : the API's description is the same. Numbered as SoundBuddy 0.14.2, which it pairs with.
+
+### New
+
+- SoundVitrine can run as a single executable, which takes its pages and files along : `bun run build:binary`
+
+### Changed
+
+- The server's routing and pages are written with Hono, whose templates escape what they show
+- Images have a text alternative, and the GitHub link of the upload page opens without giving the new tab a hold on this one
+
+### Removed
+
+- The test page for shouts (`/mock/sse`) : the API's reference sends them, logged in (`/api/docs`, `POST /api/v1/me/shouts`)
+
 ## 0.14.0
 
 Nothing changes for visitors, nor for SoundBuddy : the API's description is the same.
