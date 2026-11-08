@@ -3,10 +3,10 @@
 
 // Parts shared by the pages : metadata, footer, the browser build, form helpers
 
-import { readdirSync, readFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename } from 'node:path';
 import type { Session } from '../auth/session';
-import { APP_NAME, APP_ROOT, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
+import { APP_NAME, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
+import { clientEntries, embedded } from '../embedded';
 import type { Lang, TranslationKey, Translator } from '../i18n/i18n';
 import { dictionaries } from '../i18n/i18n';
 import type { Html } from './html';
@@ -28,8 +28,6 @@ export interface PageContext {
 // The browser build
 //
 
-const caching = process.env.NODE_ENV === 'production';
-
 // the files of Vite's entry, relative to client/dist/
 export interface ClientEntry {
   file: string;
@@ -40,23 +38,8 @@ export interface ClientEntry {
 export const LIBRARY_ENTRY = 'library/main.tsx';
 export const ACCOUNT_ENTRY = 'account/main.tsx';
 
-export function clientEntryIn(manifest: string, name = LIBRARY_ENTRY): ClientEntry | undefined {
-  return (JSON.parse(manifest) as Record<string, ClientEntry>)[name];
-}
-
-const cachedClientEntries = new Map<string, ClientEntry>();
-
 function clientEntry(name = LIBRARY_ENTRY): ClientEntry | undefined {
-  const cachedEntry = cachedClientEntries.get(name);
-  if (cachedEntry) return cachedEntry;
-
-  let entry: ClientEntry | undefined;
-  try {
-    entry = clientEntryIn(readFileSync(join(APP_ROOT, 'client/dist/.vite/manifest.json'), 'utf8'), name);
-  } catch {}
-  if (!entry) console.error('No browser build in client/dist : run "bun run build"');
-  if (caching && entry) cachedClientEntries.set(name, entry);
-  return entry;
+  return clientEntries[name];
 }
 
 // the script of Vite's build : without it, the page misses what moved there
@@ -139,8 +122,10 @@ export const translationsScript = (context: PageContext) => html`<script>
 
 const FOOTER_PART = 'flex h-full items-center bg-white text-[.65rem]';
 
-const flags = readdirSync(join(APP_ROOT, 'client/public/images/flags'))
-  .filter(name => name.endsWith('.svg'))
+const FLAGS = 'public/images/flags/';
+const flags = Object.keys(embedded)
+  .filter(key => key.startsWith(FLAGS) && key.endsWith('.svg'))
+  .map(key => key.slice(FLAGS.length))
   .sort();
 
 export function footer(context: PageContext): Html {

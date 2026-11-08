@@ -29,6 +29,8 @@ COPY --from=build /app/node_modules/@scalar/api-reference/dist/browser/standalon
 COPY --from=build /app/client/dist ./client/dist
 
 COPY server ./server
+# written by Vite's build : what the server serves of the application
+COPY --from=build /app/server/embedded.ts ./server/embedded.ts
 COPY client/public ./client/public
 COPY tsconfig.json ./
 

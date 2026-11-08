@@ -3,47 +3,44 @@
 
 // Vite's build, and the API's reference
 
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { beforeAll, describe, expect, test } from 'bun:test';
 import { handle } from '../app';
-import { APP_ROOT } from '../config';
-import { clientEntryIn } from '../pages/layout';
+import { clientEntries, embedded } from '../embedded';
+import { ACCOUNT_ENTRY, LIBRARY_ENTRY } from '../pages/layout';
 import { base, prepareTestUser } from './helpers';
 
 beforeAll(prepareTestUser);
 
 describe("Vite's build", () => {
-  test('pages find its entry in the manifest', () => {
-    const entry = { file: 'assets/main-abc.js', css: ['assets/main-def.css'], isEntry: true };
-    expect(clientEntryIn(JSON.stringify({ 'library/main.tsx': entry }))).toEqual(entry);
-    expect(clientEntryIn(JSON.stringify({ 'account/main.ts': entry }), 'account/main.ts')).toEqual(entry);
-    expect(clientEntryIn('{}')).toBeUndefined();
-  });
+  const library = clientEntries[LIBRARY_ENTRY];
 
-  // a file of its own : client/dist/ only exists after a build, and tests must not depend on one
-  const folder = join(APP_ROOT, 'client', 'dist', 'assets');
-  const file = join(folder, 'test-served.js');
-
-  beforeAll(() => {
-    mkdirSync(folder, { recursive: true });
-    writeFileSync(file, 'served');
+  test('the pages know the files of its entries', () => {
+    for (const name of [LIBRARY_ENTRY, ACCOUNT_ENTRY]) {
+      const entry = clientEntries[name];
+      expect(entry && embedded[`web/${entry.file}`]).toBeTruthy();
+      for (const css of entry?.css ?? []) expect(embedded[`web/${css}`]).toBeTruthy();
+    }
   });
-  afterAll(() => rmSync(file, { force: true }));
 
   test('is served at /web/, kept forever', async () => {
-    const response = await handle(new Request(`${base}/web/assets/test-served.js`));
+    const response = await handle(new Request(`${base}/web/${library?.file}`));
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toStartWith('text/javascript');
     expect(response.headers.get('cache-control')).toContain('immutable');
-    expect(await response.text()).toBe('served');
+    expect(await response.text()).toBe(await Bun.file(embedded[`web/${library?.file}`] as string).text());
   });
 
   test('serves nothing else', async () => {
-    for (const path of ['/web/assets/missing.js', '/web/..%2fmain.ts', '/web/%2e%2e/%2e%2e/package.json']) {
+    for (const path of [
+      '/web/assets/missing.js',
+      '/web/..%2fmain.ts',
+      '/web/%2e%2e/%2e%2e/package.json',
+      '/web/%E0%A4%A',
+      '/public/..%2f..%2fpackage.json',
+    ]) {
       expect((await handle(new Request(`${base}${path}`))).status).toBe(404);
     }
-    expect((await handle(new Request(`${base}/web/assets/test-served.js`, { method: 'POST' }))).status).not.toBe(200);
+    expect((await handle(new Request(`${base}/web/${library?.file}`, { method: 'POST' }))).status).not.toBe(200);
   });
 });
 

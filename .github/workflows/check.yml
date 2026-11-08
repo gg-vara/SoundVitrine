@@ -19,6 +19,8 @@ jobs:
       - name: Check, then test
         run: |
           bun install --frozen-lockfile
+          # the server imports what it lists (server/embedded.ts)
+          bun run build
           bun x --bun tsc --noEmit
           bun x --bun tsc --noEmit -p client
           bun x biome ci .

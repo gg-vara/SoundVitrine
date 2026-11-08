@@ -4,11 +4,10 @@
 // The API of SoundVitrine, described by an OpenAPI document (served at /api/openapi.json, browsable at /api/docs) :
 // what released SoundBuddy versions call (soundbuddy.ts), the live shouts of a user (shouts.ts), and OAuth with what it opens (oauth.ts, v1.ts)
 
-import { join } from 'node:path';
 import { OpenAPIHandler } from '@orpc/openapi/fetch';
 import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
-import { APP_NAME, APP_ROOT, APP_VERSION, COMPANION_APP_NAME } from '../config';
+import { APP_NAME, APP_VERSION, COMPANION_APP_NAME } from '../config';
 import type { ApiContext } from './base';
 import { revokeRoute, tokenRoute } from './oauth';
 import { shoutsRoute } from './shouts';
@@ -28,8 +27,6 @@ const router = {
 };
 
 const API_TITLE = `${APP_NAME} API`;
-
-export const SCALAR_SCRIPT = join(APP_ROOT, 'node_modules/@scalar/api-reference/dist/browser/standalone.js');
 
 const apiHandler = new OpenAPIHandler(router, {
   plugins: [
