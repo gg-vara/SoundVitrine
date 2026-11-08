@@ -33,9 +33,6 @@ export const STATE_FOLDER_PATH = resolve(process.env.SOUNDVITRINE_STATE_PATH ?? 
 
 export const PORT = Number(process.env.PORT ?? 80);
 
-// a page to send and receive test shouts (/mock/sse), for development
-export const ALLOW_SSE_TESTING = Boolean(process.env.ALLOW_SSE_TESTING);
-
 // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
 export const TRUST_PROXY = process.env.SOUNDVITRINE_TRUST_PROXY === '1';
 

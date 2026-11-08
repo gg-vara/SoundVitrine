@@ -12,18 +12,16 @@ import { prepareAuth } from './auth/auth';
 import { chosenLang, langCookie, readSession } from './auth/session';
 import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
-import { ALLOW_SSE_TESTING, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import { STATE_FOLDER_PATH, TRUST_PROXY } from './config';
 import type { AppContext, Env } from './env';
 import { plain, setCookies } from './env';
 import type { Lang } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
 import { hasLibrary } from './library/library';
-import { publishShout } from './library/shouts';
 import { accountPage } from './pages/account';
 import type { PageContext } from './pages/layout';
 import { renderPages } from './pages/layout';
 import { libraryPage } from './pages/library';
-import { mockPage } from './pages/mock';
 import { uploadPage } from './pages/upload';
 import { welcomePage } from './pages/welcome';
 import { staticRoute } from './static';
@@ -57,18 +55,6 @@ async function libraryRoute(c: AppContext, userPart: string | undefined, action:
   if (!hasLibrary(user) || action === 'uploadMusicLibrary') return c.render(uploadPage(context));
 
   return c.render(libraryPage(context, user));
-}
-
-function mockRoute(c: AppContext, action: string | undefined): Response | Promise<Response> {
-  if (!ALLOW_SSE_TESTING) return plain(c, 'Mock testing is disabled.', 403);
-  if (action !== 'send') return c.render(mockPage(c.var.page));
-  if (c.req.method !== 'POST') return plain(c, '', 404);
-
-  const toUser = c.var.page.form.toUser;
-  if (!toUser) return plain(c, 'Missing target user', 400);
-
-  publishShout(toUser, { date: new Date().toISOString(), album: 'The Black Album', artist: 'Metallica' });
-  return plain(c, 'OK');
 }
 
 // who calls : "peerAddress" is the direct connection, which is the proxy when there is one
@@ -141,9 +127,6 @@ for (const path of ['/u', '/u/*']) {
     return libraryRoute(c, user, action);
   });
 }
-
-app.all('/mock/sse/*', c => mockRoute(c, partsOf(c.req.path)[1]));
-app.all('/mock/sse', c => mockRoute(c, undefined));
 
 app.notFound(c => plain(c, '', 404));
 

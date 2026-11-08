@@ -10,7 +10,7 @@ From `app/` :
 bun run dev:seed
 ```
 
-A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
+A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API : its Authorize button logs in, and `POST /api/v1/me/shouts` sends a shout the library page shows live. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
 
 - `bun test`, `bun run typecheck`, `bun x biome check --write .`, `bun run build` : what CI checks (`biome ci`)
 - `bun run test:e2e` : the real pages in a real browser (Playwright, `e2e/`), on a seeded server of their own. It uses the installed Chrome, CI a downloaded Chromium
