@@ -12,3 +12,4 @@ playwright.config.ts
 test-results
 playwright-report
 server/embedded.ts
+bin

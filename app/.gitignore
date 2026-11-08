@@ -7,3 +7,5 @@ test-results
 playwright-report
 # written by Vite's build (vite.config.ts)
 server/embedded.ts
+# the executable (bun run build:binary)
+bin

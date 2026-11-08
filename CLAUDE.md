@@ -50,6 +50,7 @@ Browser, on Vite 8, Solid and Tailwind, built to `client/dist/` by `bun run buil
 - `client/styles/` : `index.css` says why there are no layers nor reset, and what Tailwind scans : a new folder must be added there. `base.css` holds what every page relies on, the others are by feature
 - `client/page-globals.d.ts` : what the page defines before its scripts
 - `client/public/` : static files, served at `/public/`
+- `server/embedded.ts` : written by Vite's build (a plugin in `vite.config.ts`). It imports every file the server serves of the application, so that `bun run build:binary` makes a single executable that takes them along, and tells the pages the files of each entry. The server reads nothing else next to its code : only the state folder, from `SOUNDVITRINE_STATE_PATH` or `_state` in the current folder. `e2e/binary-smoke.ts` checks the executable (`bun run test:binary`)
 
 ## What must not break
 
