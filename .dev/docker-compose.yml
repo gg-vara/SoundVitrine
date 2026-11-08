@@ -13,7 +13,6 @@ services:
      - ../_state:/app/_state:rw
     environment:
       NODE_ENV: "development"
-      ALLOW_SSE_TESTING: "1" # dev-only
       ENFORCE_CANONICAL_HTTP_SCHEME: "1"
     develop:
       watch:

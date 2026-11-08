@@ -1,6 +1,6 @@
 {
   "name": "soundvitrine",
-  "version": "0.14.0",
+  "version": "0.14.2",
   "description": "SoundVitrine is an hosted iTunes Library portal for the web. Used alongside SoundBuddy, you can broadcast to visitors what you are listening to, and what music you currently have on your computer !",
   "private": true,
   "type": "module",
@@ -11,6 +11,8 @@
     "dev:seed": "vite build && bun server/scripts/seed.ts",
     "dev:client": "vite build --watch",
     "build": "vite build",
+    "build:binary": "vite build && bun build --compile --minify --sourcemap server/index.ts --outfile bin/soundvitrine",
+    "test:binary": "bun e2e/binary-smoke.ts bin/soundvitrine",
     "test": "bun test",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p client",
@@ -22,6 +24,7 @@
     "@orpc/server": "^1.16.1",
     "@orpc/zod": "^1.16.1",
     "better-auth": "^1.7.16",
+    "hono": "^4.13.17",
     "zod": "^4.6.7"
   },
   "devDependencies": {

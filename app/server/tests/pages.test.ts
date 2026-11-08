@@ -174,6 +174,11 @@ describe('pages', () => {
     expect(existsSync(join(STATE_FOLDER_PATH, 'soundvitrine.db'))).toBe(true);
   });
 
+  test('what repeats the path is plain text, never read as HTML', async () => {
+    const response = await handle(new Request(`${base}/u/%3Cscript%3E`));
+    expect(response.headers.get('content-type')).toBe('text/plain;charset=utf-8');
+  });
+
   test('health check, and unknown pages', async () => {
     expect(await (await handle(new Request(`${base}/healthz`))).text()).toBe('OK');
     expect((await handle(new Request(`${base}/nothing`))).status).toBe(404);

@@ -27,16 +27,11 @@ export const SHOUT_PROFILE_FILE_NAME = 'shout.json';
 // as these colors can be customized by users
 export const DEFAULT_BACKGROUND_COLORS = ['#EE7752', '#E73C7E', '#23A6D5', '#23D5AB'];
 
-// application folder : static files (client/public/)
-export const APP_ROOT = resolve(import.meta.dir, '..');
-
 // state files, on the filesystem : users database, users folders, sessions key
-export const STATE_FOLDER_PATH = resolve(process.env.SOUNDVITRINE_STATE_PATH ?? resolve(APP_ROOT, '_state'));
+// _state in the current folder unless told : nothing is next to the code once compiled
+export const STATE_FOLDER_PATH = resolve(process.env.SOUNDVITRINE_STATE_PATH ?? '_state');
 
 export const PORT = Number(process.env.PORT ?? 80);
-
-// a page to send and receive test shouts (/mock/sse), for development
-export const ALLOW_SSE_TESTING = Boolean(process.env.ALLOW_SSE_TESTING);
 
 // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
 export const TRUST_PROXY = process.env.SOUNDVITRINE_TRUST_PROXY === '1';

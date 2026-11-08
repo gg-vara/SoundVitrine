@@ -19,10 +19,18 @@ jobs:
       - name: Check, then test
         run: |
           bun install --frozen-lockfile
+          # the server imports what it lists (server/embedded.ts)
+          bun run build
           bun x --bun tsc --noEmit
           bun x --bun tsc --noEmit -p client
           bun x biome ci .
           bun test
+
+      # a single executable, which takes the application's files along : started on its own, and called as browsers and SoundBuddy do
+      - name: Test the compiled executable
+        run: |
+          bun run build:binary
+          bun run test:binary
 
       - name: Test the pages in a browser
         run: |

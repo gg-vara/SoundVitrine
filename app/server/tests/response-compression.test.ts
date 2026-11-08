@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { handle } from '../app';
 import { userFolder } from '../auth/users';
 import { compressedResponse } from '../compressed-response';
-import { APP_ROOT } from '../config';
+import { embedded } from '../embedded';
 import { base, createUser, PASSWORD, prepareTestLibrary, soundBuddyHeaders, USER } from './helpers';
 
 beforeAll(prepareTestLibrary);
@@ -40,7 +40,7 @@ describe('compression', () => {
   });
 
   test('a file keeps its content, and tells its size for the loading bar', async () => {
-    const original = await Bun.file(join(APP_ROOT, 'client/public/images/chrome.svg')).bytes();
+    const original = await Bun.file(embedded['public/images/chrome.svg'] as string).bytes();
     const response = await asBrowser('/public/images/chrome.svg');
     expect(response.headers.get('content-encoding')).toBe('gzip');
     expect(response.headers.has('content-length')).toBe(false);

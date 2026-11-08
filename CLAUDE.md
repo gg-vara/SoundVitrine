@@ -10,7 +10,7 @@ From `app/` :
 bun run dev:seed
 ```
 
-A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API, `/mock/sse` sends test shouts. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
+A server to try things on, at http://localhost:3000 : rebuilt from nothing at each start, in `_state-dev`, with the account `testcurator` / `testpassword`, a generated library and a recent shout. `SEED_TRACKS=30000` makes the library larger, `PORT` moves it. `/api/docs` browses the API : its Authorize button logs in, and `POST /api/v1/me/shouts` sends a shout the library page shows live. It builds the browser code first : `bun run dev:client` rebuilds it as it changes, and a reload shows it.
 
 - `bun test`, `bun run typecheck`, `bun x biome check --write .`, `bun run build` : what CI checks (`biome ci`)
 - `bun run test:e2e` : the real pages in a real browser (Playwright, `e2e/`), on a seeded server of their own. It uses the installed Chrome, CI a downloaded Chromium
@@ -33,11 +33,11 @@ Without `--format docker`, Podman drops the health check. On WSL, Podman's netwo
 
 Server :
 
-- `server/app.ts` : routing. `server/static.ts` the files served as they are, `server/account.ts` what the account page calls, `server/responses.ts` their answers
+- `server/app.ts` : routing, on Hono : middleware for static files, the API (oRPC, which reads the body first) and what the pages are rendered from, then the routes. `server/static.ts` the files served as they are, `server/account.ts` the account routes, mounted at `/account`. `server/env.ts` what the routes share; `plain()` says the type of plain text, which Bun only adds when sending
 - `server/api/` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`). `router.ts` gathers it and picks the format of its errors, `soundbuddy.ts` is what released versions call, `oauth.ts` has `/oauth/token` (password and refresh grants, RFC 6749), `v1.ts` has `/api/v1` (Bearer, scopes, errors as RFC 9457) : the password stops travelling once SoundBuddy moves to them
 - `server/auth/` : `auth.ts` is Better Auth, whose HTTP routes are closed on purpose, the forms call it directly. `tokens.ts` the OAuth tokens, kept as hashes. `rate-limit.ts` the failed passwords, by client and account
 - `server/library/` : what becomes of an uploaded library, and the live shouts
-- `server/pages/` : a file by page rendered by the server, on `layout.ts`. `html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
+- `server/pages/` : a file by page rendered by the server, in `hono/jsx`, on `layout.tsx`. It escapes what it interpolates : only `dangerouslySetInnerHTML` takes HTML as it is, for trusted texts, scripts and styles (`Script`, `Style`). they go through `c.render()`, whose `jsxRenderer` (`renderPages`) writes the doctype JSX cannot
 - `server/i18n/` : the two languages
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `server/compressed-response.ts` : gzip for browsers. Never live shouts, nor the plain text SoundBuddy reads
@@ -50,6 +50,7 @@ Browser, on Vite 8, Solid and Tailwind, built to `client/dist/` by `bun run buil
 - `client/styles/` : `index.css` says why there are no layers nor reset, and what Tailwind scans : a new folder must be added there. `base.css` holds what every page relies on, the others are by feature
 - `client/page-globals.d.ts` : what the page defines before its scripts
 - `client/public/` : static files, served at `/public/`
+- `server/embedded.ts` : written by Vite's build (a plugin in `vite.config.ts`). It imports every file the server serves of the application, so that `bun run build:binary` makes a single executable that takes them along, and tells the pages the files of each entry. The server reads nothing else next to its code : only the state folder, from `SOUNDVITRINE_STATE_PATH` or `_state` in the current folder. `e2e/binary-smoke.ts` checks the executable (`bun run test:binary`)
 
 ## What must not break
 

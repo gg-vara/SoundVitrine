@@ -14,7 +14,6 @@ const PASSWORD = 'testpassword';
 // set before the server's modules read them
 process.env.SOUNDVITRINE_STATE_PATH = STATE;
 process.env.PORT = process.env.PORT ?? '3000';
-process.env.ALLOW_SSE_TESTING = '1';
 process.env.ENFORCE_CANONICAL_HTTP_SCHEME = '1';
 
 rmSync(STATE, { recursive: true, force: true });
@@ -87,5 +86,4 @@ const server = Bun.serve({
 console.log(`SoundVitrine listening on ${server.url}, seeded in ${STATE}
   account  : ${USERNAME} / ${PASSWORD}
   library  : ${server.url}u/${USERNAME}
-  API      : ${server.url}api/docs
-  shouts   : ${server.url}mock/sse`);
+  API      : ${server.url}api/docs (its Authorize button logs in : POST /api/v1/me/shouts shouts, the library page shows it live)`);
