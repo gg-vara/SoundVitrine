@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2018-2026 Guillaume Vara <guillaume.vara@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Requests : static files, the API (server/api/router.ts) with its reference, then the pages
+// Requests, on Hono : static files, the API (server/api/router.ts) with its reference, then the pages
 
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { Hono } from 'hono';
 import { accountRoute } from './account';
 import { apiResponse } from './api/router';
 import { prepareAuth } from './auth/auth';
@@ -12,7 +13,7 @@ import { chosenLang, langCookie, readSession } from './auth/session';
 import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
 import { ALLOW_SSE_TESTING, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
-import type { Lang } from './i18n/i18n';
+import type { Lang, Translator } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
 import { hasLibrary } from './library/library';
 import { publishShout } from './library/shouts';
@@ -77,54 +78,82 @@ function clientIpOf(request: Request, peerAddress: string | undefined): string {
   return forwarded || peerAddress || 'unknown';
 }
 
-export async function handle(request: Request, peerAddress?: string): Promise<Response> {
-  return compressedResponse(request, await respond(request, peerAddress));
+// the path's parts after its first one : /u/curator/uploadShout gives curator, uploadShout
+function partsOf(path: string): (string | undefined)[] {
+  return path.split('/').filter(Boolean).slice(1);
 }
 
-async function respond(request: Request, peerAddress?: string): Promise<Response> {
-  const url = new URL(request.url);
-  const path = url.pathname;
+type Env = {
+  Bindings: { peerAddress?: string };
+  Variables: { clientIp: string; lang: Lang; tr: Translator; page: PageContext };
+};
 
-  if (path === '/healthz') return text('OK');
+const app = new Hono<Env>();
 
-  const file = await staticRoute(request, path);
-  if (file) return file;
+// for browsers that ask, except what must stay as it is (server/compressed-response.ts)
+app.use(async (c, next) => {
+  await next();
+  c.res = compressedResponse(c.req.raw, c.res);
+});
 
-  const clientIp = clientIpOf(request, peerAddress);
-  const lang: Lang = chosenLang(request) ?? langFromHeader(request.headers.get('accept-language')) ?? defaultLang;
-  const tr = translator(lang);
+app.all('/healthz', () => text('OK'));
 
-  const answer = await apiResponse(request, { tr, clientIp });
-  if (answer) return answer;
+app.use(async (c, next) => (await staticRoute(c.req.raw, c.req.path)) ?? next());
 
+// who calls, in which language : the API answers in it too
+app.use(async (c, next) => {
+  const lang: Lang = chosenLang(c.req.raw) ?? langFromHeader(c.req.header('accept-language') ?? null) ?? defaultLang;
+  c.set('clientIp', clientIpOf(c.req.raw, c.env?.peerAddress));
+  c.set('lang', lang);
+  c.set('tr', translator(lang));
+  await next();
+});
+
+// the API, with its reference : first, as it reads the body itself
+app.use(async (c, next) => (await apiResponse(c.req.raw, { tr: c.var.tr, clientIp: c.var.clientIp })) ?? next());
+
+// what the pages are rendered from
+app.use(async (c, next) => {
+  const request = c.req.raw;
   const context: PageContext = {
     request,
-    url,
+    url: new URL(request.url),
     session: await readSession(request),
-    clientIp,
-    lang,
-    tr,
+    clientIp: c.var.clientIp,
+    lang: c.var.lang,
+    tr: c.var.tr,
     form: await formFields(request),
   };
 
   // language chosen from the footer : back to the page
   if (isLang(context.form.set_lang)) {
-    return page(redirect(path + url.search, 303), [langCookie(context.form.set_lang)]);
+    return page(redirect(context.url.pathname + context.url.search, 303), [langCookie(context.form.set_lang)]);
   }
 
-  const [section, first, second] = path.split('/').filter(Boolean);
-  switch (section) {
-    case undefined:
-      return page(welcomePage(context, allUsers()));
-    case 'account':
-      return accountRoute(context, first);
-    case 'u':
-      return libraryRoute(context, request, first, second);
-    case 'mock':
-      return first === 'sse' ? mockRoute(context, second) : text('', 404);
-    default:
-      return text('', 404);
-  }
+  c.set('page', context);
+  return next();
+});
+
+app.all('/', c => page(welcomePage(c.var.page, allUsers())));
+
+for (const path of ['/account', '/account/*']) {
+  app.all(path, c => accountRoute(c.var.page, partsOf(c.req.path)[0]));
+}
+
+for (const path of ['/u', '/u/*']) {
+  app.all(path, c => {
+    const [user, action] = partsOf(c.req.path);
+    return libraryRoute(c.var.page, c.req.raw, user, action);
+  });
+}
+
+app.all('/mock/sse/*', c => mockRoute(c.var.page, partsOf(c.req.path)[1]));
+app.all('/mock/sse', c => mockRoute(c.var.page, undefined));
+
+app.notFound(() => text('', 404));
+
+export function handle(request: Request, peerAddress?: string): Promise<Response> {
+  return Promise.resolve(app.fetch(request, { peerAddress }));
 }
 
 // the database, and the folders of the users
