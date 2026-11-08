@@ -12,7 +12,10 @@
     "noImplicitReturns": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    // the pages the server renders (server/pages) : the browser's are in Solid, with their own settings (client/tsconfig.json)
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
   },
   "include": ["server", "client/tests", "client/page-globals.d.ts", "e2e", "vite.config.ts", "playwright.config.ts"]
 }

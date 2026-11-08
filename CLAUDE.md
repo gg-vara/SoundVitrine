@@ -37,7 +37,7 @@ Server :
 - `server/api/` : the API, in oRPC, from which the OpenAPI document comes (`/api/openapi.json`). `router.ts` gathers it and picks the format of its errors, `soundbuddy.ts` is what released versions call, `oauth.ts` has `/oauth/token` (password and refresh grants, RFC 6749), `v1.ts` has `/api/v1` (Bearer, scopes, errors as RFC 9457) : the password stops travelling once SoundBuddy moves to them
 - `server/auth/` : `auth.ts` is Better Auth, whose HTTP routes are closed on purpose, the forms call it directly. `tokens.ts` the OAuth tokens, kept as hashes. `rate-limit.ts` the failed passwords, by client and account
 - `server/library/` : what becomes of an uploaded library, and the live shouts
-- `server/pages/` : a file by page rendered by the server, on `layout.ts`. `html.ts` escapes what `html` interpolates : `raw()` only takes what is trusted
+- `server/pages/` : a file by page rendered by the server, in `hono/jsx`, on `layout.tsx`. It escapes what it interpolates : only `dangerouslySetInnerHTML` takes HTML as it is, for trusted texts, scripts and styles (`Script`, `Style`). `page()` (`server/responses.ts`) adds the doctype, which JSX cannot write
 - `server/i18n/` : the two languages
 - `server/db.ts` : SQLite, in the state folder. Libraries and pictures stay files, under `users/<name>/`, served at `/data/users/`
 - `server/compressed-response.ts` : gzip for browsers. Never live shouts, nor the plain text SoundBuddy reads
