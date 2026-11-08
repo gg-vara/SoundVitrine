@@ -12,7 +12,7 @@ import solid from 'vite-plugin-solid';
 const app = import.meta.dirname;
 const client = join(app, 'client');
 
-// what the server serves of the application, besides Vite's build : served at /public/, and Scalar's script for /api/docs
+// what the server serves of the application, besides Vite's build : at /public/, and Scalar's script for /api/docs
 const PUBLIC_FOLDER = join(client, 'public');
 const SCALAR_SCRIPT = join(app, 'node_modules/@scalar/api-reference/dist/browser/standalone.js');
 const EMBEDDED = join(app, 'server/embedded.ts');
@@ -39,7 +39,7 @@ function embedForServer(): Plugin {
         ...readdirSync(PUBLIC_FOLDER, { recursive: true, encoding: 'utf8' })
           .filter(name => statSync(join(PUBLIC_FOLDER, name)).isFile())
           .map(name => [`public/${name.replaceAll('\\', '/')}`, join(PUBLIC_FOLDER, name)] as [string, string]),
-        ['scalar.js', SCALAR_SCRIPT],
+        ['api/scalar.js', SCALAR_SCRIPT],
       ];
       files.sort(([a], [b]) => a.localeCompare(b));
 

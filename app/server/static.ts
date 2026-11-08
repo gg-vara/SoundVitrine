@@ -3,64 +3,51 @@
 
 // Files served as they are
 
-import { extname, join, resolve, sep } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { STATE_FOLDER_PATH } from './config';
 import { latestShout } from './db';
 import { embedded } from './embedded';
 import { text } from './responses';
 
-function decoded(path: string): string | undefined {
+function fileResponse(file: string, headers: Record<string, string> = {}): Response {
+  const content = Bun.file(file);
+  return new Response(content, { headers: { 'content-length': String(content.size), ...headers } });
+}
+
+// one of the application's files, by its URL : only those listed exist (server/embedded.ts). Vite's build names a file by its
+// content, so it can be kept forever
+function applicationFile(path: string): Response | undefined {
+  const file = embedded[path.slice(1)];
+  if (!file) return undefined;
+  return fileResponse(file, { 'cache-control': path.startsWith('/web/') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600' });
+}
+
+// what users uploaded, on disk : the latest shout is in the database, and a library changes with each upload, so it is not cached
+async function userFile(path: string): Promise<Response | undefined> {
+  const shoutOf = /^\/data\/users\/([^/]+)\/shout\.json$/.exec(path)?.[1];
+  if (shoutOf) {
+    const shout = latestShout(shoutOf.toLowerCase());
+    return shout ? new Response(shout, { headers: { 'content-type': 'application/json' } }) : undefined;
+  }
+
+  let name: string;
   try {
-    return decodeURIComponent(path);
+    name = decodeURIComponent(path.slice('/data/users/'.length));
   } catch {
     return undefined;
   }
-}
-
-function fileResponse(file: string, cacheControl: string): Response {
-  const content = Bun.file(file);
-  const length = { 'content-length': String(content.size) };
-  return new Response(content, { headers: extname(file) === '.json' ? length : { ...length, 'cache-control': cacheControl } });
-}
-
-// one of the application's files, by its path in server/embedded.ts : nothing else exists there
-function applicationFile(path: string | undefined, cacheControl = 'public, max-age=3600'): Response | undefined {
-  const file = path === undefined ? undefined : embedded[path];
-  return file ? fileResponse(file, cacheControl) : undefined;
-}
-
-// "path" within "root" on disk, if it is a file there : what users uploaded
-async function stateFile(root: string, path: string): Promise<Response | undefined> {
-  const name = decoded(path);
-  if (name === undefined) return undefined;
-
+  const root = resolve(join(STATE_FOLDER_PATH, 'users'));
   const file = resolve(root, `.${sep}${name}`);
-  if (!file.startsWith(resolve(root) + sep) || !(await Bun.file(file).exists())) return undefined;
-  return fileResponse(file, 'public, max-age=3600');
+  if (!file.startsWith(root + sep) || !(await Bun.file(file).exists())) return undefined;
+  return fileResponse(file, file.endsWith('.json') ? {} : { 'cache-control': 'public, max-age=3600' });
 }
 
 // the file this request is for, if it is for one
 export async function staticRoute(request: Request, path: string): Promise<Response | undefined> {
-  if (path === '/api/scalar.js')
-    return new Response(Bun.file(embedded['scalar.js'] as string), { headers: { 'content-type': 'text/javascript' } });
+  if (path === '/api/scalar.js') return applicationFile(path);
+  if (request.method !== 'GET') return undefined;
 
-  if (request.method === 'GET' && path.startsWith('/public/')) {
-    return applicationFile(decoded(path.slice(1))) ?? text('', 404);
-  }
-  // Vite's build : a file's name changes with its content, it can be kept forever
-  if (request.method === 'GET' && path.startsWith('/web/')) {
-    return applicationFile(decoded(path.slice(1)), 'public, max-age=31536000, immutable') ?? text('', 404);
-  }
-  if (request.method === 'GET' && path.startsWith('/data/users/')) {
-    // the latest shout comes from the database
-    const shoutOf = /^\/data\/users\/([^/]+)\/shout\.json$/.exec(path)?.[1];
-    if (shoutOf) {
-      const shout = latestShout(shoutOf.toLowerCase());
-      return shout ? new Response(shout, { headers: { 'content-type': 'application/json' } }) : text('', 404);
-    }
-
-    return (await stateFile(join(STATE_FOLDER_PATH, 'users'), path.slice('/data/users/'.length))) ?? text('', 404);
-  }
-
+  if (path.startsWith('/public/') || path.startsWith('/web/')) return applicationFile(path) ?? text('', 404);
+  if (path.startsWith('/data/users/')) return (await userFile(path)) ?? text('', 404);
   return undefined;
 }
