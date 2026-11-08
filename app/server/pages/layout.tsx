@@ -6,6 +6,7 @@
 
 import { basename } from 'node:path';
 import type { Child } from 'hono/jsx';
+import { jsxRenderer } from 'hono/jsx-renderer';
 import type { Session } from '../auth/session';
 import { APP_NAME, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
 import { clientEntries, embedded } from '../embedded';
@@ -186,6 +187,9 @@ export function Footer({ context }: { context: PageContext }) {
     </footer>
   );
 }
+
+// what c.render() goes through : the pages are whole documents, given the doctype JSX cannot write
+export const renderPages = jsxRenderer(({ children }) => <>{children}</>, { docType: true });
 
 // a page of the admin layout
 export function AdminPage({ context, title, children }: { context: PageContext; title: string; children?: Child }) {

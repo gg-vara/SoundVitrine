@@ -7,7 +7,9 @@ import { join, resolve, sep } from 'node:path';
 import { STATE_FOLDER_PATH } from './config';
 import { latestShout } from './db';
 import { embedded } from './embedded';
-import { text } from './responses';
+
+// as the routes answer what they do not know
+const notFound = () => new Response('', { status: 404, headers: { 'content-type': 'text/plain;charset=utf-8' } });
 
 function fileResponse(file: string, headers: Record<string, string> = {}): Response {
   const content = Bun.file(file);
@@ -47,7 +49,7 @@ export async function staticRoute(request: Request, path: string): Promise<Respo
   if (path === '/api/scalar.js') return applicationFile(path);
   if (request.method !== 'GET') return undefined;
 
-  if (path.startsWith('/public/') || path.startsWith('/web/')) return applicationFile(path) ?? text('', 404);
-  if (path.startsWith('/data/users/')) return (await userFile(path)) ?? text('', 404);
+  if (path.startsWith('/public/') || path.startsWith('/web/')) return applicationFile(path) ?? notFound();
+  if (path.startsWith('/data/users/')) return (await userFile(path)) ?? notFound();
   return undefined;
 }
