@@ -24,7 +24,7 @@ podman build --format docker -t soundvitrine:test app
 ```
 
 ```bash
-podman run -d --name sv-test -p 3103:80 -e ENFORCE_CANONICAL_HTTP_SCHEME=1 -e SOUNDVITRINE_PUBLIC_URL=http://localhost:3103 -v sv-test-state:/app/_state:rw soundvitrine:test
+podman run -d --name sv-test -p 3103:80 -e SOUNDVITRINE_PUBLIC_URL=http://localhost:3103 -v sv-test-state:/app/_state:rw soundvitrine:test
 ```
 
 Without `--format docker`, Podman drops the health check. On WSL, Podman's networking needs WSL 2.7.5 or newer, whose kernel has `nft_fib_inet`.

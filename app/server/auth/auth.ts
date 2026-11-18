@@ -14,15 +14,7 @@ import { betterAuth } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
 import { jwt } from 'better-auth/plugins/jwt';
 import { username } from 'better-auth/plugins/username';
-import {
-  APP_NAME,
-  COMPANION_APP_NAME,
-  ENFORCE_CANONICAL_HTTP_SCHEME,
-  IS_PRODUCTION,
-  PUBLIC_URL,
-  SESSION_SECRET,
-  STATE_FOLDER_PATH,
-} from '../config';
+import { APP_NAME, COMPANION_APP_NAME, PUBLIC_URL, SERVED_IN_HTTPS, SESSION_SECRET, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
 import { SCOPE_NAMES } from './scopes';
 
@@ -54,9 +46,9 @@ export const auth = betterAuth({
   disabledPaths: ['/token'],
   emailAndPassword: { enabled: true, minPasswordLength: 8, maxPasswordLength: 128 },
   session: { expiresIn: 60 * 60 * 24 * 30 },
-  // HTTPS comes from the proxy in front of the server, which it cannot see
   advanced: {
-    useSecureCookies: IS_PRODUCTION && !ENFORCE_CANONICAL_HTTP_SCHEME,
+    // only sent back over HTTPS : an address in plain HTTP (development) would never get them back
+    useSecureCookies: SERVED_IN_HTTPS,
     // prepareAuth() brings the tables up to date at each start, right after this first check would complain
     database: { validateSchema: false },
   },

@@ -15,9 +15,12 @@ Pairs with the SoundBuddy that logs in through the browser : earlier SoundBuddy 
 
 - The upload page needs its owner logged in, and no longer asks for the password
 - `SOUNDVITRINE_PUBLIC_URL` must be the address visitors use : logins and uploads from any other are refused. In production (`NODE_ENV=production`, as in the image), the server will not start without it
-- The environment is checked at startup, the server stopping with what is wrong : an invalid `PORT` or `SOUNDVITRINE_PUBLIC_URL`, or a flag (`SOUNDVITRINE_TRUST_PROXY`, `ENFORCE_CANONICAL_HTTP_SCHEME`) other than `0` or `1`
+- The environment is checked at startup, the server stopping with what is wrong : an invalid `PORT` or `SOUNDVITRINE_PUBLIC_URL`, or `SOUNDVITRINE_TRUST_PROXY` other than `0` or `1`
+- The pages' canonical addresses (`og:url`, `og:image`) come from `SOUNDVITRINE_PUBLIC_URL`, rather than from the request's headers
 
 ### Removed
+
+- `ENFORCE_CANONICAL_HTTP_SCHEME` : `SOUNDVITRINE_PUBLIC_URL` tells the scheme. Session cookies are marked `Secure` when it is in HTTPS
 
 - What SoundBuddy called with the password each time : `/hb/creds`, `/u/{user}/uploadMusicLibrary`, `/u/{user}/uploadShout`, and `/oauth/token`
 

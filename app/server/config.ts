@@ -44,8 +44,6 @@ const environment = z
     SOUNDVITRINE_SESSION_SECRET: z.string().optional(),
     // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
     SOUNDVITRINE_TRUST_PROXY: flag,
-    // served in HTTP rather than HTTPS : canonical URLs when no proxy tells the scheme (X-Forwarded-Proto), and session cookies
-    ENFORCE_CANONICAL_HTTP_SCHEME: flag,
   })
   .superRefine((values, context) => {
     // in production, the default address (localhost) would make every login and upload from the real one refused
@@ -72,6 +70,7 @@ export const STATE_FOLDER_PATH = resolve(env.SOUNDVITRINE_STATE_PATH);
 export const PORT = env.PORT;
 // without a trailing slash
 export const PUBLIC_URL = (env.SOUNDVITRINE_PUBLIC_URL ?? `http://localhost:${PORT}`).replace(/\/+$/, '');
+// visitors come in HTTPS : the proxy in front of the server gives it, which the server cannot see
+export const SERVED_IN_HTTPS = PUBLIC_URL.startsWith('https:');
 export const SESSION_SECRET = env.SOUNDVITRINE_SESSION_SECRET;
 export const TRUST_PROXY = env.SOUNDVITRINE_TRUST_PROXY;
-export const ENFORCE_CANONICAL_HTTP_SCHEME = env.ENFORCE_CANONICAL_HTTP_SCHEME;

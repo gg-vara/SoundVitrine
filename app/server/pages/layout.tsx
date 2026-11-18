@@ -8,7 +8,7 @@ import { basename } from 'node:path';
 import type { Child } from 'hono/jsx';
 import { jsxRenderer } from 'hono/jsx-renderer';
 import type { Session } from '../auth/session';
-import { APP_NAME, APP_VERSION, DEFAULT_BACKGROUND_COLORS, ENFORCE_CANONICAL_HTTP_SCHEME } from '../config';
+import { APP_NAME, APP_VERSION, DEFAULT_BACKGROUND_COLORS, PUBLIC_URL } from '../config';
 import { clientEntries, embedded } from '../embedded';
 import type { Lang, TranslationKey, Translator } from '../i18n/i18n';
 import { dictionaries } from '../i18n/i18n';
@@ -77,16 +77,10 @@ export const Style = ({ css }: { css: string }) => <style dangerouslySetInnerHTM
 // Head and footer
 //
 
-function canonicalHost(request: Request): string {
-  const headers = request.headers;
-  const scheme = headers.get('x-forwarded-proto') || (ENFORCE_CANONICAL_HTTP_SCHEME ? 'http' : 'https');
-  const host = headers.get('x-forwarded-host') || headers.get('host') || new URL(request.url).host;
-  return `${scheme}://${host}`;
-}
-
 export function Metadata({ context, title }: { context: PageContext; title: string }) {
   const description = context.tr('app_descr');
-  const host = canonicalHost(context.request);
+  // the address visitors use, rather than what the request's headers claim
+  const host = PUBLIC_URL;
   const image = `${host}/public/images/og_image.png`;
   const url = host + context.url.pathname + context.url.search;
 
