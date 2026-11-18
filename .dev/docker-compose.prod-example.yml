@@ -8,6 +8,7 @@ services:
      - soundvitrine-state:/app/_state:rw
     environment:
       SOUNDVITRINE_TRUST_PROXY: "1" # Traefik gives the client's address, to limit password guessing by client
+      SOUNDVITRINE_PUBLIC_URL: https://${MY_SOUNDVITRINE_DOMAIN} # the address visitors use : logins from any other are refused
     networks:
       - traefik
     labels:

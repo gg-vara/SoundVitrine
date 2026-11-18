@@ -2,6 +2,24 @@
 
 Each section becomes the notes of its GitHub release. Versions are shared with [SoundBuddy](https://github.com/gg-vara/SoundBuddy) from 0.13.0 on. Before that, see the tags.
 
+## Unreleased
+
+Pairs with the SoundBuddy that logs in through the browser : earlier SoundBuddy versions can no longer upload.
+
+### New
+
+- Applications log in through the browser : SoundVitrine's login page, then a page telling what they ask, which the user allows or denies. Their access tokens are for `/api/v1` only, and logging out of the site leaves them connected
+- The API's reference logs in the same way (`/api/docs`, Authorize)
+
+### Changed
+
+- The upload page needs its owner logged in, and no longer asks for the password
+- `SOUNDVITRINE_PUBLIC_URL` must be the address visitors use : logins and uploads from any other are refused
+
+### Removed
+
+- What SoundBuddy called with the password each time : `/hb/creds`, `/u/{user}/uploadMusicLibrary`, `/u/{user}/uploadShout`, and `/oauth/token`
+
 ## 0.14.3
 
 Nothing changes for visitors, nor for SoundBuddy : the API's description is the same.

@@ -66,7 +66,7 @@ You can also run it without Docker : from `app/`, `bun install`, then `PORT=3000
 What [SoundBuddy](https://github.com/gg-vara/SoundBuddy) calls, and the live shouts of a user, are described by an OpenAPI document (`/api/openapi.json`), which you can browse and try at `/api/docs`.
 
 ### Hosting / Deploying
-Since the app is self-contained, hosting is quite simple. Check https://github.com/Amphaal/SoundVitrine/tree/main/.dev/docker-compose.prod-example.yml for a non-debug configuration example. No secret needs configuring : HTTPS is expected from the proxy in front of it, and state lives in the `SOUNDVITRINE_STATE_PATH` volume : a SQLite database (`soundvitrine.db`), and a folder per user with its library and picture. Set `SOUNDVITRINE_TRUST_PROXY=1` behind a proxy, so that failed logins are counted by client.
+Since the app is self-contained, hosting is quite simple. Check https://github.com/Amphaal/SoundVitrine/tree/main/.dev/docker-compose.prod-example.yml for a non-debug configuration example. No secret needs configuring : HTTPS is expected from the proxy in front of it, and state lives in the `SOUNDVITRINE_STATE_PATH` volume : a SQLite database (`soundvitrine.db`), and a folder per user with its library and picture. Set `SOUNDVITRINE_PUBLIC_URL` to the address visitors use (`https://soundvitrine.example.com`) : logins and uploads from any other are refused, and SoundBuddy logs in there. Set `SOUNDVITRINE_TRUST_PROXY=1` behind a proxy, so that failed logins are counted by client.
 
 ## Screenshots
 <div align="center">
