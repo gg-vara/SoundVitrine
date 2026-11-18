@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { Hono } from 'hono';
 import { accountRoutes } from './account';
 import { apiResponse } from './api/router';
-import { prepareAuth } from './auth/auth';
+import { auth, prepareAuth } from './auth/auth';
 import { chosenLang, langCookie, readSession } from './auth/session';
 import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
@@ -18,6 +18,7 @@ import { plain, setCookies } from './env';
 import type { Lang } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
 import { hasLibrary } from './library/library';
+import { oauthRoutes } from './oauth';
 import { accountPage } from './pages/account';
 import type { PageContext } from './pages/layout';
 import { renderPages } from './pages/layout';
@@ -92,6 +93,9 @@ app.use(async (c, next) => {
 // the API, with its reference : first, as it reads the body itself
 app.use(async (c, next) => (await apiResponse(c.req.raw, { tr: c.var.tr, clientIp: c.var.clientIp })) ?? next());
 
+// OAuth's endpoints, by Better Auth : the only routes of its own exposed (server/auth/auth.ts)
+app.on(['GET', 'POST'], '/api/auth/oauth2/*', c => auth.handler(c.req.raw));
+
 // what the pages are rendered from
 app.use(async (c, next) => {
   const request = c.req.raw;
@@ -120,6 +124,7 @@ app.use(renderPages);
 app.all('/', c => c.render(welcomePage(c.var.page, allUsers())));
 
 app.route('/account', accountRoutes);
+app.route('/oauth', oauthRoutes);
 
 for (const path of ['/u', '/u/*']) {
   app.all(path, c => {

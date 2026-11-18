@@ -41,27 +41,39 @@ function me(context: PageContext) {
   };
 }
 
-async function login(c: AppContext): Promise<Response> {
-  const { tr, clientIp } = c.var;
-  const fields = await fieldsOf(c);
-  const username = textOf(fields.username).trim().toLowerCase();
-  const password = textOf(fields.password);
+export type SignIn = { refusal: string; status: ContentfulStatusCode } | { refusal: null; redirect?: string };
 
-  if (!username) return refused(c, tr('e_log_nouser'));
-  if (!password) return refused(c, tr('e_log_nopass'));
-  if (!findUser(username)) return refused(c, tr('e_unsu', username), 401);
-  if (isBlocked(clientIp, username)) return refused(c, tr('e_too_many'), 429);
+// a password login, with its cookies set on the response : on the account page, or to continue an OAuth authorization ("oauthQuery",
+// signed by Better Auth, which then tells where to go next)
+export async function signIn(c: AppContext, rawUsername: string, password: string, oauthQuery?: string): Promise<SignIn> {
+  const { tr, clientIp } = c.var;
+  const username = rawUsername.trim().toLowerCase();
+
+  if (!username) return { refusal: tr('e_log_nouser'), status: 400 };
+  if (!password) return { refusal: tr('e_log_nopass'), status: 400 };
+  if (!findUser(username)) return { refusal: tr('e_unsu', username), status: 401 };
+  if (isBlocked(clientIp, username)) return { refusal: tr('e_too_many'), status: 429 };
 
   try {
-    const { headers } = await auth.api.signInUsername({ body: { username, password }, headers: c.req.raw.headers, returnHeaders: true });
+    const body = oauthQuery ? { username, password, oauth_query: oauthQuery } : { username, password };
+    const { headers, response } = await auth.api.signInUsername({ body, headers: c.req.raw.headers, returnHeaders: true });
     clearFailures(clientIp, username);
     setCookies(c, headers.getSetCookie());
-    return c.json({ username });
+    const next = (response as { redirect?: boolean; url?: string }).url;
+    return { refusal: null, ...(next ? { redirect: next } : {}) };
   } catch (error) {
-    if (!(error instanceof APIError)) throw error;
+    // only a refused password counts against the account : not an OAuth query Better Auth did not sign
+    if (!(error instanceof APIError) || error.status !== 'UNAUTHORIZED') throw error;
     recordFailure(clientIp, username);
-    return refused(c, tr('e_log_wrongpass'), 401);
+    return { refusal: tr('e_log_wrongpass'), status: 401 };
   }
+}
+
+async function login(c: AppContext): Promise<Response> {
+  const fields = await fieldsOf(c);
+  const result = await signIn(c, textOf(fields.username), textOf(fields.password));
+  if (result.refusal !== null) return refused(c, result.refusal, result.status);
+  return c.json({ username: textOf(fields.username).trim().toLowerCase() });
 }
 
 function randomColor(): string {

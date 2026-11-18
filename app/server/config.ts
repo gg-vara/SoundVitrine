@@ -33,6 +33,10 @@ export const STATE_FOLDER_PATH = resolve(process.env.SOUNDVITRINE_STATE_PATH ?? 
 
 export const PORT = Number(process.env.PORT ?? 80);
 
+// where visitors reach SoundVitrine, without a trailing slash : OAuth's redirections are built from it, and requests from another
+// origin are refused (Better Auth)
+export const PUBLIC_URL = (process.env.SOUNDVITRINE_PUBLIC_URL ?? `http://localhost:${PORT}`).replace(/\/+$/, '');
+
 // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
 export const TRUST_PROXY = process.env.SOUNDVITRINE_TRUST_PROXY === '1';
 
