@@ -31,6 +31,7 @@
     "@biomejs/biome": "^2.6.4",
     "@playwright/test": "^1.65.0",
     "@scalar/api-reference": "^1.76.4",
+    "@solidjs/vite-plugin": "^3.0.1",
     "@solidjs/web": "^2.0.1",
     "@tailwindcss/vite": "^4.3.4",
     "@types/bun": "^1.4.4",
@@ -40,7 +41,6 @@
     "tailwindcss": "^4.3.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
-    "vite-plugin-solid": "^3.0.0-next.27",
     "xstate": "^5.33.3"
   }
 }

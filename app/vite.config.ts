@@ -4,10 +4,10 @@
 // Scripts and styles of the browser, from client/ to client/dist/. The pages stay rendered by the server (server/pages) : no index.html
 import { readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import solid from '@solidjs/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import type { Plugin, Rollup } from 'vite';
 import { defineConfig } from 'vite';
-import solid from 'vite-plugin-solid';
 
 const app = import.meta.dirname;
 const client = join(app, 'client');
