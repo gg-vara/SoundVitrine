@@ -4,91 +4,11 @@
 // An application logging in through the browser (OAuth's authorization code, with PKCE), as SoundBuddy does : its pages, then its tokens
 
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { handle } from '../app';
-import { auth, SOUNDBUDDY_CLIENT_ID } from '../auth/auth';
+import { SOUNDBUDDY_CLIENT_ID } from '../auth/auth';
 import { base, prepareTestUser } from './helpers';
-
-const PASSWORD = 'password1';
-// a native application's loopback address : any port
-const REDIRECT_URI = 'http://127.0.0.1:43210/callback';
-const SCOPE = 'library:write shout:write offline_access';
-
-// what a browser sends with a form
-const formPost = (path: string, fields: Record<string, string>, cookie = '') =>
-  handle(
-    new Request(`${base}${path}`, {
-      method: 'POST',
-      body: new URLSearchParams(fields),
-      headers: { 'content-type': 'application/x-www-form-urlencoded', origin: base, cookie, 'accept-language': 'en' },
-    }),
-  );
-
-const cookieOf = (response: Response) =>
-  response.headers
-    .getSetCookie()
-    .map(cookie => cookie.split(';')[0])
-    .join('; ');
-
-// what SoundBuddy starts with : its PKCE verifier, and the address it opens in the browser
-function authorization(redirectUri = REDIRECT_URI) {
-  const verifier = randomBytes(32).toString('base64url');
-  const query = new URLSearchParams({
-    response_type: 'code',
-    client_id: SOUNDBUDDY_CLIENT_ID,
-    redirect_uri: redirectUri,
-    scope: SCOPE,
-    state: 'some-state',
-    code_challenge: createHash('sha256').update(verifier).digest('base64url'),
-    code_challenge_method: 'S256',
-  });
-  return { verifier, url: `${base}/api/auth/oauth2/authorize?${query}` };
-}
-
-const tokenRequest = (fields: Record<string, string>) =>
-  handle(
-    new Request(`${base}/api/auth/oauth2/token`, {
-      method: 'POST',
-      body: new URLSearchParams({ client_id: SOUNDBUDDY_CLIENT_ID, ...fields }),
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    }),
-  );
-
-// a user of their own : the consent given is remembered, and the next authorization would skip its page
-let users = 0;
-async function newUser(): Promise<string> {
-  users += 1;
-  const username = `oauthflow${users}`;
-  await auth.api.signUpEmail({ body: { name: username, username, password: PASSWORD, email: `${username}@example.com` } });
-  return username;
-}
-
-// from the start in the browser to the code SoundBuddy receives : "accept" the user's answer
-async function browserFlow(accept = true, username?: string) {
-  const user = username ?? (await newUser());
-  const { verifier, url } = authorization();
-
-  const authorize = await handle(new Request(url));
-  const loginUrl = new URL(authorize.headers.get('location') ?? '', base);
-  const oauthQuery = loginUrl.search.slice(1);
-
-  const login = await formPost('/oauth/login', { username: user, password: PASSWORD, oauth_query: oauthQuery });
-  const cookie = cookieOf(login);
-  const consentUrl = new URL(login.headers.get('location') ?? '', base);
-
-  const consent = await formPost('/oauth/consent', { accept: String(accept), oauth_query: consentUrl.search.slice(1) }, cookie);
-  return {
-    user,
-    verifier,
-    authorize,
-    loginUrl,
-    login,
-    cookie,
-    consentUrl,
-    consent,
-    back: new URL(consent.headers.get('location') ?? 'about:blank'),
-  };
-}
+import { authorization, browserFlow, formPost, newUser, PASSWORD, REDIRECT_URI, SCOPE, tokenRequest } from './oauth-helpers';
 
 beforeAll(prepareTestUser);
 
@@ -173,13 +93,24 @@ describe('logging in through the browser', () => {
     expect(response.headers.has('location')).toBe(false);
   });
 
-  test('logging out in the browser does not disconnect the application : it keeps refreshing its tokens', async () => {
-    const { back, verifier, cookie } = await browserFlow();
+  test('logging out in the browser does not disconnect the application : its new tokens still open the API', async () => {
+    const { user, back, verifier, cookie } = await browserFlow();
     const code = back.searchParams.get('code') ?? '';
     const response = await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: REDIRECT_URI, code_verifier: verifier });
     const { refresh_token } = (await response.json()) as { refresh_token: string };
 
     await handle(new Request(`${base}/account/disconnect`, { method: 'POST', headers: { cookie, origin: base } }));
-    expect((await tokenRequest({ grant_type: 'refresh_token', refresh_token })).status).toBe(200);
+
+    // refreshed twice, as days go by, and used : not only refreshed
+    let token = refresh_token;
+    for (let round = 0; round < 2; round++) {
+      const refreshed = await tokenRequest({ grant_type: 'refresh_token', refresh_token: token });
+      expect(refreshed.status).toBe(200);
+      const next = (await refreshed.json()) as { access_token: string; refresh_token: string };
+      const me = await handle(new Request(`${base}/api/v1/me`, { headers: { Authorization: `Bearer ${next.access_token}` } }));
+      expect(me.status).toBe(200);
+      expect(((await me.json()) as { username: string }).username).toBe(user);
+      token = next.refresh_token;
+    }
   });
 });

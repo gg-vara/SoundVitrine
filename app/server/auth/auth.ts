@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Accounts and sessions, by Better Auth : hashed passwords, sessions kept in the database. And OAuth (its oauth-provider plugin) :
-// applications log in through the browser, with PKCE, and get tokens the API checks (server/auth/access.ts).
+// applications log in through the browser, with PKCE, and get access tokens for /api/v1 as JWTs, which it verifies itself
+// (server/auth/access.ts). They do not depend on the browser's session : logging out of the site leaves the applications connected.
 // Of its HTTP routes, only OAuth's are exposed (server/app.ts) : the forms of the pages call it directly, so its rules cannot be gone around
 
 import { randomBytes } from 'node:crypto';
@@ -10,8 +11,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { betterAuth } from 'better-auth';
-import { symmetricDecrypt, symmetricEncrypt } from 'better-auth/crypto';
 import { getMigrations } from 'better-auth/db/migration';
+import { jwt } from 'better-auth/plugins/jwt';
 import { username } from 'better-auth/plugins/username';
 import { APP_NAME, COMPANION_APP_NAME, ENFORCE_CANONICAL_HTTP_SCHEME, PUBLIC_URL, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
@@ -29,8 +30,10 @@ function loadSecret(): string {
 // the applications, known in advance : SoundBuddy and the API's reference log in through the browser, without a secret (public clients)
 export const SOUNDBUDDY_CLIENT_ID = 'soundbuddy';
 export const API_DOCS_CLIENT_ID = 'api-docs';
-// the API itself, which asks the provider about the tokens it is given (introspection, only answered to a client with a secret)
-export const API_CLIENT_ID = 'soundvitrine-api';
+// what the access tokens are for : their audience, which applications name as the resource they ask for (RFC 8707)
+export const API_RESOURCE = `${PUBLIC_URL}/api/v1`;
+// short-lived : revoking an application's login stops its refresh token, while the access token it holds lasts until then
+const ACCESS_TOKEN_SECONDS = 10 * 60;
 
 export const auth = betterAuth({
   appName: APP_NAME,
@@ -39,6 +42,8 @@ export const auth = betterAuth({
   baseURL: PUBLIC_URL,
   logger: { level: 'error' },
   telemetry: { enabled: false },
+  // the JWT plugin's own route : access tokens come from OAuth's
+  disabledPaths: ['/token'],
   emailAndPassword: { enabled: true, minPasswordLength: 8, maxPasswordLength: 128 },
   session: { expiresIn: 60 * 60 * 24 * 30 },
   // HTTPS comes from the proxy in front of the server, which it cannot see
@@ -54,14 +59,17 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    // signs the access tokens, with keys it keeps in the database
+    jwt(),
     oauthProvider({
       // pages of server/oauth.ts
       loginPage: '/oauth/login',
       consentPage: '/oauth/consent',
       scopes: [...SCOPE_NAMES],
       grantTypes: ['authorization_code', 'refresh_token'],
-      // opaque access tokens, checked against the database : revoking one takes effect at once
-      disableJwtPlugin: true,
+      resources: [{ identifier: API_RESOURCE, accessTokenTtl: ACCESS_TOKEN_SECONDS }],
+      // every application known in advance may ask for the API
+      enforcePerClientResources: false,
     }),
     username({
       minUsernameLength: 6,
@@ -80,7 +88,7 @@ export async function prepareAuth() {
 
 // a client is otherwise created by a logged-in user, who owns it : these belong to no one
 async function ensureClients() {
-  const { adapter, secretConfig } = await auth.$context;
+  const { adapter } = await auth.$context;
   const common = { responseTypes: ['code'], disabled: false, skipConsent: false, createdAt: new Date(), updatedAt: new Date() };
   const clients = [
     {
@@ -105,18 +113,6 @@ async function ensureClients() {
       scopes: [...SCOPE_NAMES],
       requirePKCE: true,
     },
-    {
-      clientId: API_CLIENT_ID,
-      name: `${APP_NAME} API`,
-      redirectUris: [],
-      tokenEndpointAuthMethod: 'client_secret_post',
-      applicationType: 'web',
-      grantTypes: ['client_credentials'],
-      scopes: [],
-      requirePKCE: false,
-      // encrypted with the server's key, as the plugin stores secrets without its JWT plugin
-      clientSecret: await symmetricEncrypt({ key: secretConfig, data: randomBytes(32).toString('base64url') }),
-    },
   ];
 
   for (const client of clients) {
@@ -129,19 +125,4 @@ async function ensureClients() {
       await adapter.update({ model: 'oauthClient', where, update: { redirectUris: client.redirectUris, updatedAt: new Date() } });
     }
   }
-}
-
-// the secret of the API's own client, to introspect tokens
-let apiSecret: Promise<string> | undefined;
-export function apiClientSecret(): Promise<string> {
-  apiSecret ??= (async () => {
-    const { adapter, secretConfig } = await auth.$context;
-    const client = await adapter.findOne<{ clientSecret: string }>({
-      model: 'oauthClient',
-      where: [{ field: 'clientId', value: API_CLIENT_ID }],
-    });
-    if (!client) throw new Error('The API has no OAuth client : prepareAuth() was not run');
-    return symmetricDecrypt({ key: secretConfig, data: client.clientSecret });
-  })();
-  return apiSecret;
 }

@@ -9,7 +9,6 @@ import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { APP_NAME, APP_VERSION, COMPANION_APP_NAME } from '../config';
 import type { ApiContext } from './base';
-import { revokeRoute, tokenRoute } from './oauth';
 import { shoutsRoute } from './shouts';
 import { checkCredentialsRoute, uploadMusicLibraryRoute, uploadShoutRoute } from './soundbuddy';
 import { meRoute, postShoutRoute, putLibraryRoute, securitySchemes } from './v1';
@@ -19,8 +18,6 @@ const router = {
   uploadMusicLibrary: uploadMusicLibraryRoute,
   uploadShout: uploadShoutRoute,
   shouts: shoutsRoute,
-  token: tokenRoute,
-  revoke: revokeRoute,
   me: meRoute,
   putLibrary: putLibraryRoute,
   postShout: postShoutRoute,

@@ -35,6 +35,11 @@ function asUser(row: UserRow): User {
   };
 }
 
+// the username of a user, by the identifier Better Auth gives it
+export function usernameOfId(id: string): string | undefined {
+  return database.query<{ username: string }, [string]>('SELECT username FROM user WHERE id = ?').get(id)?.username;
+}
+
 function findRow(username: string): UserRow | null {
   return database.query<UserRow, [string]>(`${selectUser} WHERE username = ?`).get(username);
 }

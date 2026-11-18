@@ -5,9 +5,10 @@
 
 import { ORPCError } from '@orpc/server';
 import { z } from 'zod';
-import type { Scope } from '../auth/tokens';
-import { authenticate, SCOPES } from '../auth/tokens';
-import { userExists } from '../auth/users';
+import { accessOf } from '../auth/access';
+import { API_DOCS_CLIENT_ID, API_RESOURCE } from '../auth/auth';
+import type { Scope } from '../auth/scopes';
+import { SCOPES } from '../auth/scopes';
 import { base } from './base';
 import { storeLibrary, storeShout } from './uploads';
 
@@ -15,10 +16,9 @@ const SECURITY = 'oauth';
 
 const authorization = z.object({ authorization: z.string().optional().describe('Bearer <access token>') });
 
-function userAllowedTo(scope: Scope | null, header: string | undefined) {
-  const token = /^Bearer (\S+)$/i.exec(header ?? '')?.[1];
-  const caller = token ? authenticate(token) : null;
-  if (!caller || !userExists(caller.username)) throw new ORPCError('UNAUTHORIZED', { message: 'Missing, unknown or expired access token' });
+async function userAllowedTo(scope: Scope | null, header: string | undefined) {
+  const caller = await accessOf(header);
+  if (!caller) throw new ORPCError('UNAUTHORIZED', { message: 'Missing, unknown or expired access token' });
   if (scope && !caller.scopes.includes(scope)) throw new ORPCError('FORBIDDEN', { message: `This token does not allow ${scope}` });
   return caller;
 }
@@ -50,7 +50,7 @@ export const putLibraryRoute = base
   .input(z.object({ headers: authorization, body: z.object({ file: z.file().describe('the library') }) }))
   .output(z.object({ changed: z.boolean().describe('false when identical to the current library') }))
   .handler(async ({ input: { headers, body }, context: { tr } }) => {
-    const { username } = userAllowedTo('library:write', headers.authorization);
+    const { username } = await userAllowedTo('library:write', headers.authorization);
     const stored = await storeLibrary(username, body.file);
     if (stored === 'invalid') throw new ORPCError('UNPROCESSABLE_CONTENT', { status: 422, message: tr('e_ucJSON') });
     return { changed: stored === 'stored' };
@@ -68,23 +68,26 @@ export const postShoutRoute = base
   })
   .input(z.object({ headers: authorization, body: z.record(z.string(), z.unknown()).describe('see the Shout schema') }))
   .output(z.object({ sent: z.boolean().describe('whether it went out live') }))
-  .handler(({ input: { headers, body } }) => {
-    const { username } = userAllowedTo('shout:write', headers.authorization);
+  .handler(async ({ input: { headers, body } }) => {
+    const { username } = await userAllowedTo('shout:write', headers.authorization);
     return { sent: storeShout(username, JSON.stringify(body)) };
   });
 
-// how the API's reference tells to get a token
+// how the API's reference gets a token : through the browser, as an application does (Better Auth's OAuth provider, server/auth/auth.ts)
 export const securitySchemes = {
   [SECURITY]: {
     type: 'oauth2' as const,
     flows: {
-      password: {
-        tokenUrl: '/oauth/token',
-        refreshUrl: '/oauth/token',
+      authorizationCode: {
+        authorizationUrl: '/api/auth/oauth2/authorize',
+        tokenUrl: '/api/auth/oauth2/token',
+        refreshUrl: '/api/auth/oauth2/token',
         scopes: SCOPES,
-        // what Scalar fills in, as it would send its client in a header
-        'x-scalar-client-id': 'api-docs',
-        'x-scalar-credentials-location': 'body',
+        'x-scalar-client-id': API_DOCS_CLIENT_ID,
+        'x-usePkce': 'SHA-256',
+        // tokens are for the API, as an application asks (RFC 8707)
+        'x-scalar-security-query': { resource: API_RESOURCE },
+        'x-scalar-security-body': { resource: API_RESOURCE },
       },
     },
   },
