@@ -14,13 +14,21 @@ import { betterAuth } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
 import { jwt } from 'better-auth/plugins/jwt';
 import { username } from 'better-auth/plugins/username';
-import { APP_NAME, COMPANION_APP_NAME, ENFORCE_CANONICAL_HTTP_SCHEME, PUBLIC_URL, STATE_FOLDER_PATH } from '../config';
+import {
+  APP_NAME,
+  COMPANION_APP_NAME,
+  ENFORCE_CANONICAL_HTTP_SCHEME,
+  IS_PRODUCTION,
+  PUBLIC_URL,
+  SESSION_SECRET,
+  STATE_FOLDER_PATH,
+} from '../config';
 import { database } from '../db';
 import { SCOPE_NAMES } from './scopes';
 
 // the signing key : SOUNDVITRINE_SESSION_SECRET, else one generated once, kept in the state folder
 function loadSecret(): string {
-  if (process.env.SOUNDVITRINE_SESSION_SECRET) return process.env.SOUNDVITRINE_SESSION_SECRET;
+  if (SESSION_SECRET) return SESSION_SECRET;
 
   const path = join(STATE_FOLDER_PATH, 'session.key');
   if (!existsSync(path)) writeFileSync(path, randomBytes(32).toString('base64'), { mode: 0o600 });
@@ -48,7 +56,7 @@ export const auth = betterAuth({
   session: { expiresIn: 60 * 60 * 24 * 30 },
   // HTTPS comes from the proxy in front of the server, which it cannot see
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === 'production' && !ENFORCE_CANONICAL_HTTP_SCHEME,
+    useSecureCookies: IS_PRODUCTION && !ENFORCE_CANONICAL_HTTP_SCHEME,
     // prepareAuth() brings the tables up to date at each start, right after this first check would complain
     database: { validateSchema: false },
   },
