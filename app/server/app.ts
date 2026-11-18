@@ -13,7 +13,7 @@ import { auth, prepareAuth } from './auth/auth';
 import { chosenLang, langCookie, readSession } from './auth/session';
 import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
-import { MUSIC_LIB_UPLOAD_FILE_NAME, PUBLIC_URL, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import { CLIENT_IP_HEADER, MUSIC_LIB_UPLOAD_FILE_NAME, PUBLIC_URL, STATE_FOLDER_PATH } from './config';
 import type { AppContext, Env } from './env';
 import { plain, setCookies } from './env';
 import type { Lang } from './i18n/i18n';
@@ -69,10 +69,11 @@ async function libraryRoute(c: AppContext, userPart: string | undefined, action:
   return c.render(libraryPage(context, user));
 }
 
-// who calls : "peerAddress" is the direct connection, which is the proxy when there is one
-function clientIpOf(request: Request, peerAddress: string | undefined): string {
-  const forwarded = TRUST_PROXY ? request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() : undefined;
-  return forwarded || peerAddress || 'unknown';
+// who calls : "peerAddress" is the direct connection, which is the proxy when there is one, "header" what gives the client's
+// address then. Its last entry : the one the nearest proxy wrote, when it appends to a list (X-Forwarded-For)
+export function clientIpOf(request: Request, peerAddress: string | undefined, header = CLIENT_IP_HEADER): string {
+  const given = header ? request.headers.get(header)?.split(',').pop()?.trim() : undefined;
+  return given || peerAddress || 'unknown';
 }
 
 // the path's parts after its first one : /u/curator/uploadMusicLibrary gives curator, uploadMusicLibrary

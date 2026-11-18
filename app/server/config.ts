@@ -26,10 +26,6 @@ export const DEFAULT_BACKGROUND_COLORS = ['#EE7752', '#E73C7E', '#23A6D5', '#23D
 
 // the environment, checked once at startup : a wrong value stops the server with what is wrong, rather than one that seems to
 // work. Empty values count as unset, as compose files give them when a variable they use is missing
-const flag = z
-  .enum(['0', '1'])
-  .optional()
-  .transform(value => value === '1');
 const environment = z
   .object({
     NODE_ENV: z.string().optional(),
@@ -42,8 +38,18 @@ const environment = z
     SOUNDVITRINE_PUBLIC_URL: z.url({ protocol: /^https?$/ }).optional(),
     // signs the sessions : else one is generated once, kept in the state folder (server/auth/auth.ts)
     SOUNDVITRINE_SESSION_SECRET: z.string().optional(),
-    // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
-    SOUNDVITRINE_TRUST_PROXY: flag,
+    // the header giving the client's address (to limit password guessing by client), set by what is in front of the server :
+    // cf-connecting-ip behind Cloudflare, x-forwarded-for behind a proxy alone. Unset, the direct connection. Only to name when
+    // nothing else can reach the server, as anyone could write it
+    SOUNDVITRINE_CLIENT_IP_HEADER: z
+      .string()
+      .regex(/^[A-Za-z0-9-]+$/, 'a header name, like cf-connecting-ip')
+      .transform(name => name.toLowerCase())
+      .optional(),
+    // replaced by SOUNDVITRINE_CLIENT_IP_HEADER : refused rather than ignored, which would quietly count every visitor as the proxy
+    SOUNDVITRINE_TRUST_PROXY: z
+      .never({ error: 'replaced by SOUNDVITRINE_CLIENT_IP_HEADER (cf-connecting-ip behind Cloudflare)' })
+      .optional(),
   })
   .superRefine((values, context) => {
     // in production, the default address (localhost) would make every login and upload from the real one refused
@@ -73,4 +79,4 @@ export const PUBLIC_URL = (env.SOUNDVITRINE_PUBLIC_URL ?? `http://localhost:${PO
 // visitors come in HTTPS : the proxy in front of the server gives it, which the server cannot see
 export const SERVED_IN_HTTPS = PUBLIC_URL.startsWith('https:');
 export const SESSION_SECRET = env.SOUNDVITRINE_SESSION_SECRET;
-export const TRUST_PROXY = env.SOUNDVITRINE_TRUST_PROXY;
+export const CLIENT_IP_HEADER = env.SOUNDVITRINE_CLIENT_IP_HEADER;
