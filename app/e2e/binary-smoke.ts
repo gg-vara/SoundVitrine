@@ -162,17 +162,6 @@ try {
   }
   stopReading.abort();
   check('a shout reaches a visitor live', received.includes('Metallica'));
-
-  // released SoundBuddy versions
-  const credentials = new FormData();
-  credentials.set('username', username);
-  credentials.set('password', password);
-  const heartbeat = await get('/hb/creds', {
-    method: 'POST',
-    body: credentials,
-    headers: { 'X-Client-Id': 'SoundBuddy', 'X-Client-Version': '0.11.0' },
-  });
-  check("released SoundBuddy versions' heartbeat", heartbeat.status === 200);
 } catch (error) {
   failures++;
   console.log(`FAIL ${(error as Error).message}`);

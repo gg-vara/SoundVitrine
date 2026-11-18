@@ -50,7 +50,7 @@ describe('API reference', () => {
     requestBody?: { content: Record<string, unknown> };
   }
 
-  test('the OpenAPI document describes what SoundBuddy calls', async () => {
+  test('the OpenAPI document describes what applications call', async () => {
     const document = (await (await handle(new Request(`${base}/api/openapi.json`))).json()) as {
       openapi: string;
       paths: Record<string, Record<string, Operation>>;
@@ -58,9 +58,10 @@ describe('API reference', () => {
     expect(document.openapi).toStartWith('3.');
 
     const { paths } = document;
-    expect(paths['/hb/creds']?.post?.responses['403']?.content?.['text/plain']).toBeDefined();
-    expect(paths['/u/{user}/uploadMusicLibrary']?.post?.requestBody?.content['multipart/form-data']).toBeDefined();
-    expect(paths['/u/{user}/uploadShout']?.post?.responses['520']).toBeDefined();
+    expect(paths['/api/v1/me/library']?.put?.requestBody?.content['multipart/form-data']).toBeDefined();
+    expect(paths['/api/v1/me/shouts']?.post).toBeDefined();
+    // where the password was sent each time, before applications logged in through the browser
+    expect(paths['/hb/creds']).toBeUndefined();
     expect(paths['/u/{user}/shouts']?.get?.responses['200']?.content?.['text/event-stream']).toBeDefined();
   });
 

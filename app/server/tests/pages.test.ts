@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { handle } from '../app';
 import { STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
-import { base, createUser, library, PASSWORD, prepareTestLibrary, soundBuddyHeaders, USER } from './helpers';
+import { base, createUser, library, PASSWORD, prepareTestLibrary, USER } from './helpers';
 
 beforeAll(prepareTestLibrary);
 
@@ -63,7 +63,6 @@ describe('pages', () => {
   test('login, then who is logged', async () => {
     const refused = await accountPost('/account/login', { username: USER, password: 'wrong' });
     expect(refused.status).toBe(401);
-    // nothing is being uploaded here, unlike where the same check serves SoundBuddy
     expect(await refused.json()).toEqual({ error: 'Wrong password.' });
 
     const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
@@ -141,19 +140,6 @@ describe('pages', () => {
     expect((await post(PASSWORD, '10.0.0.1')).status).toBe(429);
 
     expect((await post(PASSWORD, '10.0.0.2')).status).toBe(200);
-  });
-
-  test('SoundBuddy gets a 429 when blocked, which does not make it give up', async () => {
-    await createUser('guessed2');
-    const check = (password: string) => {
-      const body = new FormData();
-      body.set('username', 'guessed2');
-      body.set('password', password);
-      return handle(new Request(`${base}/hb/creds`, { method: 'POST', body, headers: soundBuddyHeaders }), '10.0.0.3');
-    };
-
-    for (let i = 0; i < 10; i++) expect((await check('wrong')).status).toBe(403);
-    expect((await check(PASSWORD)).status).toBe(429);
   });
 
   test('an email cannot serve two accounts', async () => {

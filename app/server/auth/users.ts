@@ -7,9 +7,6 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_BACKGROUND_COLORS, STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
-import type { Translator } from '../i18n/i18n';
-import { auth } from './auth';
-import { clearFailures, isBlocked, recordFailure } from './rate-limit';
 
 // what may be shown of a user
 export interface User {
@@ -81,42 +78,4 @@ export function ensureUserFolders() {
 // set up properly : in the database, with its folder
 export function userExists(username: string): boolean {
   return findRow(username) !== null && existsSync(userFolder(username));
-}
-
-//
-// Passwords, as SoundBuddy sends them with each of its calls
-//
-
-async function isPasswordOf(username: string, password: string): Promise<boolean> {
-  const row = findRow(username);
-  if (!row) return false;
-
-  const context = await auth.$context;
-  const hash = (await context.internalAdapter.findCredentialAccount(row.id))?.password;
-  return hash ? context.password.verify({ hash, password }) : false;
-}
-
-export interface CredentialsCheck {
-  // why the credentials are refused, if so
-  refusal: string | null;
-  // too many failures of this client : the password was not even looked at
-  blocked: boolean;
-}
-
-// "clientIp" being the origin of the call, for the failures it may accumulate (see rate-limit.ts)
-export async function checkCredentials(username: string, password: string, clientIp: string, tr: Translator): Promise<CredentialsCheck> {
-  const refused = (refusal: string, blocked = false) => ({ refusal, blocked });
-
-  if (!username) return refused(tr('e_log_nouser'));
-  if (!password) return refused(tr('e_nopass'));
-  if (!findRow(username)) return refused(tr('e_unsu', username));
-  if (isBlocked(clientIp, username)) return refused(tr('e_too_many'), true);
-
-  if (!(await isPasswordOf(username, password))) {
-    recordFailure(clientIp, username);
-    return refused(tr('e_pmm'));
-  }
-
-  clearFailures(clientIp, username);
-  return { refusal: null, blocked: false };
 }

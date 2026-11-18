@@ -4,8 +4,12 @@
 // What OAuth opens (/api/v1), with the tokens an application gets through the browser
 
 import { beforeAll, describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { deflateSync } from 'node:zlib';
 import { handle } from '../app';
 import { auth } from '../auth/auth';
+import { ensureUserFolders, userFolder } from '../auth/users';
 import { latestShout } from '../db';
 import { base, prepareTestUser } from './helpers';
 import { tokenRequest, tokensFor } from './oauth-helpers';
@@ -14,9 +18,9 @@ const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
 
 const me = (token: string) => handle(new Request(`${base}/api/v1/me`, { headers: bearer(token) }));
 
-function putLibrary(token: string, content: string) {
+function putLibrary(token: string, content: string | Uint8Array) {
   const body = new FormData();
-  body.set('file', new File([content], 'library.json'));
+  body.set('file', new File([typeof content === 'string' ? content : new Uint8Array(content)], 'library.json'));
   return handle(new Request(`${base}/api/v1/me/library`, { method: 'PUT', body, headers: bearer(token) }));
 }
 
@@ -57,6 +61,16 @@ describe('/api/v1', () => {
     expect((await handle(new Request(`${base}/u/${user}`))).headers.get('content-type')).toStartWith('text/html');
   });
 
+  test('a compressed library is stored decompressed, and compiled', async () => {
+    const { user, access_token } = await tokensFor();
+    const library = JSON.stringify([{ Name: 'Two', Album: 'Second', 'Album Artist': 'Packed', Genre: 'Jazz', Year: 1959 }]);
+
+    expect((await putLibrary(access_token, deflateSync(library))).status).toBe(200);
+    expect(readFileSync(join(userFolder(user), 'current.json'), 'utf8')).toBe(library);
+    const served = await handle(new Request(`${base}/data/users/${user}/unified.json`));
+    expect(((await served.json()) as { artists: Record<string, unknown> }).artists.Packed).toBeDefined();
+  });
+
   test('refuses what is no library', async () => {
     const { access_token } = await tokensFor();
     const response = await putLibrary(access_token, 'not json');
@@ -69,6 +83,36 @@ describe('/api/v1', () => {
     const shout = { date: new Date().toISOString(), artist: 'Artist', album: 'Album', name: 'Track' };
     expect(await (await postShout(access_token, shout)).json()).toEqual({ sent: true });
     expect(JSON.parse(latestShout(user) ?? '{}').name).toBe('Track');
+  });
+
+  test('a shout reaches the visitors of the library page live, as server-sent events', async () => {
+    const { user, access_token } = await tokensFor();
+    // its library page exists : the folders of the users are made as the server starts
+    ensureUserFolders();
+    const played = { date: '2026-11-04T10:00:00Z', name: 'One', album: 'First', artist: 'Artist', playerState: true, md5: 'abc' };
+    const abort = new AbortController();
+    const stream = await handle(new Request(`${base}/u/${user}/shouts`, { signal: abort.signal }));
+    expect(stream.headers.get('content-type')).toStartWith('text/event-stream');
+    const reader = (stream.body as ReadableStream<Uint8Array>).getReader();
+
+    // the stream subscribes as it is first read : its opening comment
+    await reader.read();
+
+    const posting = postShout(access_token, played);
+    let received = '';
+    while (!received.includes('data:') || !received.endsWith('\n\n')) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      received += new TextDecoder().decode(value);
+    }
+
+    expect((await posting).status).toBe(200);
+    expect(received).toContain('event: message');
+    expect(JSON.parse(received.split('data: ')[1]?.split('\n')[0] ?? '')).toEqual(played);
+    abort.abort();
+    await reader.cancel();
+
+    expect(await (await handle(new Request(`${base}/data/users/${user}/shout.json`))).json()).toEqual(played);
   });
 
   test('keeps to the scopes the user granted', async () => {

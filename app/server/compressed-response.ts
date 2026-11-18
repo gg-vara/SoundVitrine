@@ -3,8 +3,7 @@
 
 // Compressing what is sent to browsers : a proxy may do it too, but no installation should need one
 
-// not what is compressed already, nor text/event-stream, whose shouts must not wait in a buffer, nor text/plain : the replies
-// SoundBuddy reads stay as they are
+// not what is compressed already, nor text/event-stream, whose shouts must not wait in a buffer, nor short plain texts
 const COMPRESSIBLE = /^(text\/(html|css|javascript)|application\/(json|javascript|manifest\+json)|image\/svg\+xml)\b/;
 
 // a smaller file would not gain from it

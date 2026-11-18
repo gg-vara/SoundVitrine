@@ -60,8 +60,6 @@ async function libraryRoute(c: AppContext, userPart: string | undefined, action:
   const user = (userPart ?? '').toLowerCase();
   if (!userExists(user)) return plain(c, context.tr('e_unsu', user));
 
-  if (action === 'uploadShout') return plain(c, 'expects API call', 500);
-
   // the upload form of a user without library posts its file here
   if (!action && c.req.method === 'POST' && c.req.header('content-type')?.startsWith('multipart/form-data')) return uploadRoute(c, user);
 
@@ -77,7 +75,7 @@ function clientIpOf(request: Request, peerAddress: string | undefined): string {
   return forwarded || peerAddress || 'unknown';
 }
 
-// the path's parts after its first one : /u/curator/uploadShout gives curator, uploadShout
+// the path's parts after its first one : /u/curator/uploadMusicLibrary gives curator, uploadMusicLibrary
 function partsOf(path: string): (string | undefined)[] {
   return path.split('/').filter(Boolean).slice(1);
 }

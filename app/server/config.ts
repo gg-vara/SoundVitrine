@@ -12,12 +12,8 @@ export const CREATOR_EMAIL = 'guillaume.vara@gmail.com';
 export const COMPANION_APP_NAME = 'SoundBuddy';
 export const COMPANION_APP_GITHUB_LATEST_RELEASE_URL = 'https://github.com/gg-vara/SoundBuddy/releases/latest';
 
-// multipart field names of the files the companion app uploads
+// the field of the upload form's file
 export const MUSIC_LIB_UPLOAD_FILE_NAME = `${APP_NAME}_file`;
-export const SHOUT_UPLOAD_FILE_NAME = 'shout_file';
-
-// content type SoundBuddy gives a compressed library upload : informative, as uploads are told from their content
-export const COMPRESSED_LIBRARY_CONTENT_TYPE = 'application/octet-stream';
 
 // files of a user's folder
 export const MUSIC_LIB_PROFILE_FILE_NAME = 'current.json';
