@@ -37,11 +37,12 @@ jobs:
         working-directory: app
         run: |
           bun install --frozen-lockfile
+          # the server imports what it lists (server/embedded.ts)
+          bun run build
           bun x --bun tsc --noEmit
           bun x --bun tsc --noEmit -p client
           bun x biome ci .
           bun test
-          bun run build
 
       - name: Extract appVersion from package.json
         id: data-from-package
