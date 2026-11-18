@@ -2,6 +2,14 @@
 
 Each section becomes the notes of its GitHub release. Versions are shared with [SoundBuddy](https://github.com/gg-vara/SoundBuddy) from 0.13.0 on. Before that, see the tags.
 
+## 0.14.3
+
+Nothing changes for visitors, nor for SoundBuddy : the API's description is the same.
+
+### Changed
+
+- The pages' code runs on Solid 2.0, its stable release, rather than its release candidate
+
 ## 0.14.2
 
 Nothing changes for SoundBuddy : the API's description is the same. Numbered as SoundBuddy 0.14.2, which it pairs with.

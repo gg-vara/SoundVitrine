@@ -1,6 +1,6 @@
 {
   "name": "soundvitrine",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "description": "SoundVitrine is an hosted iTunes Library portal for the web. Used alongside SoundBuddy, you can broadcast to visitors what you are listening to, and what music you currently have on your computer !",
   "private": true,
   "type": "module",
@@ -31,16 +31,16 @@
     "@biomejs/biome": "^2.6.4",
     "@playwright/test": "^1.65.0",
     "@scalar/api-reference": "^1.76.4",
-    "@solidjs/web": "^2.0.0-rc.20",
+    "@solidjs/vite-plugin": "^3.0.1",
+    "@solidjs/web": "^2.0.1",
     "@tailwindcss/vite": "^4.3.4",
     "@types/bun": "^1.4.4",
     "chart.js": "^4.6.1",
     "motion": "^14.9.1",
-    "solid-js": "^2.0.0-rc.20",
+    "solid-js": "^2.0.1",
     "tailwindcss": "^4.3.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
-    "vite-plugin-solid": "^3.0.0-next.27",
     "xstate": "^5.33.3"
   }
 }
