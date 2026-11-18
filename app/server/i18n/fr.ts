@@ -95,4 +95,5 @@ export const fr = {
   oauth_scope_offline: "rester connecté, jusqu'à ce que vous le déconnectiez",
   oauth_unknown_client: "Cette application n'est pas connue.",
   log_in: 'Se connecter',
+  upload_log_in: 'Connectez-vous en tant que %s pour téléverser cette librairie',
 } satisfies Record<keyof typeof import('./en').en, string>;

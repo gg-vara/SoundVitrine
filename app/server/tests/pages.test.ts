@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { handle } from '../app';
 import { STATE_FOLDER_PATH } from '../config';
 import { database } from '../db';
-import { base, createUser, PASSWORD, prepareTestLibrary, soundBuddyHeaders, USER } from './helpers';
+import { base, createUser, library, PASSWORD, prepareTestLibrary, soundBuddyHeaders, USER } from './helpers';
 
 beforeAll(prepareTestLibrary);
 
@@ -47,11 +47,6 @@ describe('pages', () => {
     expect(page).toContain(`"shoutStreamUrl":"/u/${USER}/shouts"`);
   });
 
-  test('a user without library gets the upload form', async () => {
-    await createUser('emptyuser');
-    expect(await (await handle(new Request(`${base}/u/emptyuser`))).text()).toContain('name="SoundVitrine_file"');
-  });
-
   const accountPost = (path: string, fields: Record<string, string> = {}, headers: Record<string, string> = {}, client?: string) =>
     handle(
       new Request(`${base}${path}`, {
@@ -74,6 +69,40 @@ describe('pages', () => {
     const logged = await accountPost('/account/login', { username: USER, password: PASSWORD });
     expect(logged.status).toBe(200);
     expect((await meOf(cookieOf(logged))).username).toBe(USER);
+  });
+
+  test('a user without library : its owner, logged in, uploads one; anyone else is asked to log in', async () => {
+    await createUser('emptyuser');
+    const page = (cookie = '') =>
+      handle(new Request(`${base}/u/emptyuser`, { headers: { cookie, 'accept-language': 'en' } })).then(r => r.text());
+    const anonymous = await page();
+    expect(anonymous).toContain('Log in as emptyuser');
+    expect(anonymous).not.toContain('name="SoundVitrine_file"');
+
+    const cookie = cookieOf(await accountPost('/account/login', { username: 'emptyuser', password: PASSWORD }));
+    const owned = await page(cookie);
+    expect(owned).toContain('name="SoundVitrine_file"');
+    expect(owned).not.toContain('type="password"');
+
+    const post = (content: string, headers: Record<string, string>) => {
+      const form = new FormData();
+      form.set('SoundVitrine_file', new File([content], 'library.json', { type: 'application/json' }));
+      return handle(
+        new Request(`${base}/u/emptyuser`, { method: 'POST', body: form, headers: { origin: base, 'accept-language': 'en', ...headers } }),
+      );
+    };
+    // not without its session, nor from another site carrying it
+    expect((await post(library, {})).status).toBe(403);
+    expect((await post(library, { cookie, origin: 'http://elsewhere.example' })).status).toBe(403);
+
+    const refused = await post('not json', { cookie });
+    expect(refused.status).toBe(400);
+    expect(await refused.text()).toContain('not JSON compliant');
+
+    const uploaded = await post(library, { cookie });
+    expect(uploaded.status).toBe(303);
+    expect(uploaded.headers.get('location')).toBe('/u/emptyuser');
+    expect(await page()).toContain('id="library"');
   });
 
   test('nobody is logged without a session, or with a tampered one', async () => {

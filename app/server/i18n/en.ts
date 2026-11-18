@@ -95,4 +95,5 @@ export const en = {
   oauth_scope_offline: 'stay connected, until you disconnect it',
   oauth_unknown_client: 'This application is not known.',
   log_in: 'Log in',
+  upload_log_in: 'Log in as %s to upload this library',
 };

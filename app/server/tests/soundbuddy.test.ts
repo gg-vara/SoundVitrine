@@ -94,22 +94,6 @@ describe('library upload', () => {
     expect(response.status).toBe(200);
     expect(await response.text()).not.toBe('Bon appétit!');
   });
-
-  test('browser form : back to the library, and its errors are shown in a 200', async () => {
-    const form = new FormData();
-    form.set('SoundVitrine_file', new File(['[]'], 'library.json', { type: 'application/json' }));
-    form.set('password', PASSWORD);
-    const response = await handle(new Request(`${base}/u/${USER}`, { method: 'POST', body: form }));
-    expect(response.status).toBe(302);
-    expect(response.headers.get('location')).toBe(`/u/${USER}`);
-
-    const refused = new FormData();
-    refused.set('SoundVitrine_file', new File(['[]'], 'library.json', { type: 'application/json' }));
-    refused.set('password', 'wrong');
-    expect((await handle(new Request(`${base}/u/${USER}/uploadMusicLibrary`, { method: 'POST', body: refused }))).status).toBe(200);
-
-    await uploadLibrary(library);
-  });
 });
 
 describe('shouts', () => {
