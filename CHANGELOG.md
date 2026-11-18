@@ -2,9 +2,9 @@
 
 Each section becomes the notes of its GitHub release. Versions are shared with [SoundBuddy](https://github.com/gg-vara/SoundBuddy) from 0.13.0 on. Before that, see the tags.
 
-## Unreleased
+## 0.15.0
 
-Pairs with the SoundBuddy that logs in through the browser : earlier SoundBuddy versions can no longer upload.
+Pairs with SoundBuddy 0.15.0, which logs in through the browser : earlier SoundBuddy versions can no longer upload.
 
 ### New
 
