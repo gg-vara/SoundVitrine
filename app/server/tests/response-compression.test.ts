@@ -10,7 +10,7 @@ import { handle } from '../app';
 import { userFolder } from '../auth/users';
 import { compressedResponse } from '../compressed-response';
 import { embedded } from '../embedded';
-import { base, createUser, PASSWORD, prepareTestLibrary, soundBuddyHeaders, USER } from './helpers';
+import { base, createUser, prepareTestLibrary, USER } from './helpers';
 
 beforeAll(prepareTestLibrary);
 
@@ -89,24 +89,6 @@ describe('compression', () => {
   test('not a part of a file', async () => {
     const response = await asBrowser('/public/images/chrome.svg', { headers: { range: 'bytes=0-99', 'accept-encoding': 'gzip' } });
     expect(response.headers.has('content-encoding')).toBe(false);
-  });
-
-  test('not what SoundBuddy reads', async () => {
-    const response = await handle(
-      new Request(`${base}/hb/creds`, {
-        method: 'POST',
-        body: (() => {
-          const form = new FormData();
-          form.set('username', USER);
-          form.set('password', PASSWORD);
-          return form;
-        })(),
-        headers: { ...soundBuddyHeaders, 'accept-encoding': 'gzip' },
-      }),
-    );
-    expect(response.status).toBe(200);
-    expect(response.headers.has('content-encoding')).toBe(false);
-    expect(await response.text()).toBe('OK');
   });
 
   test('not live shouts', async () => {

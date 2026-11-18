@@ -14,6 +14,7 @@ const PASSWORD = 'testpassword';
 // set before the server's modules read them
 process.env.SOUNDVITRINE_STATE_PATH = STATE;
 process.env.PORT = process.env.PORT ?? '3000';
+process.env.SOUNDVITRINE_PUBLIC_URL = process.env.SOUNDVITRINE_PUBLIC_URL ?? `http://localhost:${process.env.PORT}`;
 process.env.ENFORCE_CANONICAL_HTTP_SCHEME = '1';
 
 rmSync(STATE, { recursive: true, force: true });

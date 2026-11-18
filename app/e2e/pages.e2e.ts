@@ -58,9 +58,14 @@ test('the account page changes the band colors and the picture', async ({ page }
   await expect(page.locator('input[name=username]')).toBeVisible();
 });
 
-test('the upload page has its form', async ({ page }) => {
+test('the upload page asks to log in, then has its form, without password', async ({ page }) => {
   await page.goto(`/u/${USER}/uploadMusicLibrary`);
   await expect(page.getByRole('heading', { name: 'Upload your library' })).toBeVisible();
+  await page.getByRole('link', { name: `Log in as ${USER}` }).click();
+  await submitLogin(page, PASSWORD);
+  await expect(page.getByRole('button', { name: 'Disconnect' })).toBeVisible();
+
+  await page.goto(`/u/${USER}/uploadMusicLibrary`);
   await expect(page.locator('input[type=file]')).toBeVisible();
-  await expect(page.locator('input[type=password]')).toBeVisible();
+  await expect(page.locator('input[type=password]')).toHaveCount(0);
 });

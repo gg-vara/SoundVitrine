@@ -8,16 +8,18 @@ import { join } from 'node:path';
 import { Hono } from 'hono';
 import { accountRoutes } from './account';
 import { apiResponse } from './api/router';
-import { prepareAuth } from './auth/auth';
+import { storeLibrary } from './api/uploads';
+import { auth, prepareAuth } from './auth/auth';
 import { chosenLang, langCookie, readSession } from './auth/session';
 import { allUsers, ensureUserFolders, userExists } from './auth/users';
 import { compressedResponse } from './compressed-response';
-import { STATE_FOLDER_PATH, TRUST_PROXY } from './config';
+import { MUSIC_LIB_UPLOAD_FILE_NAME, PUBLIC_URL, STATE_FOLDER_PATH, TRUST_PROXY } from './config';
 import type { AppContext, Env } from './env';
 import { plain, setCookies } from './env';
 import type { Lang } from './i18n/i18n';
 import { defaultLang, isLang, langFromHeader, translator } from './i18n/i18n';
 import { hasLibrary } from './library/library';
+import { oauthRoutes } from './oauth';
 import { accountPage } from './pages/account';
 import type { PageContext } from './pages/layout';
 import { renderPages } from './pages/layout';
@@ -38,21 +40,31 @@ async function formFields(request: Request): Promise<Record<string, string>> {
   return fields;
 }
 
+// a library from the upload form : only by its owner, logged in, from one of our pages (the session cookie alone would let
+// another site post here)
+async function uploadRoute(c: AppContext, user: string): Promise<Response> {
+  const context = c.var.page;
+  if (context.session.loggedAs !== user || c.req.header('origin') !== new URL(PUBLIC_URL).origin) return plain(c, '', 403);
+
+  const file = (await c.req.raw.formData()).get(MUSIC_LIB_UPLOAD_FILE_NAME);
+  const stored = file instanceof File ? await storeLibrary(user, file) : 'invalid';
+  if (stored === 'invalid') {
+    c.status(400);
+    return c.render(uploadPage(context, user, context.tr(file instanceof File ? 'e_ucJSON' : 'missingArgs')));
+  }
+  return c.redirect(`/u/${user}`, 303);
+}
+
 async function libraryRoute(c: AppContext, userPart: string | undefined, action: string | undefined): Promise<Response> {
   const context = c.var.page;
   const user = (userPart ?? '').toLowerCase();
   if (!userExists(user)) return plain(c, context.tr('e_unsu', user));
 
-  if (action === 'uploadShout') return plain(c, 'expects API call', 500);
-
   // the upload form of a user without library posts its file here
-  if (!action && c.req.method === 'POST' && c.req.header('content-type')?.startsWith('multipart/form-data')) {
-    const upload = new Request(new URL(`/u/${user}/uploadMusicLibrary`, c.req.url).href, c.req.raw);
-    return (await apiResponse(upload, { tr: context.tr, clientIp: context.clientIp })) ?? plain(c, '', 500);
-  }
+  if (!action && c.req.method === 'POST' && c.req.header('content-type')?.startsWith('multipart/form-data')) return uploadRoute(c, user);
 
   if (action && action !== 'uploadMusicLibrary') return c.render(accountPage(context));
-  if (!hasLibrary(user) || action === 'uploadMusicLibrary') return c.render(uploadPage(context));
+  if (!hasLibrary(user) || action === 'uploadMusicLibrary') return c.render(uploadPage(context, user));
 
   return c.render(libraryPage(context, user));
 }
@@ -63,7 +75,7 @@ function clientIpOf(request: Request, peerAddress: string | undefined): string {
   return forwarded || peerAddress || 'unknown';
 }
 
-// the path's parts after its first one : /u/curator/uploadShout gives curator, uploadShout
+// the path's parts after its first one : /u/curator/uploadMusicLibrary gives curator, uploadMusicLibrary
 function partsOf(path: string): (string | undefined)[] {
   return path.split('/').filter(Boolean).slice(1);
 }
@@ -91,6 +103,9 @@ app.use(async (c, next) => {
 
 // the API, with its reference : first, as it reads the body itself
 app.use(async (c, next) => (await apiResponse(c.req.raw, { tr: c.var.tr, clientIp: c.var.clientIp })) ?? next());
+
+// OAuth's endpoints, by Better Auth : the only routes of its own exposed (server/auth/auth.ts)
+app.on(['GET', 'POST'], '/api/auth/oauth2/*', c => auth.handler(c.req.raw));
 
 // what the pages are rendered from
 app.use(async (c, next) => {
@@ -120,6 +135,7 @@ app.use(renderPages);
 app.all('/', c => c.render(welcomePage(c.var.page, allUsers())));
 
 app.route('/account', accountRoutes);
+app.route('/oauth', oauthRoutes);
 
 for (const path of ['/u', '/u/*']) {
   app.all(path, c => {

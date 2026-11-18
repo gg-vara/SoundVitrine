@@ -12,12 +12,8 @@ export const CREATOR_EMAIL = 'guillaume.vara@gmail.com';
 export const COMPANION_APP_NAME = 'SoundBuddy';
 export const COMPANION_APP_GITHUB_LATEST_RELEASE_URL = 'https://github.com/gg-vara/SoundBuddy/releases/latest';
 
-// multipart field names of the files the companion app uploads
+// the field of the upload form's file
 export const MUSIC_LIB_UPLOAD_FILE_NAME = `${APP_NAME}_file`;
-export const SHOUT_UPLOAD_FILE_NAME = 'shout_file';
-
-// content type SoundBuddy gives a compressed library upload : informative, as uploads are told from their content
-export const COMPRESSED_LIBRARY_CONTENT_TYPE = 'application/octet-stream';
 
 // files of a user's folder
 export const MUSIC_LIB_PROFILE_FILE_NAME = 'current.json';
@@ -32,6 +28,10 @@ export const DEFAULT_BACKGROUND_COLORS = ['#EE7752', '#E73C7E', '#23A6D5', '#23D
 export const STATE_FOLDER_PATH = resolve(process.env.SOUNDVITRINE_STATE_PATH ?? '_state');
 
 export const PORT = Number(process.env.PORT ?? 80);
+
+// where visitors reach SoundVitrine, without a trailing slash : OAuth's redirections are built from it, and requests from another
+// origin are refused (Better Auth)
+export const PUBLIC_URL = (process.env.SOUNDVITRINE_PUBLIC_URL ?? `http://localhost:${PORT}`).replace(/\/+$/, '');
 
 // behind a proxy, which appends the client's address to X-Forwarded-For (to limit password guessing by client)
 export const TRUST_PROXY = process.env.SOUNDVITRINE_TRUST_PROXY === '1';

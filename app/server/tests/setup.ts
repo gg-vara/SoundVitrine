@@ -16,6 +16,8 @@ if (!existsSync(join(import.meta.dir, '../embedded.ts'))) {
 
 const state = mkdtempSync(join(tmpdir(), 'soundvitrine-tests-'));
 process.env.SOUNDVITRINE_STATE_PATH = state;
+// the origin of the tests' requests (helpers.ts) : Better Auth refuses others
+process.env.SOUNDVITRINE_PUBLIC_URL = 'http://localhost';
 
 afterAll(() => {
   // the database may still be open, which Windows refuses to remove : it stays in the temporary folder then
